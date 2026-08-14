@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
 import Modal from '../common/Modal';
 import toast from 'react-hot-toast';
-import { MapPin, Cpu, AlertTriangle, Crosshair } from 'lucide-react';
+import { MapPin, Cpu, AlertTriangle, Crosshair, Phone, ShieldCheck } from 'lucide-react';
+import { complaintService } from '../../services/api';
 
 const CATEGORIES = [
   'Road Damage', 'Water Leakage', 'Garbage', 'Street Light',
@@ -34,12 +35,19 @@ const NewComplaintModal = ({ isOpen, onClose, onSubmit }) => {
     location: '',
     description: '',
     reporterName: '',
-    reporterContact: ''
+    reporterContact: '',
+    isAnonymous: false
   });
   const [coordinates, setCoordinates] = useState(null);
   const [locating, setLocating] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [aiResult, setAiResult] = useState(null); // { priority, aiScore, aiReasons }
+  
+  // OTP State
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [verificationToken, setVerificationToken] = useState(null);
+  const [otpLoading, setOtpLoading] = useState(false);
 
   const handleLocate = () => {
     if (!navigator.geolocation) {
@@ -67,16 +75,41 @@ const NewComplaintModal = ({ isOpen, onClose, onSubmit }) => {
     );
   };
 
-  const handleSubmit = async (e) => {
+  const handleSendOtp = async (e) => {
     e.preventDefault();
-    if (!formData.title.trim() || !formData.location.trim()) {
-      toast.error('Please enter issue title and location.');
+    if (!formData.title.trim() || !formData.location.trim() || !formData.reporterContact.trim()) {
+      toast.error('Please enter title, location, and mobile number.');
+      return;
+    }
+    setOtpLoading(true);
+    try {
+      await complaintService.sendOtp(formData.reporterContact);
+      setOtpSent(true);
+      toast.success('OTP sent to your mobile number! (Use 123456 for demo)');
+    } catch (e) {
+      toast.error('Failed to send OTP.');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyAndSubmit = async (e) => {
+    e.preventDefault();
+    if (!otpCode) {
+      toast.error('Please enter the OTP.');
       return;
     }
     setSubmitting(true);
     try {
+      // Verify OTP first
+      const verifyRes = await complaintService.verifyOtp(formData.reporterContact, otpCode);
+      if (!verifyRes.success || !verifyRes.verificationToken) {
+        throw new Error('Invalid OTP');
+      }
+
       const payload = {
         ...formData,
+        verificationToken: verifyRes.verificationToken,
         coordinates: coordinates || [
           19.8917 + (Math.random() - 0.5) * 0.02,
           74.4789 + (Math.random() - 0.5) * 0.02
@@ -92,16 +125,19 @@ const NewComplaintModal = ({ isOpen, onClose, onSubmit }) => {
         handleClose();
       }
     } catch (err) {
-      toast.error('Failed to submit grievance. Please try again.');
+      toast.error(err.message || 'Failed to submit grievance. Please try again.');
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleClose = () => {
-    setFormData({ title: '', category: 'Road Damage', ward: 'Ward 1 - Sangamner Naka', location: '', description: '', reporterName: '', reporterContact: '' });
+    setFormData({ title: '', category: 'Road Damage', ward: 'Ward 1 - Sangamner Naka', location: '', description: '', reporterName: '', reporterContact: '', isAnonymous: false });
     setCoordinates(null);
     setAiResult(null);
+    setOtpSent(false);
+    setOtpCode('');
+    setVerificationToken(null);
     onClose();
   };
 
@@ -150,7 +186,7 @@ const NewComplaintModal = ({ isOpen, onClose, onSubmit }) => {
 
       {/* Form */}
       {!aiResult && (
-        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+        <form onSubmit={otpSent ? handleVerifyAndSubmit : handleSendOtp} className="space-y-4 text-xs">
           {/* Title */}
           <div>
             <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Issue Title *</label>
@@ -239,7 +275,8 @@ const NewComplaintModal = ({ isOpen, onClose, onSubmit }) => {
                 value={formData.reporterName}
                 onChange={e => setFormData({ ...formData, reporterName: e.target.value })}
                 placeholder="Your Name"
-                className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100"
+                disabled={formData.isAnonymous}
+                className={`w-full p-2 border rounded-lg ${formData.isAnonymous ? 'bg-slate-200 dark:bg-slate-700/50 text-slate-400 border-slate-200 dark:border-slate-700 cursor-not-allowed' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100'}`}
               />
             </div>
             <div>
@@ -253,6 +290,27 @@ const NewComplaintModal = ({ isOpen, onClose, onSubmit }) => {
               />
             </div>
           </div>
+
+          {/* Anonymous Toggle */}
+          <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+            <input
+              type="checkbox"
+              checked={formData.isAnonymous}
+              onChange={e => {
+                const checked = e.target.checked;
+                setFormData(prev => ({ 
+                  ...prev, 
+                  isAnonymous: checked,
+                  reporterName: checked ? 'Anonymous Citizen' : ''
+                }));
+              }}
+              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600"
+            />
+            <div className="flex flex-col">
+              <span className="font-bold text-slate-800 dark:text-slate-200">File Grievance Anonymously</span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">Your name will be hidden from municipal officers and public logs. Mobile number is kept encrypted for verification only.</span>
+            </div>
+          </label>
 
           {/* AI notice */}
           <div className="flex items-start gap-2 p-2.5 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 rounded-lg">
@@ -270,17 +328,42 @@ const NewComplaintModal = ({ isOpen, onClose, onSubmit }) => {
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-5 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white font-semibold shadow-md transition-colors flex items-center gap-2"
-            >
-              {submitting ? (
-                <><span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full" /> Analyzing...</>
-              ) : (
-                <><MapPin className="w-3.5 h-3.5" /> Submit Grievance</>
-              )}
-            </button>
+            
+            {!otpSent ? (
+              <button
+                type="submit"
+                disabled={otpLoading}
+                className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold shadow-md transition-colors flex items-center gap-2"
+              >
+                {otpLoading ? (
+                  <><span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full" /> Sending OTP...</>
+                ) : (
+                  <><Phone className="w-3.5 h-3.5" /> Send Verification OTP</>
+                )}
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <input 
+                  type="text" 
+                  maxLength={6}
+                  placeholder="Enter 6-digit OTP"
+                  value={otpCode}
+                  onChange={e => setOtpCode(e.target.value)}
+                  className="w-32 p-2 bg-slate-50 dark:bg-slate-800 border border-emerald-300 dark:border-emerald-700 rounded-lg text-slate-900 dark:text-slate-100 font-mono tracking-widest text-center"
+                />
+                <button
+                  type="submit"
+                  disabled={submitting || otpCode.length < 4}
+                  className="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-semibold shadow-md transition-colors flex items-center gap-2"
+                >
+                  {submitting ? (
+                    <><span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full" /> Verifying...</>
+                  ) : (
+                    <><ShieldCheck className="w-3.5 h-3.5" /> Verify & Submit</>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         </form>
       )}

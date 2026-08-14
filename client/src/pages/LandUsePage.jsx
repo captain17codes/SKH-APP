@@ -4,6 +4,7 @@ import MapView from '../components/gis/MapView';
 import LandAnalysisPanel from '../components/landuse/LandAnalysisPanel';
 import { landService } from '../services/api';
 import toast from 'react-hot-toast';
+import { useTranslation } from '../context/LanguageContext';
 
 const LAND_CATEGORIES = [
   'All Zones',
@@ -17,6 +18,7 @@ const LAND_CATEGORIES = [
 ];
 
 const LandUsePage = () => {
+  const { t } = useTranslation();
   const [plots, setPlots] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All Zones');
   const [selectedPlot, setSelectedPlot] = useState(null);
@@ -43,10 +45,10 @@ const LandUsePage = () => {
         <div>
           <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center">
             <Layers className="w-5 h-5 text-emerald-500 mr-2" />
-            Interactive Land Use Planning & AI Zoning Engine
+            {t('interactiveLandUse')}
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Cadastral land parcel analysis, environmental suitability scores, infrastructure access index, and AI master plan recommendations.
+            {t('interactiveLandUseDesc')}
           </p>
         </div>
       </div>
@@ -63,7 +65,7 @@ const LandUsePage = () => {
                 : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-400'
             }`}
           >
-            {cat}
+            {t(cat.replace(/\s+/g, ''))}
           </button>
         ))}
       </div>

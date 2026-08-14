@@ -364,6 +364,27 @@ export const complaintService = {
         }))
       };
     }
+  },
+  sendOtp: async (phone) => {
+    try {
+      const res = await apiClient.post('/complaints/otp/send', { phone });
+      return res.data;
+    } catch (e) {
+      console.log('Offline mock send OTP');
+      return { success: true, message: `OTP sent to ${phone}` };
+    }
+  },
+  verifyOtp: async (phone, code) => {
+    try {
+      const res = await apiClient.post('/complaints/otp/verify', { phone, code });
+      return res.data;
+    } catch (e) {
+      if (code === '123456') {
+        const token = `verify_mock_${Date.now()}`;
+        return { success: true, verificationToken: token };
+      }
+      throw new Error('Invalid OTP');
+    }
   }
 };
 

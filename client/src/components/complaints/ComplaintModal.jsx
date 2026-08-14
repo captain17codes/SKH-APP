@@ -59,7 +59,7 @@ const ComplaintModal = ({ isOpen, onClose, complaint, onUpdateStatus }) => {
             <span className="text-slate-400 block text-[10px] uppercase font-bold">Reported By</span>
             <div className="flex items-center text-slate-800 dark:text-slate-200 font-medium mt-0.5">
               <User className="w-3.5 h-3.5 mr-1 text-slate-400" />
-              {complaint.reporterName || 'Anonymous'} {complaint.reporterContact ? `(${complaint.reporterContact})` : ''}
+              {complaint.reporterName || 'Anonymous'} {complaint.reporterContact ? (complaint.isAnonymous ? '(Contact Hidden)' : `(${complaint.reporterContact})`) : ''}
             </div>
           </div>
           <div>
