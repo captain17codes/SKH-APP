@@ -17,7 +17,10 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors({ origin: 'http://localhost:5173', credentials: true })); // Needs credentials for cookies
+app.use(cors({ 
+  origin: process.env.CLIENT_URL || 'http://localhost:5173', 
+  credentials: true 
+}));
 app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize());
