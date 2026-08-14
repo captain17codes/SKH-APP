@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   MapContainer,
   TileLayer,
@@ -79,6 +79,27 @@ const MapRecenter = ({ center, zoom }) => {
   return null;
 };
 
+// Removes the default Leaflet scale bar that appears bottom-left
+const RemoveScaleControl = () => {
+  const map = useMap();
+  useEffect(() => {
+    map.eachLayer(() => {});
+    map.eachControl = map.eachControl || (() => {});
+    map._controlContainer && map._controlContainer
+      .querySelectorAll('.leaflet-control-scale')
+      .forEach(el => el.remove());
+  }, [map]);
+  return null;
+};
+
+const MapInstanceRegistrar = ({ onMapReady }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (onMapReady) onMapReady(map);
+  }, [map, onMapReady]);
+  return null;
+};
+
 const MapEventsHandler = ({ onZoomChange, onCenterChange }) => {
   const map = useMapEvents({
     zoomend() {
@@ -88,31 +109,6 @@ const MapEventsHandler = ({ onZoomChange, onCenterChange }) => {
       if (onCenterChange) {
         const c = map.getCenter();
         onCenterChange([c.lat, c.lng]);
-      }
-    }
-  });
-  return null;
-};
-
-// Distance Measurement Helper
-const calculateDistanceKm = (p1, p2) => {
-  if (!p1 || !p2) return '0.00';
-  const R = 6371; // Earth radius km
-  const dLat = (p2[0] - p1[0]) * Math.PI / 180;
-  const dLon = (p2[1] - p1[1]) * Math.PI / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(p1[0] * Math.PI / 180) * Math.cos(p2[0] * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return (R * c).toFixed(2);
-};
-
-const MapClickEvents = ({ activeTool, onAddPoint }) => {
-  useMapEvents({
-    click(e) {
-      if (activeTool === 'distance' || activeTool === 'polygon' || activeTool === 'rectangle') {
-        onAddPoint([e.latlng.lat, e.latlng.lng]);
       }
     }
   });
@@ -143,6 +139,9 @@ const MapView = ({
   candidateLocations = [],
   complaintHotspots = null
 }) => {
+  const initialCenterRef = useRef(center || KOPARGAON_CENTER);
+  const initialZoomRef = useRef(zoom || DEFAULT_ZOOM);
+
   const [wardsData, setWardsData] = useState(null);
   const [landUseData, setLandUseData] = useState(null);
   const [roadsData, setRoadsData] = useState(null);
@@ -168,16 +167,45 @@ const MapView = ({
     complaintHotspots: true
   });
 
-  const [activeTool, setActiveTool] = useState('none');
+  const [activeTool, setActiveTool] = useState('none'); // kept for compatibility
   const [overlayMode, setOverlayMode] = useState('none');
   const [isLayerMenuOpen, setIsLayerMenuOpen] = useState(false);
   const [isLegendOpen, setIsLegendOpen] = useState(true);
-  const [measurePoints, setMeasurePoints] = useState([]);
+  const mapContainerRef = useRef(null);
+  const mapInstanceRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Existing GIS data loading
+  // Browser Fullscreen API handler
+  const handleToggleFullscreen = useCallback(() => {
+    const el = mapContainerRef.current;
+    if (!el) return;
+    if (!document.fullscreenElement) {
+      el.requestFullscreen().catch(err => {
+        console.warn('[GIS] Fullscreen request failed:', err);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  }, []);
+
+  // Sync React state + invalidate map size on fullscreen change
   useEffect(() => {
-    // PostGIS relational models
+    const onFsChange = () => {
+      const inFs = !!document.fullscreenElement;
+      setIsFullscreen(inFs);
+      requestAnimationFrame(() => {
+        if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+      });
+      setTimeout(() => {
+        if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+      }, 200);
+    };
+    document.addEventListener('fullscreenchange', onFsChange);
+    return () => document.removeEventListener('fullscreenchange', onFsChange);
+  }, []);
+
+  // Existing GIS data loading
+  const fetchGisData = useCallback(() => {
     gisService.loadWardsGeoJSON().then(setWardsData);
     gisService.loadLandUseGeoJSON().then(setLandUseData);
     projectService.getAll().then(list => {
@@ -194,6 +222,32 @@ const MapView = ({
     gisService.getBuildings().then(setBuildingsData);
     gisService.getInfrastructure().then(setInfraData);
   }, []);
+
+  useEffect(() => {
+    fetchGisData();
+  }, [fetchGisData]);
+
+  // Refresh GIS / Reset Map View to default center and zoom
+  const handleResetView = useCallback(() => {
+    setActiveTool('none');
+
+    const defaultCenter = (Array.isArray(initialCenterRef.current) && initialCenterRef.current.length === 2 && !isNaN(initialCenterRef.current[0]) && !isNaN(initialCenterRef.current[1]))
+      ? initialCenterRef.current
+      : KOPARGAON_CENTER;
+    const defaultZoom = initialZoomRef.current || DEFAULT_ZOOM;
+
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.setView(defaultCenter, defaultZoom, {
+        animate: true
+      });
+      mapInstanceRef.current.invalidateSize();
+    }
+
+    if (onCenterChange) onCenterChange(defaultCenter);
+    if (onZoomChange) onZoomChange(defaultZoom);
+
+    fetchGisData();
+  }, [fetchGisData, onCenterChange, onZoomChange]);
 
   // Pre-load Mappls SDK so tiles and future SDK features are available
   useEffect(() => {
@@ -214,16 +268,7 @@ const MapView = ({
     setActiveLayers(prev => ({ ...prev, [layerId]: !prev[layerId] }));
   };
 
-  const handleAddMeasurePoint = (point) => {
-    setMeasurePoints(prev => [...prev, point]);
-  };
 
-  const clearMeasurement = () => {
-    setMeasurePoints([]);
-    setActiveTool('none');
-  };
-
-  // Selection highlights
   const isProjectSelected = (id) => selectedFeature && selectedFeature.type === 'project' && selectedFeature.feat.id === id;
   const isSchoolSelected = (id) => selectedFeature && selectedFeature.type === 'school' && selectedFeature.feat.id === id;
   const isHospitalSelected = (id) => selectedFeature && selectedFeature.type === 'hospital' && selectedFeature.feat.id === id;
@@ -339,25 +384,20 @@ const MapView = ({
     : [];
 
   return (
-    <div className={`relative w-full ${height} ${isFullscreen ? 'fixed inset-0 z-50 h-screen rounded-none' : 'rounded-xl overflow-hidden shadow-xl border border-slate-200 dark:border-slate-800'}`} style={{ minHeight: '500px' }}>
+    <div
+      ref={mapContainerRef}
+      className={`relative w-full ${height} ${isFullscreen ? 'fixed inset-0 z-50 h-screen rounded-none' : 'rounded-xl overflow-hidden shadow-xl border border-slate-200 dark:border-slate-800'}`}
+      style={{ minHeight: '500px' }}
+    >
       {/* Map Tools & Layer Control Overlay */}
       {showAllControls && (
         <>
           <MapTools
-            activeTool={activeTool}
-            onSelectTool={(tool) => {
-              if (tool !== activeTool) setMeasurePoints([]);
-              setActiveTool(tool);
-            }}
             baseTileSource={baseTileSource}
             onChangeBaseTile={setBaseTileSource}
-            onResetView={() => {
-              setActiveTool('none');
-              setMeasurePoints([]);
-            }}
+            onResetView={handleResetView}
             isFullscreen={isFullscreen}
-            onToggleFullscreen={() => setIsFullscreen(!isFullscreen)}
-            onClearDrawings={clearMeasurement}
+            onToggleFullscreen={handleToggleFullscreen}
           />
 
           <MapLayerControl
@@ -377,23 +417,7 @@ const MapView = ({
         </>
       )}
 
-      {/* Measurement Reset Bar */}
-      {measurePoints.length > 0 && (
-        <div className="absolute bottom-4 left-4 z-20 bg-slate-900/90 text-white text-xs px-3 py-2 rounded-lg border border-slate-700 shadow-xl flex items-center space-x-3 backdrop-blur-md">
-          <span>Points: {measurePoints.length}</span>
-          {measurePoints.length >= 2 && (
-            <span className="font-bold text-blue-400">
-              Dist: {calculateDistanceKm(measurePoints[0], measurePoints[measurePoints.length - 1])} km
-            </span>
-          )}
-          <button
-            onClick={clearMeasurement}
-            className="px-2 py-0.5 bg-rose-600 hover:bg-rose-700 text-white rounded font-medium transition-colors cursor-pointer"
-          >
-            Clear
-          </button>
-        </div>
-      )}
+
 
       {/* Leaflet Core Container */}
       <MapContainer
@@ -406,13 +430,12 @@ const MapView = ({
         keyboard={true}
         className="w-full h-full bg-slate-100 dark:bg-slate-950"
         style={{ height: '100%', minHeight: '500px', width: '100%' }}
+        ref={mapInstanceRef}
       >
+        <MapInstanceRegistrar onMapReady={(map) => { mapInstanceRef.current = map; }} />
+        <RemoveScaleControl />
         <MapRecenter center={safeCenter} zoom={zoom} />
         <MapEventsHandler onZoomChange={onZoomChange} onCenterChange={onCenterChange} />
-        <MapClickEvents
-          activeTool={activeTool}
-          onAddPoint={handleAddMeasurePoint}
-        />
 
         {/* Base Map Tile Layer */}
         {baseTileSource === 'satellite' ? (
@@ -732,10 +755,6 @@ const MapView = ({
           </Marker>
         ))}
 
-        {/* Measurement Polyline */}
-        {measurePoints.length > 0 && (
-          <Polyline positions={measurePoints} color="#3b82f6" weight={3} dashArray="4" />
-        )}
       </MapContainer>
     </div>
   );
