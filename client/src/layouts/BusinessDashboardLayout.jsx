@@ -136,9 +136,9 @@ const BusinessDashboardLayout = () => {
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60'
                 }`}
               >
-                <div className="flex items-center space-x-3 flex-1 min-w-0">
+                <div className="flex items-center space-x-3 text-left pr-2">
                   <Icon className="w-4 h-4 flex-shrink-0" />
-                  <span className="truncate whitespace-normal leading-tight">{item.label}</span>
+                  <span className="leading-tight">{item.label}</span>
                 </div>
                 {item.badge && (
                   <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded ${
