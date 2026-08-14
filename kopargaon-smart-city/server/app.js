@@ -8,15 +8,23 @@ import propertyRouter from "./routes/property.routes.js";
 import ttsRouter from "./routes/tts.routes.js";
 import mcpClient from "./services/mcpClient.js";
 
+import authRouter from "./routes/auth.routes.js";
+import passport from "./config/passport.js";
+import cookieParser from "cookie-parser";
+
 
 dotenv.config();
 
 const app = express();
 
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:5173', credentials: true })); // Needs credentials for cookies
 app.use(express.json());
+app.use(cookieParser());
+app.use(passport.initialize());
+
 app.use('/uploads', express.static('uploads'));
 
+app.use("/api/auth", authRouter);
 app.use("/api/ai", aiRouter);
 app.use("/api/complaints", complaintRouter);
 app.use("/api/projects", projectRouter);

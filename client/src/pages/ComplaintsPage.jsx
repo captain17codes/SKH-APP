@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageSquareWarning, LayoutGrid, ListFilter, AlertCircle, CheckCircle2, Clock, Cpu, BarChart3, TrendingUp } from 'lucide-react';
+import { MessageSquareWarning, Plus, LayoutGrid, ListFilter, AlertCircle, CheckCircle2, Clock, Cpu, BarChart3, TrendingUp } from 'lucide-react';
 import ComplaintCard from '../components/complaints/ComplaintCard';
 import ComplaintTable from '../components/complaints/ComplaintTable';
 import ComplaintModal from '../components/complaints/ComplaintModal';
-
+import NewComplaintModal from '../components/complaints/NewComplaintModal';
 import StatCard from '../components/common/StatCard';
 import SearchBar from '../components/common/SearchBar';
 import FilterPanel from '../components/common/FilterPanel';
@@ -22,6 +22,7 @@ const ComplaintsPage = () => {
   const [selectedFilters, setSelectedFilters] = useState({});
   const [activeComplaint, setActiveComplaint] = useState(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isLodgeOpen, setIsLodgeOpen] = useState(false);
   const { t } = useTranslation();
 
   const fetchComplaints = () => {
@@ -259,7 +260,14 @@ const ComplaintsPage = () => {
         onUpdateStatus={handleUpdateStatus}
       />
 
-
+      <NewComplaintModal
+        isOpen={isLodgeOpen}
+        onClose={() => setIsLodgeOpen(false)}
+        onSubmit={async (newC) => {
+          await complaintService.create(newC);
+          fetchComplaints();
+        }}
+      />
     </div>
   );
 };

@@ -33,6 +33,8 @@ import DocumentsPage from './pages/DocumentsPage';
 import SettingsPage from './pages/SettingsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
+import ProtectedRoute from './components/common/ProtectedRoute';
+
 function App() {
   return (
     <LanguageProvider>
@@ -49,7 +51,11 @@ function App() {
 
             {/* Citizen Entry & Dashboard Routes (Single Citizen Sidebar Layout) */}
             <Route path="/citizen/login" element={<CitizenLoginPage />} />
-            <Route element={<CitizenDashboardLayout />}>
+            <Route element={
+              <ProtectedRoute allowedRoles={['Citizen']}>
+                <CitizenDashboardLayout />
+              </ProtectedRoute>
+            }>
               <Route path="/citizen/dashboard" element={<CitizenDashboardPage />} />
               <Route path="/citizen/gis" element={<CitizenGisPage />} />
               {/* Citizen Land & Property removed — redirect old URLs to dashboard */}
@@ -59,7 +65,11 @@ function App() {
 
             {/* Business Routes (Single Business Sidebar Layout) */}
             <Route path="/business/login" element={<BusinessLoginPage />} />
-            <Route element={<BusinessDashboardLayout />}>
+            <Route element={
+              <ProtectedRoute allowedRoles={['Business']}>
+                <BusinessDashboardLayout />
+              </ProtectedRoute>
+            }>
               <Route path="/business/dashboard" element={<BusinessDashboardPage />} />
               <Route path="/business/gis" element={<BusinessGisPage />} />
               <Route path="/business/properties" element={<BusinessPropertiesPage />} />
@@ -68,7 +78,11 @@ function App() {
             </Route>
 
             {/* Authenticated Administrator Dashboard Layout (Untouched) */}
-            <Route element={<DashboardLayout />}>
+            <Route element={
+              <ProtectedRoute allowedRoles={['Administrator', 'GIS Planner', 'Municipal Officer']}>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/administrator/dashboard" element={<DashboardPage />} />
               <Route path="/gis" element={<GisPage />} />
