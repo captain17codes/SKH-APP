@@ -1,0 +1,182 @@
+// Kopargaon GeoJSON Municipal Wards
+export const KOPARGAON_WARDS_GEOJSON = {
+  type: "FeatureCollection",
+  features: [
+    {
+      type: "Feature",
+      id: "ward-1",
+      properties: {
+        id: "W1",
+        name: "Ward 1 - Sangamner Naka & Station Hub",
+        councillor: "Shri. Rajesh Deshmukh",
+        population: 14200,
+        areaKm2: 3.4,
+        density: "4,176 / km²",
+        type: "Commercial & Transit",
+        completionRate: 78,
+        activeProjects: 4,
+        complaintsCount: 6,
+        color: "#3b82f6"
+      },
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [74.4650, 19.8950],
+            [74.4750, 19.8980],
+            [74.4780, 19.8900],
+            [74.4680, 19.8870],
+            [74.4650, 19.8950]
+          ]
+        ]
+      }
+    },
+    {
+      type: "Feature",
+      id: "ward-2",
+      properties: {
+        id: "W2",
+        name: "Ward 2 - Godavari Riverbank Front",
+        councillor: "Smt. Sunita Patil",
+        population: 11800,
+        areaKm2: 2.8,
+        density: "4,214 / km²",
+        type: "Green Zone & Eco-Tourism",
+        completionRate: 85,
+        activeProjects: 3,
+        complaintsCount: 4,
+        color: "#10b981"
+      },
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [74.4750, 19.8980],
+            [74.4880, 19.9020],
+            [74.4910, 19.8930],
+            [74.4780, 19.8900],
+            [74.4750, 19.8980]
+          ]
+        ]
+      }
+    },
+    {
+      type: "Feature",
+      id: "ward-3",
+      properties: {
+        id: "W3",
+        name: "Ward 3 - Laxmi Nagar & Tilak Road",
+        councillor: "Shri. Amit Shinde",
+        population: 18500,
+        areaKm2: 2.1,
+        density: "8,809 / km²",
+        type: "High Density Residential",
+        completionRate: 64,
+        activeProjects: 5,
+        complaintsCount: 12,
+        color: "#f59e0b"
+      },
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [74.4680, 19.8870],
+            [74.4780, 19.8900],
+            [74.4760, 19.8800],
+            [74.4640, 19.8780],
+            [74.4680, 19.8870]
+          ]
+        ]
+      }
+    },
+    {
+      type: "Feature",
+      id: "ward-4",
+      properties: {
+        id: "W4",
+        name: "Ward 4 - Yesgaon Bypass & Logistics Hub",
+        councillor: "Shri. Vikram Kadam",
+        population: 9400,
+        areaKm2: 4.8,
+        density: "1,958 / km²",
+        type: "Industrial & Transport",
+        completionRate: 90,
+        activeProjects: 2,
+        complaintsCount: 3,
+        color: "#8b5cf6"
+      },
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [74.4780, 19.8900],
+            [74.4910, 19.8930],
+            [74.4950, 19.8810],
+            [74.4760, 19.8800],
+            [74.4780, 19.8900]
+          ]
+        ]
+      }
+    },
+    {
+      type: "Feature",
+      id: "ward-5",
+      properties: {
+        id: "W5",
+        name: "Ward 5 - Takli Road & MIDC Zone",
+        councillor: "Smt. Priyanka Pawar",
+        population: 13100,
+        areaKm2: 4.2,
+        density: "3,119 / km²",
+        type: "Manufacturing & Solar",
+        completionRate: 72,
+        activeProjects: 4,
+        complaintsCount: 8,
+        color: "#ec4899"
+      },
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [74.4550, 19.8850],
+            [74.4680, 19.8870],
+            [74.4640, 19.8780],
+            [74.4520, 19.8740],
+            [74.4550, 19.8850]
+          ]
+        ]
+      }
+    },
+    {
+      type: "Feature",
+      id: "ward-6",
+      properties: {
+        id: "W6",
+        name: "Ward 6 - Samvatsar Border Agri Market",
+        councillor: "Shri. Balasaheb More",
+        population: 8900,
+        areaKm2: 5.5,
+        density: "1,618 / km²",
+        type: "Agricultural & Wholesale",
+        completionRate: 81,
+        activeProjects: 3,
+        complaintsCount: 5,
+        color: "#06b6d4"
+      },
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [74.4880, 19.9020],
+            [74.5020, 19.9080],
+            [74.5050, 19.8940],
+            [74.4910, 19.8930],
+            [74.4880, 19.9020]
+          ]
+        ]
+      }
+    }
+  ]
+};
+
+export default KOPARGAON_WARDS_GEOJSON;
