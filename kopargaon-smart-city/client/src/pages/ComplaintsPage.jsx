@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageSquareWarning, Plus, LayoutGrid, ListFilter, AlertCircle, CheckCircle2, Clock, Cpu, BarChart3, TrendingUp } from 'lucide-react';
+import { MessageSquareWarning, LayoutGrid, ListFilter, AlertCircle, CheckCircle2, Clock, Cpu, BarChart3, TrendingUp } from 'lucide-react';
 import ComplaintCard from '../components/complaints/ComplaintCard';
 import ComplaintTable from '../components/complaints/ComplaintTable';
 import ComplaintModal from '../components/complaints/ComplaintModal';
-import NewComplaintModal from '../components/complaints/NewComplaintModal';
+
 import StatCard from '../components/common/StatCard';
 import SearchBar from '../components/common/SearchBar';
 import FilterPanel from '../components/common/FilterPanel';
@@ -21,7 +21,7 @@ const ComplaintsPage = () => {
   const [selectedFilters, setSelectedFilters] = useState({});
   const [activeComplaint, setActiveComplaint] = useState(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [isLodgeOpen, setIsLodgeOpen] = useState(false);
+
 
   const fetchComplaints = () => {
     complaintService.getAll().then(setComplaints);
@@ -106,13 +106,7 @@ const ComplaintsPage = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => setIsLodgeOpen(true)}
-          className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-md transition-colors flex items-center space-x-1.5 w-fit cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Lodge New Grievance</span>
-        </button>
+
       </div>
 
       {/* Stats */}
@@ -264,14 +258,7 @@ const ComplaintsPage = () => {
         onUpdateStatus={handleUpdateStatus}
       />
 
-      <NewComplaintModal
-        isOpen={isLodgeOpen}
-        onClose={() => setIsLodgeOpen(false)}
-        onSubmit={async (newC) => {
-          await complaintService.create(newC);
-          fetchComplaints();
-        }}
-      />
+
     </div>
   );
 };
