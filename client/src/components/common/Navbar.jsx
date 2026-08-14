@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Menu, Search, Bell, Sun, Moon, User, Shield, LogOut, ChevronDown } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from '../../context/LanguageContext';
 import NotificationDrawer from './NotificationDrawer';
 import GlobalSearchModal from './GlobalSearchModal';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -9,6 +10,7 @@ import LanguageSwitcher from './LanguageSwitcher';
 const Navbar = ({ onMobileMenuOpen }) => {
   const { theme, toggleTheme } = useTheme();
   const { user, switchRole, logout } = useAuth();
+  const { t } = useTranslation();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -28,8 +30,8 @@ const Navbar = ({ onMobileMenuOpen }) => {
           </button>
 
           <div className="hidden sm:block">
-            <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">Kopargaon Smart Development Portal</h2>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400">Municipal Council GIS & Digital Infrastructure Platform</p>
+            <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">{t('navTitle')}</h2>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400">{t('navSubtitle')}</p>
           </div>
         </div>
 

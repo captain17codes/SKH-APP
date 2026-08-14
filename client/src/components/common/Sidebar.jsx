@@ -14,21 +14,23 @@ import {
   X
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-
-const navItems = [
-  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/gis', label: 'GIS Smart Map', icon: MapPin, badge: 'Live GIS' },
-  { path: '/projects', label: 'Projects', icon: FolderKanban },
-  { path: '/land-use', label: 'Land Use Planning', icon: Layers },
-  { path: '/complaints', label: 'Citizen Complaints', icon: MessageSquareWarning, badge: '6 New' },
-  { path: '/analytics', label: 'Analytics', icon: BarChart3 },
-  { path: '/ai-planner', label: 'AI Urban Planner', icon: Bot, badge: 'AI 2.0' },
-  { path: '/documents', label: 'Documents', icon: FileText },
-  { path: '/settings', label: 'Settings', icon: Settings },
-];
+import { useTranslation } from '../../context/LanguageContext';
 
 const Sidebar = ({ isOpen, onClose }) => {
   const { user } = useAuth();
+  const { t } = useTranslation();
+
+  const navItems = [
+    { path: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
+    { path: '/gis', label: t('gisSmartMap'), icon: MapPin, badge: 'Live GIS' },
+    { path: '/projects', label: t('projects'), icon: FolderKanban },
+    { path: '/land-use', label: t('landUsePlanning'), icon: Layers },
+    { path: '/complaints', label: t('citizenComplaints'), icon: MessageSquareWarning, badge: '6 New' },
+    { path: '/analytics', label: t('analytics'), icon: BarChart3 },
+    { path: '/ai-planner', label: t('aiUrbanPlanner'), icon: Bot, badge: 'AI 2.0' },
+    { path: '/documents', label: t('documents'), icon: FileText },
+    { path: '/settings', label: t('settings'), icon: Settings },
+  ];
 
   return (
     <>
