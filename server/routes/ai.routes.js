@@ -46,8 +46,8 @@ router.post('/urban-planner', async (req, res) => {
 router.get('/urban-planner/health', (req, res) => {
   res.json({
     status: 'ok',
-    provider: 'xAI',
-    model: 'grok-4.5'
+    provider: 'Groq',
+    model: 'llama-3.3-70b-versatile'
   });
 });
 

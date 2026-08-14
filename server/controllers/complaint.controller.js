@@ -112,6 +112,32 @@ let complaints = [
   }
 ];
 
+// Secure storage for sensitive contact info, keyed by complaint ID
+const secureContacts = new Map();
+// Pre-populate secureContacts for dummy data
+complaints.forEach(c => {
+  secureContacts.set(c.id, {
+    reporterContact: c.reporterContact,
+    isAnonymous: false // Legacy dummy data isn't anonymous
+  });
+});
+
+// Helper to strip sensitive info before sending to client
+const sanitizeComplaint = (c) => {
+  const contactInfo = secureContacts.get(c.id) || {};
+  const isAnonymous = c.isAnonymous || contactInfo.isAnonymous;
+  
+  if (isAnonymous) {
+    return {
+      ...c,
+      reporterName: 'Anonymous Citizen',
+      reporterContact: '[REDACTED]',
+      isAnonymous: true
+    };
+  }
+  return c;
+};
+
 // GET /api/complaints
 export const getAllComplaints = (req, res) => {
   const { category, status, ward, priority } = req.query;
@@ -122,14 +148,14 @@ export const getAllComplaints = (req, res) => {
   if (ward) filtered = filtered.filter(c => c.ward && c.ward.includes(ward));
   if (priority) filtered = filtered.filter(c => c.priority === priority.toUpperCase());
 
-  res.json(filtered);
+  res.json(filtered.map(sanitizeComplaint));
 };
 
 // GET /api/complaints/:id
 export const getComplaintById = (req, res) => {
   const complaint = complaints.find(c => c.id === req.params.id);
   if (!complaint) return res.status(404).json({ error: 'Complaint not found' });
-  res.json(complaint);
+  res.json(sanitizeComplaint(complaint));
 };
 
 // POST /api/complaints
@@ -137,12 +163,20 @@ export const createComplaint = async (req, res) => {
   try {
     const {
       title, category, ward, location, coordinates, description,
-      reporterName, reporterContact
+      reporterName, reporterContact, isAnonymous, verificationToken
     } = req.body;
 
     if (!title || !category || !location) {
       return res.status(400).json({ error: 'title, category, and location are required' });
     }
+
+    if (!verificationToken || !mockOtpStore.has(verificationToken)) {
+      return res.status(401).json({ error: 'Invalid or missing OTP verification token. Please verify your mobile number.' });
+    }
+    
+    // Consume the token
+    const verifiedPhone = mockOtpStore.get(verificationToken);
+    mockOtpStore.delete(verificationToken);
 
     // Run AI priority scoring
     const lat = coordinates ? coordinates[0] : null;
@@ -170,15 +204,22 @@ export const createComplaint = async (req, res) => {
       priority: aiResult.priority,
       aiScore: aiResult.score,
       aiReasons: aiResult.reasons,
-      reporterName: reporterName || 'Anonymous',
-      reporterContact: reporterContact || 'N/A',
+      reporterName: isAnonymous ? 'Anonymous Citizen' : (reporterName || 'Anonymous'),
+      reporterContact: isAnonymous ? '[REDACTED]' : (verifiedPhone || reporterContact || 'N/A'),
+      isAnonymous: !!isAnonymous,
       description: description || '',
       assignedDept: resolveDept(category),
       upvotes: 1
     };
 
+    // Store actual secure data separately
+    secureContacts.set(newId, {
+      reporterContact: verifiedPhone || reporterContact || 'N/A',
+      isAnonymous: !!isAnonymous
+    });
+
     complaints.unshift(complaint);
-    res.status(201).json(complaint);
+    res.status(201).json(sanitizeComplaint(complaint));
   } catch (e) {
     console.error('[Complaint Controller] createComplaint error:', e);
     res.status(500).json({ error: e.message });
@@ -258,3 +299,38 @@ function resolveDept(category) {
   };
   return map[category] || 'Municipal Corporation';
 }
+
+// ---- MOCK OTP IMPLEMENTATION ----
+const mockOtpStore = new Map(); // token -> phone
+const mockOtpCodes = new Map(); // phone -> code
+
+export const sendOtp = (req, res) => {
+  const { phone } = req.body;
+  if (!phone) return res.status(400).json({ error: 'Phone number required' });
+  
+  // Always use 123456 for demo purposes, or generate a random one
+  const code = '123456';
+  mockOtpCodes.set(phone, code);
+  
+  // In a real app, integrate Twilio/AWS SNS here
+  console.log(`[OTP SERVICE] Sent OTP ${code} to ${phone}`);
+  
+  res.json({ success: true, message: `OTP sent to ${phone}` });
+};
+
+export const verifyOtp = (req, res) => {
+  const { phone, code } = req.body;
+  if (!phone || !code) return res.status(400).json({ error: 'Phone and code required' });
+  
+  const expected = mockOtpCodes.get(phone);
+  if (expected === code) {
+    mockOtpCodes.delete(phone);
+    // Issue a temporary verification token valid for submitting a complaint
+    const token = `verify_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    mockOtpStore.set(token, phone);
+    
+    return res.json({ success: true, verificationToken: token });
+  }
+  
+  return res.status(401).json({ error: 'Invalid OTP' });
+};

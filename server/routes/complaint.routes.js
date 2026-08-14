@@ -6,13 +6,19 @@ import {
   updateComplaint,
   upvoteComplaint,
   deleteComplaint,
-  getHotspots
+  getHotspots,
+  sendOtp,
+  verifyOtp
 } from '../controllers/complaint.controller.js';
 
 const router = express.Router();
 
 // GET  /api/complaints/hotspots  — MUST be before /:id route
 router.get('/hotspots', getHotspots);
+
+// OTP routes
+router.post('/otp/send', sendOtp);
+router.post('/otp/verify', verifyOtp);
 
 // CRUD
 router.get('/', getAllComplaints);

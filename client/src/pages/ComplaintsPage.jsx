@@ -11,6 +11,7 @@ import FilterPanel from '../components/common/FilterPanel';
 import EmptyState from '../components/common/EmptyState';
 import { complaintService } from '../services/api';
 import toast from 'react-hot-toast';
+import { useTranslation } from '../context/LanguageContext';
 
 
 const ComplaintsPage = () => {
@@ -22,6 +23,7 @@ const ComplaintsPage = () => {
   const [activeComplaint, setActiveComplaint] = useState(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isLodgeOpen, setIsLodgeOpen] = useState(false);
+  const { t } = useTranslation();
 
   const fetchComplaints = () => {
     complaintService.getAll().then(setComplaints);
@@ -39,17 +41,17 @@ const ComplaintsPage = () => {
   const filterConfigs = [
     {
       key: 'category',
-      label: 'Category',
+      label: t('filterCategory'),
       options: ['Road Damage', 'Water Leakage', 'Garbage', 'Street Light', 'Drainage', 'Illegal Construction', 'Traffic', 'Electricity', 'Public Infrastructure', 'Other']
     },
     {
       key: 'status',
-      label: 'Status',
+      label: t('filterStatus'),
       options: ['Pending', 'Under Review', 'In Progress', 'Resolved']
     },
     {
       key: 'priority',
-      label: 'AI Priority',
+      label: t('filterPriority'),
       options: ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']
     }
   ];
@@ -99,10 +101,10 @@ const ComplaintsPage = () => {
         <div>
           <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center">
             <MessageSquareWarning className="w-5 h-5 text-amber-500 mr-2" />
-            Citizen Grievance Redressal Portal
+            {t('grievancePortalTitle')}
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Real-time tracking of civic issues, municipal department SLAs, upvoting system, and GIS coordinate pinpoints.
+            {t('grievancePortalDesc')}
           </p>
         </div>
 
@@ -111,37 +113,37 @@ const ComplaintsPage = () => {
           className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-md transition-colors flex items-center space-x-1.5 w-fit cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>Lodge New Grievance</span>
+          <span>{t('lodgeNewGrievance')}</span>
         </button>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <StatCard
-          title="Total Registered"
+          title={t('totalRegistered')}
           value={totalComplaints}
-          subtitle="Citizen tickets logged"
+          subtitle={t('totalRegisteredDesc')}
           icon={MessageSquareWarning}
           color="amber"
         />
         <StatCard
-          title="Pending Review"
+          title={t('pendingReview')}
           value={pendingCount}
-          subtitle="Awaiting department action"
+          subtitle={t('pendingReviewDesc')}
           icon={AlertCircle}
           color="rose"
         />
         <StatCard
-          title="In Work Pipeline"
+          title={t('inWorkPipeline')}
           value={inProgressCount}
-          subtitle="Work teams deployed"
+          subtitle={t('inWorkPipelineDesc')}
           icon={Clock}
           color="blue"
         />
         <StatCard
-          title="Resolved Tickets"
+          title={t('resolvedTicketsTitle')}
           value={resolvedCount}
-          subtitle="Satisfactorily closed"
+          subtitle={t('resolvedTicketsDesc')}
           icon={CheckCircle2}
           color="emerald"
         />
@@ -151,15 +153,15 @@ const ComplaintsPage = () => {
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs">
         <div className="flex items-center gap-2 mb-3">
           <Cpu className="w-4 h-4 text-violet-500" />
-          <span className="text-sm font-bold text-slate-900 dark:text-slate-100">AI Priority Engine — Active Complaint Distribution</span>
-          <span className="ml-auto text-[10px] text-slate-400 italic">Scores are AI-generated advisories. Admin can override.</span>
+          <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{t('aiPriorityEngineTitle')}</span>
+          <span className="ml-auto text-[10px] text-slate-400 italic">{t('aiPriorityEngineDesc')}</span>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Critical', key: 'CRITICAL', color: 'bg-rose-500', textColor: 'text-rose-600 dark:text-rose-400', light: 'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800', icon: '🚨' },
-            { label: 'High', key: 'HIGH', color: 'bg-orange-500', textColor: 'text-orange-600 dark:text-orange-400', light: 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800', icon: '🔴' },
-            { label: 'Medium', key: 'MEDIUM', color: 'bg-amber-500', textColor: 'text-amber-600 dark:text-amber-400', light: 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800', icon: '🟡' },
-            { label: 'Low', key: 'LOW', color: 'bg-emerald-500', textColor: 'text-emerald-600 dark:text-emerald-400', light: 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800', icon: '🟢' }
+            { label: t('priorityCritical'), key: 'CRITICAL', color: 'bg-rose-500', textColor: 'text-rose-600 dark:text-rose-400', light: 'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800', icon: '🚨' },
+            { label: t('priorityHigh'), key: 'HIGH', color: 'bg-orange-500', textColor: 'text-orange-600 dark:text-orange-400', light: 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800', icon: '🔴' },
+            { label: t('priorityMedium'), key: 'MEDIUM', color: 'bg-amber-500', textColor: 'text-amber-600 dark:text-amber-400', light: 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800', icon: '🟡' },
+            { label: t('priorityLow'), key: 'LOW', color: 'bg-emerald-500', textColor: 'text-emerald-600 dark:text-emerald-400', light: 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800', icon: '🟢' }
           ].map(({ label, key, color, textColor, light, icon }) => {
             const count = complaints.filter(c =>
               (c.priority === key || c.priority === label || c.priority?.toUpperCase() === key) &&
@@ -175,7 +177,7 @@ const ComplaintsPage = () => {
                 <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                   <div className={`h-full ${color} rounded-full transition-all duration-700`} style={{ width: `${pct}%` }} />
                 </div>
-                <p className={`text-[10px] mt-1 ${textColor} font-semibold`}>{pct}% of open tickets</p>
+                <p className={`text-[10px] mt-1 ${textColor} font-semibold`}>{pct}{t('pctOpenTickets')}</p>
               </div>
             );
           })}
@@ -187,7 +189,7 @@ const ComplaintsPage = () => {
           <SearchBar
             value={searchQuery}
             onChange={setSearchQuery}
-            placeholder="Search complaints by title, address, ticket ID..."
+            placeholder={t('searchComplaintsPlaceholder')}
             className="w-full sm:w-72"
           />
 
@@ -207,7 +209,7 @@ const ComplaintsPage = () => {
             }`}
           >
             <LayoutGrid className="w-4 h-4" />
-            <span>Grid</span>
+            <span>{t('grid')}</span>
           </button>
           <button
             onClick={() => setViewMode('table')}
@@ -216,7 +218,7 @@ const ComplaintsPage = () => {
             }`}
           >
             <ListFilter className="w-4 h-4" />
-            <span>Table</span>
+            <span>{t('table')}</span>
           </button>
         </div>
       </div>
@@ -224,8 +226,8 @@ const ComplaintsPage = () => {
       {/* Cards or Table */}
       {filteredComplaints.length === 0 ? (
         <EmptyState
-          title="No Grievance Records Found"
-          description="No citizen complaints match your query or active category filters."
+          title={t('noRecordsFound')}
+          description={t('noRecordsDesc')}
         />
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

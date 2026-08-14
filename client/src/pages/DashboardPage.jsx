@@ -35,10 +35,12 @@ import ComplaintModal from '../components/complaints/ComplaintModal';
 import { projectService, complaintService } from '../services/api';
 import { StatusBadge } from '../components/common/Badge';
 import { useTheme } from '../context/ThemeContext';
+import { useTranslation } from '../context/LanguageContext';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const [projects, setProjects] = useState([]);
   const [complaints, setComplaints] = useState([]);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
@@ -95,9 +97,9 @@ const DashboardPage = () => {
       {/* Top Banner & Quick Action Buttons */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 border border-slate-800 p-6 rounded-2xl text-white shadow-xl">
         <div>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">Executive Overview</span>
-          <h2 className="text-xl sm:text-2xl font-black tracking-tight">Kopargaon Smart City Master Dashboard</h2>
-          <p className="text-xs text-slate-300 mt-1">Real-time GIS analytics, AI project monitoring & ward development metrics.</p>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">{t('executiveOverview')}</span>
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight">{t('masterDashboardTitle')}</h2>
+          <p className="text-xs text-slate-300 mt-1">{t('masterDashboardDesc')}</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
@@ -106,7 +108,7 @@ const DashboardPage = () => {
             className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md transition-all flex items-center space-x-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>New Project</span>
+            <span>{t('newProject')}</span>
           </button>
 
           <button
@@ -114,7 +116,7 @@ const DashboardPage = () => {
             className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-md transition-all flex items-center space-x-1.5 cursor-pointer"
           >
             <MessageSquareWarning className="w-4 h-4" />
-            <span>Lodge Grievance</span>
+            <span>{t('lodgeGrievance')}</span>
           </button>
 
           <Link
@@ -122,7 +124,7 @@ const DashboardPage = () => {
             className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-all flex items-center space-x-1.5"
           >
             <MapPin className="w-4 h-4 text-emerald-400" />
-            <span>Open GIS Map</span>
+            <span>{t('openGisMap')}</span>
           </Link>
         </div>
       </div>
@@ -131,9 +133,9 @@ const DashboardPage = () => {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <div onClick={() => navigate('/projects')} className="cursor-pointer">
           <StatCard
-            title="Total Projects"
+            title={t('totalProjects')}
             value={totalProjects}
-            subtitle="Click to view all"
+            subtitle={t('clickToViewAll')}
             icon={FolderKanban}
             color="blue"
           />
@@ -141,9 +143,9 @@ const DashboardPage = () => {
 
         <div onClick={() => navigate('/projects?status=IN_PROGRESS')} className="cursor-pointer">
           <StatCard
-            title="Ongoing"
+            title={t('ongoing')}
             value={ongoingProjects}
-            subtitle="In progress"
+            subtitle={t('inProgress')}
             icon={Clock}
             color="blue"
           />
@@ -151,9 +153,9 @@ const DashboardPage = () => {
 
         <div onClick={() => navigate('/projects?status=COMPLETED')} className="cursor-pointer">
           <StatCard
-            title="Completed"
+            title={t('completed')}
             value={completedProjects}
-            subtitle="Handed over"
+            subtitle={t('handedOver')}
             icon={CheckCircle2}
             color="emerald"
           />
@@ -161,9 +163,9 @@ const DashboardPage = () => {
 
         <div onClick={() => navigate('/projects?status=DELAYED')} className="cursor-pointer">
           <StatCard
-            title="Delayed"
+            title={t('delayed')}
             value={delayedProjects}
-            subtitle="Schedule lag"
+            subtitle={t('scheduleLag')}
             icon={Clock}
             color="amber"
           />
@@ -171,9 +173,9 @@ const DashboardPage = () => {
 
         <div onClick={() => navigate('/projects?risk=High')} className="cursor-pointer">
           <StatCard
-            title="High Risk"
+            title={t('highRisk')}
             value={highRiskCount}
-            subtitle="🔴 AI Flagged"
+            subtitle={t('aiFlagged')}
             icon={FolderKanban}
             color="rose"
           />
@@ -181,9 +183,9 @@ const DashboardPage = () => {
 
         <div onClick={() => navigate('/projects?risk=Critical')} className="cursor-pointer">
           <StatCard
-            title="Critical Risk"
+            title={t('criticalRisk')}
             value={criticalRiskCount}
-            subtitle="🟣 Immediate Action"
+            subtitle={t('immediateAction')}
             icon={FolderKanban}
             color="purple"
           />
@@ -192,14 +194,13 @@ const DashboardPage = () => {
 
       {/* Recharts Data Visualization Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Project Progress Chart */}
         <ChartCard
-          title="Infrastructure Projects Progress"
-          subtitle="Completion percentage per key project"
+          title={t('infraProgress')}
+          subtitle={t('infraProgressDesc')}
           className="lg:col-span-2"
           action={
             <Link to="/projects" className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline">
-              Details →
+              {t('detailsArrow')}
             </Link>
           }
         >
@@ -221,13 +222,12 @@ const DashboardPage = () => {
           </div>
         </ChartCard>
 
-        {/* Budget Utilization Pie */}
         <ChartCard
-          title="Budget Utilization Breakdown"
-          subtitle="Sanctioned vs Utilized Capital"
+          title={t('budgetBreakdown')}
+          subtitle={t('budgetBreakdownDesc')}
           action={
             <Link to="/analytics" className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline">
-              Analytics →
+              {t('analyticsArrow')}
             </Link>
           }
         >
@@ -260,11 +260,11 @@ const DashboardPage = () => {
 
       {/* Ward-Wise Development Chart */}
       <ChartCard
-        title="Ward-Wise Development Metrics"
-        subtitle="Completion rate (%) and budget allocation (₹ Cr) across Kopargaon Municipal Wards"
+        title={t('wardMetrics')}
+        subtitle={t('wardMetricsDesc')}
         action={
           <Link to="/gis" className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline">
-            View on GIS Map →
+            {t('viewOnGisMapArrow')}
           </Link>
         }
       >
@@ -291,12 +291,12 @@ const DashboardPage = () => {
               to="/projects"
               className="text-sm font-bold text-slate-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center space-x-1.5"
             >
-              <span>Recent Smart City Projects</span>
+              <span>{t('recentProjects')}</span>
               <ArrowRight className="w-4 h-4 text-blue-500" />
             </Link>
 
             <Link to="/projects" className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline">
-              View All Projects →
+              {t('viewAllProjectsArrow')}
             </Link>
           </div>
           <ProjectTable projects={projects.slice(0, 5)} />
@@ -309,12 +309,12 @@ const DashboardPage = () => {
               to="/complaints"
               className="text-sm font-bold text-slate-900 dark:text-slate-100 hover:text-amber-600 dark:hover:text-amber-400 transition-colors flex items-center space-x-1.5"
             >
-              <span>Recent Citizen Grievances</span>
+              <span>{t('recentGrievances')}</span>
               <ArrowRight className="w-4 h-4 text-amber-500" />
             </Link>
 
             <Link to="/complaints" className="text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline">
-              View All →
+              {t('viewAllArrow')}
             </Link>
           </div>
 
@@ -333,7 +333,7 @@ const DashboardPage = () => {
                   <StatusBadge status={c.status} />
                 </div>
                 <h4 className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors line-clamp-1">{c.title}</h4>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">{c.ward} • Reported {c.reportedDate}</p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">{c.ward} • {t('reported')} {c.reportedDate}</p>
               </div>
             ))}
           </div>
