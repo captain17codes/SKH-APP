@@ -8,7 +8,7 @@ import {
   AI_MOCK_RESPONSES
 } from '../data/mockData';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -16,7 +16,7 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json'
   },
-  timeout: 5000
+  timeout: 60000 // Increased for Render cold starts
 });
 
 // Centralized Session Data Store (in-memory sync for single-page session consistency)
