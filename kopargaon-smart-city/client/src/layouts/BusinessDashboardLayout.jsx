@@ -18,14 +18,13 @@ const BusinessDashboardLayout = () => {
 
   const businessNavItems = [
     { id: 'dashboard', label: t('dashboard'), icon: LayoutDashboard, path: '/business/dashboard' },
-    { id: 'site-intelligence', label: t('aiSiteIntelligence'), icon: Sparkles, badge: '★ Killer Feature', path: '/business/dashboard?view=site-intelligence' },
+    { id: 'site-intelligence', label: t('aiSiteIntelligence'), icon: Sparkles, path: '/business/dashboard?view=site-intelligence' },
     { id: 'business-gis', label: t('businessGis'), icon: MapPin, badge: 'Live GIS', path: '/business/gis' },
     { id: 'area-intelligence', label: t('areaIntelligence'), icon: BarChart3, path: '/business/dashboard?view=area-intelligence' },
     { id: 'properties-land', label: t('landProperty'), icon: Layers, path: '/business/properties' },
     { id: 'market-intelligence', label: t('marketCompetitorIntel'), icon: BarChart3, path: '/business/market-intelligence' },
     { id: 'upcoming-dev', label: t('upcomingDevelopment'), icon: Building2, path: '/business/upcoming-development' },
     { id: 'opportunities', label: t('businessOpportunities'), icon: Briefcase, badge: '3 Tenders', path: '/business/dashboard?view=opportunities' },
-    { id: 'applications', label: t('applicationsTenders'), icon: FileCheck, path: '/business/dashboard?view=applications' },
     { id: 'ai-assistant', label: t('aiBusinessAssistant'), icon: Bot, badge: 'AI Advisor', path: '/business/dashboard?view=ai-assistant' }
   ];
 

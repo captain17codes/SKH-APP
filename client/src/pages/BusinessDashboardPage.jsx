@@ -20,12 +20,13 @@ const BusinessDashboardPage = () => {
 
   const businessNavItems = [
     { id: 'dashboard', label: t('dashboard'), icon: LayoutDashboard },
-    { id: 'site-intelligence', label: t('aiSiteIntelligence'), icon: Sparkles, badge: '★ Killer Feature' },
+    { id: 'site-intelligence', label: t('aiSiteIntelligence'), icon: Sparkles },
     { id: 'business-gis', label: t('businessGis'), icon: MapPin, badge: 'Live GIS' },
     { id: 'area-intelligence', label: t('areaIntelligence'), icon: BarChart3 },
     { id: 'properties-land', label: t('landProperty'), icon: Layers, path: '/business/properties' },
     { id: 'market-intelligence', label: t('marketCompetitorIntel'), icon: BarChart3 },
     { id: 'upcoming-dev', label: t('upcomingDevelopment'), icon: Building2 },
+    { id: 'opportunities', label: t('businessOpportunities'), icon: Briefcase, badge: '3 Tenders' },
     { id: 'ai-assistant', label: t('aiBusinessAssistant'), icon: Bot, badge: 'AI Advisor' }
   ];
 
@@ -333,18 +334,32 @@ const BusinessDashboardPage = () => {
               </div>
 
               {/* Quick Feature Shortcut Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
                 <div 
                   onClick={() => setActiveView('site-intelligence')}
-                  className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-cyan-500/40 cursor-pointer space-y-3 shadow-sm transition-all"
+                  className="flex flex-col p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-cyan-500/40 cursor-pointer shadow-sm transition-all"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mb-3">
                     <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-500 border border-cyan-500/20">★ KILLER FEATURE</span>
-                    <ArrowRight className="w-4 h-4 text-cyan-500" />
+                    <ArrowRight className="w-4 h-4 text-cyan-500 flex-shrink-0" />
                   </div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">AI Site Intelligence Report</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">AI Site Intelligence Report</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed flex-1">
                     Upload site photography + select location pin to generate a 12-metric suitability analysis report combining land use, infrastructure, and footfall.
+                  </p>
+                </div>
+
+                <div 
+                  onClick={() => setActiveView('opportunities')}
+                  className="flex flex-col p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-500/40 cursor-pointer shadow-sm transition-all"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20">PPP OPPORTUNITIES</span>
+                    <ArrowRight className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">Municipal Tenders &amp; Commercial Land</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed flex-1">
+                    Explore active Public-Private Partnership RFPs for commercial complexes, solar installations, and MIDC plot leases.
                   </p>
                 </div>
               </div>
@@ -357,7 +372,6 @@ const BusinessDashboardPage = () => {
               {/* Header Title */}
               <div className="flex items-center justify-between flex-wrap gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-500">★ Business Killer Feature</span>
                   <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 flex items-center space-x-2">
                     <Sparkles className="w-6 h-6 text-cyan-500" />
                     <span>AI Site Intelligence Engine</span>
@@ -645,6 +659,32 @@ const BusinessDashboardPage = () => {
               </div>
             </div>
           )}
+
+          {/* VIEW 6: BUSINESS OPPORTUNITIES */}
+          {activeView === 'opportunities' && (
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
+                <Briefcase className="w-5 h-5 text-cyan-500" />
+                <span>Municipal PPP Tenders & Commercial Land Auctions</span>
+              </h3>
+
+              <div className="space-y-3 text-xs">
+                {[
+                  { title: 'Smart Commercial Complex & Multi-level Parking (PPP)', ward: 'Ward 3', deadline: '28 Aug 2026' },
+                  { title: 'Solar Rooftop Installation (BOOT Model)', ward: 'City-wide', deadline: '05 Sep 2026' }
+                ].map((t, i) => (
+                  <div key={i} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                    <div>
+                      <h4 className="font-bold text-slate-900 dark:text-slate-100">{t.title}</h4>
+                      <p className="text-slate-500">Location: {t.ward} • Deadline: {t.deadline}</p>
+                    </div>
+                    <button className="px-4 py-2 bg-cyan-600 text-white rounded-xl font-bold">Apply</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
 
           {/* VIEW 8: AI BUSINESS ASSISTANT */}
           {activeView === 'ai-assistant' && (

@@ -18,12 +18,13 @@ const BusinessDashboardLayout = () => {
 
   const businessNavItems = [
     { id: 'dashboard', label: t('dashboard'), icon: LayoutDashboard, path: '/business/dashboard' },
-    { id: 'site-intelligence', label: t('aiSiteIntelligence'), icon: Sparkles, badge: '★ Killer Feature', path: '/business/dashboard?view=site-intelligence' },
+    { id: 'site-intelligence', label: t('aiSiteIntelligence'), icon: Sparkles, path: '/business/dashboard?view=site-intelligence' },
     { id: 'business-gis', label: t('businessGis'), icon: MapPin, badge: 'Live GIS', path: '/business/gis' },
     { id: 'area-intelligence', label: t('areaIntelligence'), icon: BarChart3, path: '/business/dashboard?view=area-intelligence' },
     { id: 'properties-land', label: t('landProperty'), icon: Layers, path: '/business/properties' },
     { id: 'market-intelligence', label: t('marketCompetitorIntel'), icon: BarChart3, path: '/business/market-intelligence' },
     { id: 'upcoming-dev', label: t('upcomingDevelopment'), icon: Building2, path: '/business/upcoming-development' },
+    { id: 'opportunities', label: t('businessOpportunities'), icon: Briefcase, badge: '3 Tenders', path: '/business/dashboard?view=opportunities' },
     { id: 'ai-assistant', label: t('aiBusinessAssistant'), icon: Bot, badge: 'AI Advisor', path: '/business/dashboard?view=ai-assistant' }
   ];
 
@@ -130,15 +131,15 @@ const BusinessDashboardLayout = () => {
                   navigate(item.path);
                   setMobileMenuOpen(false);
                 }}
-                className={`w-full text-left flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
                   active
                     ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/20 font-bold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60'
                 }`}
               >
-                <div className="flex items-center space-x-3 text-left pr-2">
+                <div className="flex items-center space-x-3">
                   <Icon className="w-4 h-4 flex-shrink-0" />
-                  <span className="leading-tight">{item.label}</span>
+                  <span>{item.label}</span>
                 </div>
                 {item.badge && (
                   <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded ${

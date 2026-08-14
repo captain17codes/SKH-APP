@@ -5,8 +5,6 @@ import {
   CheckCircle2,
   Clock,
   IndianRupee,
-  MapPin,
-  MessageSquareWarning,
   Plus,
   ArrowRight,
   Eye,
@@ -30,7 +28,7 @@ import StatCard from '../components/common/StatCard';
 import ChartCard from '../components/common/ChartCard';
 import ProjectTable from '../components/projects/ProjectTable';
 import ProjectModal from '../components/projects/ProjectModal';
-import NewComplaintModal from '../components/complaints/NewComplaintModal';
+
 import ComplaintModal from '../components/complaints/ComplaintModal';
 import { projectService, complaintService } from '../services/api';
 import { StatusBadge } from '../components/common/Badge';
@@ -42,7 +40,6 @@ const DashboardPage = () => {
   const [projects, setProjects] = useState([]);
   const [complaints, setComplaints] = useState([]);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
-  const [isComplaintModalOpen, setIsComplaintModalOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
   const [isComplaintDetailOpen, setIsComplaintDetailOpen] = useState(false);
 
@@ -109,21 +106,8 @@ const DashboardPage = () => {
             <span>New Project</span>
           </button>
 
-          <button
-            onClick={() => setIsComplaintModalOpen(true)}
-            className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-md transition-all flex items-center space-x-1.5 cursor-pointer"
-          >
-            <MessageSquareWarning className="w-4 h-4" />
-            <span>Lodge Grievance</span>
-          </button>
 
-          <Link
-            to="/gis"
-            className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-all flex items-center space-x-1.5"
-          >
-            <MapPin className="w-4 h-4 text-emerald-400" />
-            <span>Open GIS Map</span>
-          </Link>
+
         </div>
       </div>
 
@@ -351,15 +335,7 @@ const DashboardPage = () => {
         }}
       />
 
-      <NewComplaintModal
-        isOpen={isComplaintModalOpen}
-        onClose={() => setIsComplaintModalOpen(false)}
-        onSubmit={(c) => {
-          complaintService.create(c).then(() => {
-            complaintService.getAll().then(setComplaints);
-          });
-        }}
-      />
+
 
       <ComplaintModal
         isOpen={isComplaintDetailOpen}
