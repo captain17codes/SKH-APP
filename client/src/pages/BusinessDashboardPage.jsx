@@ -26,8 +26,6 @@ const BusinessDashboardPage = () => {
     { id: 'properties-land', label: t('landProperty'), icon: Layers, path: '/business/properties' },
     { id: 'market-intelligence', label: t('marketCompetitorIntel'), icon: BarChart3 },
     { id: 'upcoming-dev', label: t('upcomingDevelopment'), icon: Building2 },
-    { id: 'opportunities', label: t('businessOpportunities'), icon: Briefcase, badge: '3 Tenders' },
-    { id: 'applications', label: t('applicationsTenders'), icon: FileCheck },
     { id: 'ai-assistant', label: t('aiBusinessAssistant'), icon: Bot, badge: 'AI Advisor' }
   ];
 
@@ -349,20 +347,6 @@ const BusinessDashboardPage = () => {
                     Upload site photography + select location pin to generate a 12-metric suitability analysis report combining land use, infrastructure, and footfall.
                   </p>
                 </div>
-
-                <div 
-                  onClick={() => setActiveView('opportunities')}
-                  className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-500/40 cursor-pointer space-y-3 shadow-sm transition-all"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20">PPP OPPORTUNITIES</span>
-                    <ArrowRight className="w-4 h-4 text-blue-500" />
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Municipal Tenders & Commercial Land</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                    Explore active Public-Private Partnership RFPs for commercial complexes, solar installations, and MIDC plot leases.
-                  </p>
-                </div>
               </div>
             </div>
           )}
@@ -658,49 +642,6 @@ const BusinessDashboardPage = () => {
                     <p className="text-slate-500">Area: {item.area} • Zone: {item.zone} • Price: <span className="font-bold text-cyan-500">{item.price}</span></p>
                   </div>
                 ))}
-              </div>
-            </div>
-          )}
-
-          {/* VIEW 6: BUSINESS OPPORTUNITIES */}
-          {activeView === 'opportunities' && (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
-                <Briefcase className="w-5 h-5 text-cyan-500" />
-                <span>Municipal PPP Tenders & Commercial Land Auctions</span>
-              </h3>
-
-              <div className="space-y-3 text-xs">
-                {[
-                  { title: 'Smart Commercial Complex & Multi-level Parking (PPP)', ward: 'Ward 3', deadline: '28 Aug 2026' },
-                  { title: 'Solar Rooftop Installation (BOOT Model)', ward: 'City-wide', deadline: '05 Sep 2026' }
-                ].map((t, i) => (
-                  <div key={i} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex justify-between items-center">
-                    <div>
-                      <h4 className="font-bold text-slate-900 dark:text-slate-100">{t.title}</h4>
-                      <p className="text-slate-500">Location: {t.ward} • Deadline: {t.deadline}</p>
-                    </div>
-                    <button className="px-4 py-2 bg-cyan-600 text-white rounded-xl font-bold">Apply</button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* VIEW 7: APPLICATIONS */}
-          {activeView === 'applications' && (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
-                <FileCheck className="w-5 h-5 text-emerald-500" />
-                <span>Single Window Business License & NOC Tracker</span>
-              </h3>
-
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
-                <div className="flex justify-between">
-                  <span className="font-bold text-slate-900 dark:text-slate-100">Trade License #LIC-2026-992</span>
-                  <span className="text-emerald-500 font-bold">Approved</span>
-                </div>
-                <p className="text-slate-500">Commercial Establishment • Ward 3 Station Road</p>
               </div>
             </div>
           )}
