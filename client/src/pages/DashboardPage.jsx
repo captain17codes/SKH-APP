@@ -102,31 +102,7 @@ const DashboardPage = () => {
           <p className="text-xs text-slate-300 mt-1">{t('masterDashboardDesc')}</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
-          <button
-            onClick={() => setIsProjectModalOpen(true)}
-            className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md transition-all flex items-center space-x-1.5 cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span>{t('newProject')}</span>
-          </button>
 
-          <button
-            onClick={() => setIsComplaintModalOpen(true)}
-            className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-md transition-all flex items-center space-x-1.5 cursor-pointer"
-          >
-            <MessageSquareWarning className="w-4 h-4" />
-            <span>{t('lodgeGrievance')}</span>
-          </button>
-
-          <Link
-            to="/gis"
-            className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-all flex items-center space-x-1.5"
-          >
-            <MapPin className="w-4 h-4 text-emerald-400" />
-            <span>{t('openGisMap')}</span>
-          </Link>
-        </div>
       </div>
 
       {/* KPI Stats Grid - Clickable Navigation */}

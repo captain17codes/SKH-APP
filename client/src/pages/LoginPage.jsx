@@ -50,7 +50,7 @@ const LoginPage = ({ defaultRole }) => {
     try {
       const data = await authService.adminLogin(email, password);
       login(data.user);
-      toast.success(`Authenticated as ${role}`);
+
       if (data.user.role === 'Business') {
         navigate('/business/dashboard');
       } else {
@@ -85,7 +85,7 @@ const LoginPage = ({ defaultRole }) => {
     try {
       const data = await authService.verifyOtp(phone, otp, role);
       login(data.user);
-      toast.success(`Authenticated as ${role}`);
+
       navigate('/citizen/dashboard');
     } catch (e) {
       toast.error(e.response?.data?.error || 'Invalid OTP');

@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import MapView from '../components/gis/MapView';
 import SearchBar from '../components/common/SearchBar';
 import { KOPARGAON_CENTER } from '../data/mockData';
-import KOPARGAON_WARDS_GEOJSON from '../data/gis/wardBoundaries';
+import { KOPARGAON_WARDS_GEOJSON } from '../data/gis/wardBoundaries';
 import { gisService } from '../services/gisService';
 import { complaintService } from '../services/api';
 import {

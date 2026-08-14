@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   MapContainer,
   TileLayer,
@@ -39,41 +39,25 @@ const createCustomIcon = (color) => {
   });
 };
 
+// Only recenter on first mount — prevents map from jumping around on re-renders
 const MapRecenter = ({ center, zoom }) => {
   const map = useMap();
-  const prevTargetRef = useRef(null);
+  const mounted = useRef(false);
 
   useEffect(() => {
+    if (mounted.current) return; // ignore after first mount
     if (center && Array.isArray(center) && center.length === 2 && !isNaN(center[0]) && !isNaN(center[1])) {
-      const isNew = !prevTargetRef.current ||
-                    prevTargetRef.current[0] !== center[0] ||
-                    prevTargetRef.current[1] !== center[1] ||
-                    prevTargetRef.current[2] !== zoom;
-      if (isNew) {
-        prevTargetRef.current = [...center, zoom];
-        map.flyTo(center, zoom || 14, {
-          animate: true,
-          duration: 1.5
-        });
-      }
+      mounted.current = true;
+      map.setView(center, zoom || 14, { animate: false });
     }
   }, [center, zoom, map]);
 
   useEffect(() => {
-    const handleResize = () => {
-      if (map) map.invalidateSize();
-    };
-
+    const handleResize = () => { if (map) map.invalidateSize(); };
     handleResize();
-    const t1 = setTimeout(handleResize, 150);
-    const t2 = setTimeout(handleResize, 450);
-
+    const t1 = setTimeout(handleResize, 200);
     window.addEventListener('resize', handleResize);
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      window.removeEventListener('resize', handleResize);
-    };
+    return () => { clearTimeout(t1); window.removeEventListener('resize', handleResize); };
   }, [map]);
 
   return null;
@@ -108,16 +92,8 @@ const calculateDistanceKm = (p1, p2) => {
   return (R * c).toFixed(2);
 };
 
-const MapClickEvents = ({ activeTool, onAddPoint }) => {
-  useMapEvents({
-    click(e) {
-      if (activeTool === 'distance' || activeTool === 'polygon' || activeTool === 'rectangle') {
-        onAddPoint([e.latlng.lat, e.latlng.lng]);
-      }
-    }
-  });
-  return null;
-};
+
+
 
 const COMPLAINT_PRIORITY_COLORS = {
   CRITICAL: '#f43f5e',
@@ -168,12 +144,26 @@ const MapView = ({
     complaintHotspots: true
   });
 
-  const [activeTool, setActiveTool] = useState('none');
   const [overlayMode, setOverlayMode] = useState('none');
   const [isLayerMenuOpen, setIsLayerMenuOpen] = useState(false);
   const [isLegendOpen, setIsLegendOpen] = useState(true);
-  const [measurePoints, setMeasurePoints] = useState([]);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = useRef(null);
+
+  // Browser Fullscreen API
+  const handleToggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      containerRef.current?.requestFullscreen?.();
+    } else {
+      document.exitFullscreen?.();
+    }
+  }, []);
+
+  useEffect(() => {
+    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onFsChange);
+    return () => document.removeEventListener('fullscreenchange', onFsChange);
+  }, []);
 
   // Existing GIS data loading
   useEffect(() => {
@@ -212,15 +202,6 @@ const MapView = ({
 
   const toggleLayer = (layerId) => {
     setActiveLayers(prev => ({ ...prev, [layerId]: !prev[layerId] }));
-  };
-
-  const handleAddMeasurePoint = (point) => {
-    setMeasurePoints(prev => [...prev, point]);
-  };
-
-  const clearMeasurement = () => {
-    setMeasurePoints([]);
-    setActiveTool('none');
   };
 
   // Selection highlights
@@ -339,25 +320,16 @@ const MapView = ({
     : [];
 
   return (
-    <div className={`relative w-full ${height} ${isFullscreen ? 'fixed inset-0 z-50 h-screen rounded-none' : 'rounded-xl overflow-hidden shadow-xl border border-slate-200 dark:border-slate-800'}`} style={{ minHeight: '500px' }}>
+    <div ref={containerRef} className={`relative w-full ${height} ${isFullscreen ? 'fixed inset-0 z-50 h-screen rounded-none' : 'rounded-xl overflow-hidden shadow-xl border border-slate-200 dark:border-slate-800'}`} style={{ minHeight: '500px' }}>
       {/* Map Tools & Layer Control Overlay */}
       {showAllControls && (
         <>
           <MapTools
-            activeTool={activeTool}
-            onSelectTool={(tool) => {
-              if (tool !== activeTool) setMeasurePoints([]);
-              setActiveTool(tool);
-            }}
             baseTileSource={baseTileSource}
             onChangeBaseTile={setBaseTileSource}
-            onResetView={() => {
-              setActiveTool('none');
-              setMeasurePoints([]);
-            }}
+            onResetView={() => {}}
             isFullscreen={isFullscreen}
-            onToggleFullscreen={() => setIsFullscreen(!isFullscreen)}
-            onClearDrawings={clearMeasurement}
+            onToggleFullscreen={handleToggleFullscreen}
           />
 
           <MapLayerControl
@@ -377,24 +349,6 @@ const MapView = ({
         </>
       )}
 
-      {/* Measurement Reset Bar */}
-      {measurePoints.length > 0 && (
-        <div className="absolute bottom-4 left-4 z-20 bg-slate-900/90 text-white text-xs px-3 py-2 rounded-lg border border-slate-700 shadow-xl flex items-center space-x-3 backdrop-blur-md">
-          <span>Points: {measurePoints.length}</span>
-          {measurePoints.length >= 2 && (
-            <span className="font-bold text-blue-400">
-              Dist: {calculateDistanceKm(measurePoints[0], measurePoints[measurePoints.length - 1])} km
-            </span>
-          )}
-          <button
-            onClick={clearMeasurement}
-            className="px-2 py-0.5 bg-rose-600 hover:bg-rose-700 text-white rounded font-medium transition-colors cursor-pointer"
-          >
-            Clear
-          </button>
-        </div>
-      )}
-
       {/* Leaflet Core Container */}
       <MapContainer
         center={safeCenter}
@@ -409,10 +363,6 @@ const MapView = ({
       >
         <MapRecenter center={safeCenter} zoom={zoom} />
         <MapEventsHandler onZoomChange={onZoomChange} onCenterChange={onCenterChange} />
-        <MapClickEvents
-          activeTool={activeTool}
-          onAddPoint={handleAddMeasurePoint}
-        />
 
         {/* Base Map Tile Layer */}
         {baseTileSource === 'satellite' ? (
@@ -732,10 +682,8 @@ const MapView = ({
           </Marker>
         ))}
 
-        {/* Measurement Polyline */}
-        {measurePoints.length > 0 && (
-          <Polyline positions={measurePoints} color="#3b82f6" weight={3} dashArray="4" />
-        )}
+
+
       </MapContainer>
     </div>
   );

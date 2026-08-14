@@ -108,13 +108,7 @@ const ComplaintsPage = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => setIsLodgeOpen(true)}
-          className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-md transition-colors flex items-center space-x-1.5 w-fit cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>{t('lodgeNewGrievance')}</span>
-        </button>
+
       </div>
 
       {/* Stats */}
