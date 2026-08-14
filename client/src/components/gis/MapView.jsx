@@ -39,65 +39,27 @@ const createCustomIcon = (color) => {
   });
 };
 
+// Only recenter on first mount — prevents map from jumping around on re-renders
 const MapRecenter = ({ center, zoom }) => {
   const map = useMap();
-  const prevTargetRef = useRef(null);
+  const mounted = useRef(false);
 
   useEffect(() => {
+    if (mounted.current) return; // ignore after first mount
     if (center && Array.isArray(center) && center.length === 2 && !isNaN(center[0]) && !isNaN(center[1])) {
-      const isNew = !prevTargetRef.current ||
-                    prevTargetRef.current[0] !== center[0] ||
-                    prevTargetRef.current[1] !== center[1] ||
-                    prevTargetRef.current[2] !== zoom;
-      if (isNew) {
-        prevTargetRef.current = [...center, zoom];
-        map.flyTo(center, zoom || 14, {
-          animate: true,
-          duration: 1.5
-        });
-      }
+      mounted.current = true;
+      map.setView(center, zoom || 14, { animate: false });
     }
   }, [center, zoom, map]);
 
   useEffect(() => {
-    const handleResize = () => {
-      if (map) map.invalidateSize();
-    };
-
+    const handleResize = () => { if (map) map.invalidateSize(); };
     handleResize();
-    const t1 = setTimeout(handleResize, 150);
-    const t2 = setTimeout(handleResize, 450);
-
+    const t1 = setTimeout(handleResize, 200);
     window.addEventListener('resize', handleResize);
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      window.removeEventListener('resize', handleResize);
-    };
+    return () => { clearTimeout(t1); window.removeEventListener('resize', handleResize); };
   }, [map]);
 
-  return null;
-};
-
-// Removes the default Leaflet scale bar that appears bottom-left
-const RemoveScaleControl = () => {
-  const map = useMap();
-  useEffect(() => {
-    map.eachLayer(() => {}); // no-op to ensure map is ready
-    map.eachControl = map.eachControl || (() => {});
-    // Remove any scale control Leaflet added automatically
-    map._controlContainer && map._controlContainer
-      .querySelectorAll('.leaflet-control-scale')
-      .forEach(el => el.remove());
-  }, [map]);
-  return null;
-};
-
-const MapInstanceRegistrar = ({ onMapReady }) => {
-  const map = useMap();
-  useEffect(() => {
-    if (onMapReady) onMapReady(map);
-  }, [map, onMapReady]);
   return null;
 };
 
@@ -115,6 +77,23 @@ const MapEventsHandler = ({ onZoomChange, onCenterChange }) => {
   });
   return null;
 };
+
+// Distance Measurement Helper
+const calculateDistanceKm = (p1, p2) => {
+  if (!p1 || !p2) return '0.00';
+  const R = 6371; // Earth radius km
+  const dLat = (p2[0] - p1[0]) * Math.PI / 180;
+  const dLon = (p2[1] - p1[1]) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(p1[0] * Math.PI / 180) * Math.cos(p2[0] * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return (R * c).toFixed(2);
+};
+
+
+
 
 const COMPLAINT_PRIORITY_COLORS = {
   CRITICAL: '#f43f5e',
@@ -140,9 +119,6 @@ const MapView = ({
   candidateLocations = [],
   complaintHotspots = null
 }) => {
-  const initialCenterRef = useRef(center || KOPARGAON_CENTER);
-  const initialZoomRef = useRef(zoom || DEFAULT_ZOOM);
-
   const [wardsData, setWardsData] = useState(null);
   const [landUseData, setLandUseData] = useState(null);
   const [roadsData, setRoadsData] = useState(null);
@@ -168,50 +144,30 @@ const MapView = ({
     complaintHotspots: true
   });
 
-  const [activeTool, setActiveTool] = useState('none'); // kept for MapEventsHandler compatibility
   const [overlayMode, setOverlayMode] = useState('none');
   const [isLayerMenuOpen, setIsLayerMenuOpen] = useState(false);
   const [isLegendOpen, setIsLegendOpen] = useState(true);
-  const mapContainerRef = useRef(null);
-  const mapInstanceRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = useRef(null);
 
-  // Browser Fullscreen API handler
+  // Browser Fullscreen API
   const handleToggleFullscreen = useCallback(() => {
-    const el = mapContainerRef.current;
-    if (!el) return;
     if (!document.fullscreenElement) {
-      el.requestFullscreen().catch(err => {
-        console.warn('[GIS] Fullscreen request failed:', err);
-      });
+      containerRef.current?.requestFullscreen?.();
     } else {
-      document.exitFullscreen();
+      document.exitFullscreen?.();
     }
   }, []);
 
-  // Sync React state + invalidate map size on fullscreen change
   useEffect(() => {
-    const onFsChange = () => {
-      const inFs = !!document.fullscreenElement;
-      setIsFullscreen(inFs);
-      // Give the browser one frame to repaint before invalidating
-      requestAnimationFrame(() => {
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.invalidateSize();
-        }
-      });
-      setTimeout(() => {
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.invalidateSize();
-        }
-      }, 200);
-    };
+    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
     document.addEventListener('fullscreenchange', onFsChange);
     return () => document.removeEventListener('fullscreenchange', onFsChange);
   }, []);
 
   // Existing GIS data loading
-  const fetchGisData = useCallback(() => {
+  useEffect(() => {
+    // PostGIS relational models
     gisService.loadWardsGeoJSON().then(setWardsData);
     gisService.loadLandUseGeoJSON().then(setLandUseData);
     projectService.getAll().then(list => {
@@ -228,32 +184,6 @@ const MapView = ({
     gisService.getBuildings().then(setBuildingsData);
     gisService.getInfrastructure().then(setInfraData);
   }, []);
-
-  useEffect(() => {
-    fetchGisData();
-  }, [fetchGisData]);
-
-  // Refresh GIS / Reset Map View to default center and zoom
-  const handleResetView = useCallback(() => {
-    setActiveTool('none');
-
-    const defaultCenter = (Array.isArray(initialCenterRef.current) && initialCenterRef.current.length === 2 && !isNaN(initialCenterRef.current[0]) && !isNaN(initialCenterRef.current[1]))
-      ? initialCenterRef.current
-      : KOPARGAON_CENTER;
-    const defaultZoom = initialZoomRef.current || DEFAULT_ZOOM;
-
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.setView(defaultCenter, defaultZoom, {
-        animate: true
-      });
-      mapInstanceRef.current.invalidateSize();
-    }
-
-    if (onCenterChange) onCenterChange(defaultCenter);
-    if (onZoomChange) onZoomChange(defaultZoom);
-
-    fetchGisData();
-  }, [fetchGisData, onCenterChange, onZoomChange]);
 
   // Pre-load Mappls SDK so tiles and future SDK features are available
   useEffect(() => {
@@ -273,7 +203,6 @@ const MapView = ({
   const toggleLayer = (layerId) => {
     setActiveLayers(prev => ({ ...prev, [layerId]: !prev[layerId] }));
   };
-
 
   // Selection highlights
   const isProjectSelected = (id) => selectedFeature && selectedFeature.type === 'project' && selectedFeature.feat.id === id;
@@ -391,18 +320,14 @@ const MapView = ({
     : [];
 
   return (
-    <div
-      ref={mapContainerRef}
-      className={`relative w-full ${height} ${isFullscreen ? 'fixed inset-0 z-50 h-screen rounded-none' : 'rounded-xl overflow-hidden shadow-xl border border-slate-200 dark:border-slate-800'}`}
-      style={{ minHeight: '500px' }}
-    >
+    <div ref={containerRef} className={`relative w-full ${height} ${isFullscreen ? 'fixed inset-0 z-50 h-screen rounded-none' : 'rounded-xl overflow-hidden shadow-xl border border-slate-200 dark:border-slate-800'}`} style={{ minHeight: '500px' }}>
       {/* Map Tools & Layer Control Overlay */}
       {showAllControls && (
         <>
           <MapTools
             baseTileSource={baseTileSource}
             onChangeBaseTile={setBaseTileSource}
-            onResetView={handleResetView}
+            onResetView={() => {}}
             isFullscreen={isFullscreen}
             onToggleFullscreen={handleToggleFullscreen}
           />
@@ -424,7 +349,6 @@ const MapView = ({
         </>
       )}
 
-
       {/* Leaflet Core Container */}
       <MapContainer
         center={safeCenter}
@@ -436,12 +360,9 @@ const MapView = ({
         keyboard={true}
         className="w-full h-full bg-slate-100 dark:bg-slate-950"
         style={{ height: '100%', minHeight: '500px', width: '100%' }}
-        ref={mapInstanceRef}
       >
-        <MapInstanceRegistrar onMapReady={(map) => { mapInstanceRef.current = map; }} />
         <MapRecenter center={safeCenter} zoom={zoom} />
         <MapEventsHandler onZoomChange={onZoomChange} onCenterChange={onCenterChange} />
-        <RemoveScaleControl />
 
         {/* Base Map Tile Layer */}
         {baseTileSource === 'satellite' ? (
@@ -760,6 +681,8 @@ const MapView = ({
             </Popup>
           </Marker>
         ))}
+
+
 
       </MapContainer>
     </div>
