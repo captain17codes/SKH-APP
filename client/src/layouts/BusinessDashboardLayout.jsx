@@ -18,7 +18,7 @@ const BusinessDashboardLayout = () => {
 
   const businessNavItems = [
     { id: 'dashboard', label: t('dashboard'), icon: LayoutDashboard, path: '/business/dashboard' },
-    { id: 'site-intelligence', label: t('aiSiteIntelligence'), icon: Sparkles, badge: '★ Killer Feature', path: '/business/dashboard?view=site-intelligence' },
+    { id: 'site-intelligence', label: t('aiSiteIntelligence'), icon: Sparkles, path: '/business/dashboard?view=site-intelligence' },
     { id: 'business-gis', label: t('businessGis'), icon: MapPin, badge: 'Live GIS', path: '/business/gis' },
     { id: 'area-intelligence', label: t('areaIntelligence'), icon: BarChart3, path: '/business/dashboard?view=area-intelligence' },
     { id: 'properties-land', label: t('landProperty'), icon: Layers, path: '/business/properties' },

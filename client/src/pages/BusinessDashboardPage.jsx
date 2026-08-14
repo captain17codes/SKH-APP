@@ -339,7 +339,7 @@ const BusinessDashboardPage = () => {
                   className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-cyan-500/40 cursor-pointer space-y-3 shadow-sm transition-all"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-500 border border-cyan-500/20">★ KILLER FEATURE</span>
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-500 border border-cyan-500/20">AI Insights</span>
                     <ArrowRight className="w-4 h-4 text-cyan-500" />
                   </div>
                   <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">AI Site Intelligence Report</h3>
@@ -357,7 +357,7 @@ const BusinessDashboardPage = () => {
               {/* Header Title */}
               <div className="flex items-center justify-between flex-wrap gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-500">★ Business Killer Feature</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-500">AI Enabled Intelligence</span>
                   <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 flex items-center space-x-2">
                     <Sparkles className="w-6 h-6 text-cyan-500" />
                     <span>AI Site Intelligence Engine</span>

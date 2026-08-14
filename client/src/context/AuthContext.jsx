@@ -1,44 +1,44 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { authService } from '../services/api';
+import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState({
-    name: 'Er. Rajan Patel',
-    email: 'rajan.patel@kopargaon.gov.in',
-    role: 'Administrator', // 'Administrator', 'GIS Planner', 'Municipal Officer', 'Citizen'
-    department: 'Town Planning & GIS Governance',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80',
-    token: 'mock-jwt-token-kopargaon-2026'
-  });
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        const { user } = await authService.me();
+        setUser(user);
+        setIsAuthenticated(true);
+      } catch (e) {
+        setUser(null);
+        setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+    initAuth();
+  }, []);
 
-  const login = (role = 'Administrator', credentials = {}) => {
-    let name = 'Er. Rajan Patel';
-    let dept = 'Town Planning & GIS Governance';
-
-    if (role === 'Citizen') {
-      name = 'Aniket Sharma (Citizen)';
-      dept = 'Citizen Services & Grievance Governance';
-    } else if (role === 'Business') {
-      name = 'Vikram Shah (Business Investor)';
-      dept = 'Commercial & Site Intelligence Division';
-    }
-
-    setUser({
-      name: credentials.name || name,
-      email: credentials.email || `${role.toLowerCase().replace(' ', '.')}@kopargaon.gov.in`,
-      role: role,
-      department: dept,
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80',
-      token: 'mock-jwt-token-kopargaon-2026'
-    });
+  const login = (userData) => {
+    setUser(userData);
     setIsAuthenticated(true);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await authService.logout();
+    } catch (e) {
+      console.error('Logout failed:', e);
+    }
+    setUser(null);
     setIsAuthenticated(false);
+    toast.success('Logged out successfully');
   };
 
   const switchRole = (newRole) => {
@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, switchRole }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, loading, login, logout, switchRole }}>
       {children}
     </AuthContext.Provider>
   );

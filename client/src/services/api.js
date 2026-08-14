@@ -12,6 +12,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json'
   },
@@ -528,6 +529,29 @@ export const gisService = {
     } catch {
       return KOPARGAON_WARDS_GEOJSON;
     }
+  }
+};
+
+export const authService = {
+  sendOtp: async (phone) => {
+    const res = await apiClient.post('/auth/otp/send', { phone });
+    return res.data;
+  },
+  verifyOtp: async (phone, otp, role) => {
+    const res = await apiClient.post('/auth/otp/verify', { phone, otp, role });
+    return res.data;
+  },
+  adminLogin: async (email, password) => {
+    const res = await apiClient.post('/auth/admin/login', { email, password });
+    return res.data;
+  },
+  me: async () => {
+    const res = await apiClient.get('/auth/me');
+    return res.data;
+  },
+  logout: async () => {
+    const res = await apiClient.post('/auth/logout');
+    return res.data;
   }
 };
 
