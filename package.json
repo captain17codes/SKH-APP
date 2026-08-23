@@ -3,15 +3,19 @@
   "version": "1.0.0",
   "description": "Kopargaon Smart City GIS AI Platform",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "npm --prefix client run dev",
     "dev:client": "npm --prefix client run dev",
     "dev:server": "npm --prefix server run dev",
     "start:mcp": "npm --prefix mcp-server start",
     "start:server": "npm --prefix server start",
-    "build:client": "npm --prefix client run build"
+    "build:client": "npm --prefix client run build",
+    "seed:demo": "node database/seed.js --dataset=all --source=demo --dir=database/seed-data/demo",
+    "seed:official": "node database/seed.js --dataset=all --source=official --dir=database/seed-data/official"
   },
   "dependencies": {
-    "@google-cloud/text-to-speech": "^6.4.1"
+    "dotenv": "^17.4.2",
+    "pg": "^8.23.0"
   }
 }

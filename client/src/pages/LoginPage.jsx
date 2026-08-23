@@ -24,13 +24,13 @@ const LoginPage = ({ defaultRole }) => {
 
   // Admin/Business state
   const [email, setEmail] = useState(() => {
-    if (role === 'Administrator') return 'admin@kopargaon.gov.in';
+    if (role === 'Administrator') return 'admin@kopargaon.gov';
     if (role === 'Business') return 'business@gmail.com';
     return '';
   });
   
   const [password, setPassword] = useState(() => {
-    if (role === 'Administrator') return 'admin';
+    if (role === 'Administrator') return 'admin123';
     if (role === 'Business') return 'business';
     return '';
   });
@@ -49,7 +49,7 @@ const LoginPage = ({ defaultRole }) => {
     setLoading(true);
     try {
       const data = await authService.adminLogin(email, password);
-      login(data.user);
+      login(data.user, data.token);
 
       if (data.user.role === 'Business') {
         navigate('/business/dashboard');
@@ -57,7 +57,7 @@ const LoginPage = ({ defaultRole }) => {
         navigate('/dashboard');
       }
     } catch (e) {
-      toast.error(e.response?.data?.error || 'Login failed');
+      toast.error(e.response?.data?.message || e.response?.data?.error || 'Login failed');
     } finally {
       setLoading(false);
     }

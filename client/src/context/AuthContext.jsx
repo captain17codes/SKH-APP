@@ -25,7 +25,10 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
-  const login = (userData) => {
+  const login = (userData, token) => {
+    if (token) {
+      localStorage.setItem('kopargaon-auth-token', token);
+    }
     setUser(userData);
     setIsAuthenticated(true);
   };
@@ -36,6 +39,7 @@ export const AuthProvider = ({ children }) => {
     } catch (e) {
       console.error('Logout failed:', e);
     }
+    localStorage.removeItem('kopargaon-auth-token');
     setUser(null);
     setIsAuthenticated(false);
     toast.success('Logged out successfully');
