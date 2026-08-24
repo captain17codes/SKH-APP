@@ -1,8 +1,8 @@
-import pool from '../config/db.js';
+import pool, { query as dbQuery } from '../config/db.js';
 
 export const createFeedback = async (feedback) => {
   const { ward_id, project_id, rating, comment, citizen_id } = feedback;
-  const result = await pool.query(
+  const result = await dbQuery(
     `INSERT INTO feedback (ward_id, project_id, rating, comment, citizen_id)
      VALUES ($1, $2, $3, $4, $5)
      RETURNING *`,
@@ -12,7 +12,7 @@ export const createFeedback = async (feedback) => {
 };
 
 export const getFeedbackByProject = async (projectId) => {
-  const result = await pool.query(`
+  const result = await dbQuery(`
     SELECT f.*, u.name as citizen_name
     FROM feedback f
     LEFT JOIN users u ON f.citizen_id = u.id
@@ -23,6 +23,6 @@ export const getFeedbackByProject = async (projectId) => {
 };
 
 export const getAverageRating = async () => {
-  const result = await pool.query(`SELECT AVG(rating) as average_rating FROM feedback`);
+  const result = await dbQuery(`SELECT AVG(rating) as average_rating FROM feedback`);
   return result.rows[0].average_rating;
 };

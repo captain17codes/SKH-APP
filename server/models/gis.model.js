@@ -1,7 +1,7 @@
-import pool from '../config/db.js';
+import pool, { query } from '../config/db.js';
 
 export const getAllWards = async () => {
-  const result = await pool.query(`
+  const result = await query(`
     SELECT 
       w.*,
       ST_AsGeoJSON(w.geometry)::json AS geojson
@@ -12,7 +12,7 @@ export const getAllWards = async () => {
 };
 
 export const getWardById = async (id) => {
-  const result = await pool.query(`
+  const result = await query(`
     SELECT 
       w.*,
       ST_AsGeoJSON(w.geometry)::json AS geojson
@@ -23,7 +23,7 @@ export const getWardById = async (id) => {
 };
 
 export const getAllInfrastructure = async (wardId = null) => {
-  let query = `
+  let sql = `
     SELECT 
       i.*,
       ST_AsGeoJSON(i.geometry)::json AS geojson,
@@ -36,15 +36,15 @@ export const getAllInfrastructure = async (wardId = null) => {
   
   if (wardId) {
     values.push(wardId);
-    query += ` AND i.ward_id = $1`;
+    sql += ` AND i.ward_id = $1`;
   }
   
-  const result = await pool.query(query, values);
+  const result = await query(sql, values);
   return result.rows;
 };
 
 export const getAllRoads = async () => {
-  const result = await pool.query(`
+  const result = await query(`
     SELECT 
       r.*,
       ST_AsGeoJSON(r.geometry)::json AS geojson

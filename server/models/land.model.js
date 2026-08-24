@@ -1,7 +1,7 @@
-import pool from '../config/db.js';
+import pool, { query as dbQuery } from '../config/db.js';
 
 export const getAllLandUse = async (wardId = null) => {
-  let query = `
+  let sql = `
     SELECT 
       lu.*,
       ST_AsGeoJSON(lu.geometry)::json AS geojson,
@@ -14,15 +14,15 @@ export const getAllLandUse = async (wardId = null) => {
   
   if (wardId) {
     values.push(wardId);
-    query += ` AND lu.ward_id = $1`;
+    sql += ` AND lu.ward_id = $1`;
   }
   
-  const result = await pool.query(query, values);
+  const result = await dbQuery(sql, values);
   return result.rows;
 };
 
 export const getLandStatsByWard = async (wardId) => {
-  const result = await pool.query(`
+  const result = await dbQuery(`
     SELECT 
       land_use_type,
       COUNT(*) as count,
@@ -37,7 +37,7 @@ export const getLandStatsByWard = async (wardId) => {
 
 // Fragmentation metric: standard deviation / mean of ST_Area for a specific ward
 export const getFragmentationIndex = async (wardId) => {
-  const result = await pool.query(`
+  const result = await dbQuery(`
     SELECT 
       ward_id,
       COUNT(*) as parcel_count,

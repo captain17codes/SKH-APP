@@ -1,7 +1,7 @@
-import pool from '../config/db.js';
+import pool, { query as dbQuery } from '../config/db.js';
 
 export const getDashboardMetrics = async () => {
-  const result = await pool.query(`
+  const result = await dbQuery(`
     SELECT 
       (SELECT COUNT(*) FROM projects) as total_projects,
       (SELECT COUNT(*) FROM projects WHERE status = 'Completed') as completed_projects,
@@ -15,7 +15,7 @@ export const getDashboardMetrics = async () => {
 };
 
 export const getProjectStatusDistribution = async () => {
-  const result = await pool.query(`
+  const result = await dbQuery(`
     SELECT status, COUNT(*) as count 
     FROM projects 
     GROUP BY status
@@ -24,7 +24,7 @@ export const getProjectStatusDistribution = async () => {
 };
 
 export const getComplaintCategoryDistribution = async () => {
-  const result = await pool.query(`
+  const result = await dbQuery(`
     SELECT category, COUNT(*) as count 
     FROM complaints 
     GROUP BY category

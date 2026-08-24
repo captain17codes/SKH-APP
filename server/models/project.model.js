@@ -1,7 +1,7 @@
-import pool from '../config/db.js';
+import pool, { query as dbQuery } from '../config/db.js';
 
 export const getAllProjects = async (filters = {}) => {
-  let query = `
+  let sql = `
     SELECT 
       p.*,
       ST_AsGeoJSON(p.geometry)::json AS geojson,
@@ -14,22 +14,22 @@ export const getAllProjects = async (filters = {}) => {
   
   if (filters.ward_id) {
     values.push(filters.ward_id);
-    query += ` AND p.ward_id = $${values.length}`;
+    sql += ` AND p.ward_id = $${values.length}`;
   }
   
   if (filters.status) {
     values.push(filters.status);
-    query += ` AND p.status = $${values.length}`;
+    sql += ` AND p.status = $${values.length}`;
   }
 
-  query += ` ORDER BY p.updated_at DESC`;
+  sql += ` ORDER BY p.updated_at DESC`;
 
-  const result = await pool.query(query, values);
+  const result = await dbQuery(sql, values);
   return result.rows;
 };
 
 export const getProjectById = async (id) => {
-  const result = await pool.query(`
+  const result = await dbQuery(`
     SELECT 
       p.*,
       ST_AsGeoJSON(p.geometry)::json AS geojson,
@@ -44,7 +44,7 @@ export const getProjectById = async (id) => {
 export const createProject = async (project) => {
   const { id, project_code, name, category, description, status, progress, budget, spent, department, ward_id, geometry } = project;
   
-  const result = await pool.query(
+  const result = await dbQuery(
     `INSERT INTO projects (
       id, project_code, name, category, description, status, progress, budget, spent, department, ward_id, geometry
     ) VALUES (
@@ -77,18 +77,18 @@ export const updateProject = async (id, updates) => {
   setClauses.push(`updated_at = now()`);
   
   values.push(id);
-  const query = `
+  const sql = `
     UPDATE projects 
     SET ${setClauses.join(', ')} 
     WHERE id = $${paramIndex} OR project_code = $${paramIndex}
     RETURNING *
   `;
 
-  const result = await pool.query(query, values);
+  const result = await dbQuery(sql, values);
   return result.rows[0];
 };
 
 export const deleteProject = async (id) => {
-  const result = await pool.query('DELETE FROM projects WHERE id = $1 OR project_code = $1 RETURNING id', [id]);
+  const result = await dbQuery('DELETE FROM projects WHERE id = $1 OR project_code = $1 RETURNING id', [id]);
   return result.rows[0];
 };
