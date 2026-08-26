@@ -8,14 +8,15 @@ import {
   AI_MOCK_RESPONSES
 } from '../data/mockData';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json'
   },
-  timeout: 30000
+  timeout: 60000 // Increased for Render cold starts
 });
 
 // Centralized Session Data Store (in-memory sync for single-page session consistency)
@@ -479,19 +480,9 @@ export const documentService = {
 };
 
 export const aiPlannerService = {
-  queryAI: async (prompt, language, role = 'citizen', extraData = {}) => {
+  queryAI: async (prompt, language) => {
     try {
-      const payload = { 
-        query: prompt, 
-        message: prompt,
-        language: language || extraData.language || 'mr', 
-        role: role || extraData.role || extraData.userType || 'citizen', 
-        userType: role || extraData.userType || extraData.role || 'citizen',
-        userId: extraData.userId || null,
-        location: extraData.location || null,
-        conversation: extraData.conversation || []
-      };
-      const res = await apiClient.post('/ai/urban-planner', payload);
+      const res = await apiClient.post('/ai/urban-planner', { query: prompt, language: language || 'en-IN' });
       return res.data;
     } catch (e) {
       console.error('❌ Backend POST /api/ai/urban-planner failed:', {
@@ -517,30 +508,15 @@ export const aiPlannerService = {
 export const ttsService = {
   speak: async (text, language) => {
     try {
-      console.log('[TTS] Provider: ElevenLabs');
-      console.log('[TTS] ElevenLabs request started');
       const response = await apiClient.post(
         '/tts',
         { text, language },
         { responseType: 'blob' }
       );
-      if (response.data && response.data.type === 'application/json') {
-        const textData = await response.data.text();
-        try {
-          const json = JSON.parse(textData);
-          if (json.success === false) {
-            console.log(`[TTS] Backend TTS notice: ${json.error || 'Falling back to browser speech synthesis'}`);
-            return null;
-          }
-        } catch (parseErr) {
-          return null;
-        }
-      }
-      console.log('[TTS] ElevenLabs audio received');
       return URL.createObjectURL(response.data);
     } catch (e) {
-      console.log(`[TTS] ElevenLabs backend unavailable (${e.message}), using browser voice.`);
-      return null;
+      console.error('Backend POST /api/tts failed:', e);
+      throw e;
     }
   }
 };
@@ -553,6 +529,29 @@ export const gisService = {
     } catch {
       return KOPARGAON_WARDS_GEOJSON;
     }
+  }
+};
+
+export const authService = {
+  sendOtp: async (phone) => {
+    const res = await apiClient.post('/auth/otp/send', { phone });
+    return res.data;
+  },
+  verifyOtp: async (phone, otp, role) => {
+    const res = await apiClient.post('/auth/otp/verify', { phone, otp, role });
+    return res.data;
+  },
+  adminLogin: async (email, password) => {
+    const res = await apiClient.post('/auth/admin/login', { email, password });
+    return res.data;
+  },
+  me: async () => {
+    const res = await apiClient.get('/auth/me');
+    return res.data;
+  },
+  logout: async () => {
+    const res = await apiClient.post('/auth/logout');
+    return res.data;
   }
 };
 

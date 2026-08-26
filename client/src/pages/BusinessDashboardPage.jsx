@@ -10,8 +10,6 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import toast from 'react-hot-toast';
-import { aiPlannerService } from '../services/api';
-import BusinessAiAssistant from '../components/ai/BusinessAiAssistant';
 
 const BusinessDashboardPage = () => {
   const { user, logout } = useAuth();
@@ -22,13 +20,12 @@ const BusinessDashboardPage = () => {
 
   const businessNavItems = [
     { id: 'dashboard', label: t('dashboard'), icon: LayoutDashboard },
-    { id: 'site-intelligence', label: t('aiSiteIntelligence'), icon: Sparkles },
+    { id: 'site-intelligence', label: t('aiSiteIntelligence'), icon: Sparkles, badge: '★ Killer Feature' },
     { id: 'business-gis', label: t('businessGis'), icon: MapPin, badge: 'Live GIS' },
     { id: 'area-intelligence', label: t('areaIntelligence'), icon: BarChart3 },
     { id: 'properties-land', label: t('landProperty'), icon: Layers, path: '/business/properties' },
     { id: 'market-intelligence', label: t('marketCompetitorIntel'), icon: BarChart3 },
     { id: 'upcoming-dev', label: t('upcomingDevelopment'), icon: Building2 },
-    { id: 'opportunities', label: t('businessOpportunities'), icon: Briefcase, badge: '3 Tenders' },
     { id: 'ai-assistant', label: t('aiBusinessAssistant'), icon: Bot, badge: 'AI Advisor' }
   ];
 
@@ -97,7 +94,6 @@ const BusinessDashboardPage = () => {
   const [aiChat, setAiChat] = useState([
     { sender: 'bot', text: 'Welcome to Kopargaon AI Site Intelligence! Ask me anything regarding commercial site viability, zoning laws, upcoming municipal tenders, or footfall density.' }
   ]);
-  const [isAiTyping, setIsAiTyping] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -237,25 +233,52 @@ const BusinessDashboardPage = () => {
     }, 2400);
   };
 
-  const handleAiSend = async (e) => {
+  const handleAiSend = (e) => {
     e.preventDefault();
-    if (!aiPrompt.trim() || isAiTyping) return;
+    if (!aiPrompt.trim()) return;
 
     const userMsg = aiPrompt;
     setAiChat(prev => [...prev, { sender: 'user', text: userMsg }]);
     setAiPrompt('');
-    setIsAiTyping(true);
 
-    try {
-      const res = await aiPlannerService.queryAI(userMsg, 'auto', 'business');
-      setAiChat(prev => [...prev, { sender: 'bot', text: res.answer || res.text || 'No response provided.' }]);
-    } catch (err) {
-      console.error('Business AI Chat Error:', err);
-      toast.error('AI Assistant service encountered an error.');
-      setAiChat(prev => [...prev, { sender: 'bot', text: '⚠️ I am currently experiencing connection difficulties. Please try again later.' }]);
-    } finally {
-      setIsAiTyping(false);
-    }
+    setTimeout(() => {
+      let reply = "Based on Kopargaon's 11-layer vector GIS data, commercial plots along Station Road and Bypass Road offer the highest ROI due to upcoming 24m DP road widenings and low flood risk scores.";
+      
+      const lower = userMsg.toLowerCase();
+
+      // Check for Marathi Language / Script
+      const isMarathi = /[\u0900-\u097F]/.test(userMsg) && (lower.includes('नमस्कार') || lower.includes('व्यवसाय') || lower.includes('जागा') || lower.includes('जमीन') || lower.includes('कोपरगाव') || lower.includes('दुकान'));
+      // Check for Hindi Language / Script
+      const isHindi = /[\u0900-\u097F]/.test(userMsg) || lower.includes('नमस्ते') || lower.includes('व्यापार') || lower.includes('जगह') || lower.includes('जमीन') || lower.includes('दुकान');
+
+      if (isMarathi || lower.includes('marathi') || lower.includes('मराठी')) {
+        if (lower.includes('जागा') || lower.includes('जमीन') || lower.includes('plot')) {
+          reply = "कोपरगाव व्यापारी माहिती: स्टेशन रोड (वॉर्ड ३) आणि बायपास रस्ता (वॉर्ड ४) येथे २४ मीटर डीपी रस्ता रुंदीकरणामुळे व्यावसायिक गुंतवणुकीसाठी सर्वाधिक संधी उपलब्ध आहे.";
+        } else if (lower.includes('दुकान') || lower.includes('व्यवसाय') || lower.includes('shop')) {
+          reply = "किरकोळ विक्री आणि बँकिंगसाठी वॉर्ड ३ (स्टेशन भाग) मध्ये दररोज १४,००० हून अधिक पादचाऱ्यांची वर्दळ आहे. लॉजिस्टिक्ससाठी वॉर्ड ४ बायपास रस्ता उत्तम आहे.";
+        } else {
+          reply = "नमस्कार! मी आपला कोपरगाव व्यावसायिक AI सल्लागार आहे. मी आपणास जागा निवड, जीआयएस मॅपिंग आणि टेंडर माहिती पुरवू शकतो.";
+        }
+      } else if (isHindi || lower.includes('hindi') || lower.includes('हिंदी')) {
+        if (lower.includes('जगह') || lower.includes('जमीन') || lower.includes('plot')) {
+          reply = "कोपरगांव व्यावसायिक विश्लेषण: स्टेशन रोड (वार्ड 3) और बाईपास रोड (वार्ड 4) में 24 मीटर डीपी सड़क चौड़ीकरण के कारण व्यावसायिक निवेश के लिए सर्वोत्तम अवसर उपलब्ध हैं।";
+        } else if (lower.includes('दुकान') || lower.includes('व्यापार') || lower.includes('shop')) {
+          reply = "रिटेल और बैंकिंग व्यवसाय के लिए वार्ड 3 (स्टेशन क्षेत्र) में दैनिक 14,000+ लोगों का फुटफॉल है। लॉजिस्टिक्स के लिए वार्ड 4 बाईपास कॉरिडोर उपयुक्त है।";
+        } else {
+          reply = "नमस्ते! मैं आपका कोपरगांव व्यावसायिक AI सलाहकार हूँ। मैं स्थान विश्लेषण, जीआईएस मैपिंग और टेंडर जानकारी में आपकी मदद कर सकता हूँ।";
+        }
+      } else {
+        if (lower.includes('good for my business') || lower.includes('location')) {
+          reply = "To evaluate if a location is good for your business, run our 'AI Site Intelligence' analysis above! It combines footfall index, DP road width, power grid proximity, and municipal project activity.";
+        } else if (lower.includes('where') || lower.includes('open')) {
+          reply = "For retail and banking: Ward 3 Station Area offers peak footfall (14k+/day). For warehousing/logistics: Ward 4 Bypass Corridor has direct highway connectivity and commercial plot availability.";
+        } else if (lower.includes('land') || lower.includes('commercial')) {
+          reply = "Kopargaon Municipal Council currently has 3 commercial land lease plots open for bidding in Ward 3 and Ward 4 under the Business Opportunities section.";
+        }
+      }
+
+      setAiChat(prev => [...prev, { sender: 'bot', text: reply }]);
+    }, 500);
   };
 
   return (
@@ -277,7 +300,7 @@ const BusinessDashboardPage = () => {
                     className="px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-lg shadow-cyan-600/30 transition-all flex items-center space-x-1.5"
                   >
                     <Sparkles className="w-4 h-4" />
-                    <span>{t('runAiSiteIntelligence')}</span>
+                    <span>Run AI Site Intelligence</span>
                   </button>
                 </div>
               </div>
@@ -285,57 +308,43 @@ const BusinessDashboardPage = () => {
               {/* Key Business Stats */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1">
-                  <span className="text-xs text-slate-500 dark:text-slate-400">{t('peakFootfallZone')}</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">Peak Footfall Zone</span>
                   <p className="text-2xl font-bold text-cyan-500">14.2k / day</p>
                   <span className="text-[10px] text-cyan-400 font-semibold">Ward 3 Station Corridor</span>
                 </div>
 
                 <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1">
-                  <span className="text-xs text-slate-500 dark:text-slate-400">{t('availableLandLeases')}</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">Available Land Leases</span>
                   <p className="text-2xl font-bold text-emerald-500">4 Plots</p>
                   <span className="text-[10px] text-emerald-400 font-semibold">Clear Title Verified</span>
                 </div>
 
                 <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1">
-                  <span className="text-xs text-slate-500 dark:text-slate-400">{t('activePppTenders')}</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">Active PPP Tenders</span>
                   <p className="text-2xl font-bold text-blue-500">3 Tenders</p>
                   <span className="text-[10px] text-blue-400 font-semibold">EMD Registered</span>
                 </div>
 
                 <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1">
-                  <span className="text-xs text-slate-500 dark:text-slate-400">{t('avgCommercialScore')}</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">Avg Commercial Score</span>
                   <p className="text-2xl font-bold text-purple-500">92/100</p>
                   <span className="text-[10px] text-purple-400 font-semibold">Grade A Viability</span>
                 </div>
               </div>
 
               {/* Quick Feature Shortcut Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div 
                   onClick={() => setActiveView('site-intelligence')}
-                  className="flex flex-col p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-cyan-500/40 cursor-pointer shadow-sm transition-all"
+                  className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-cyan-500/40 cursor-pointer space-y-3 shadow-sm transition-all"
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-500 border border-cyan-500/20">★ KILLER FEATURE</span>
-                    <ArrowRight className="w-4 h-4 text-cyan-500 flex-shrink-0" />
+                  <div className="flex items-center justify-between">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-500 border border-cyan-500/20">AI Insights</span>
+                    <ArrowRight className="w-4 h-4 text-cyan-500" />
                   </div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">{t('aiSiteIntelReport')}</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed flex-1">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">AI Site Intelligence Report</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                     Upload site photography + select location pin to generate a 12-metric suitability analysis report combining land use, infrastructure, and footfall.
-                  </p>
-                </div>
-
-                <div 
-                  onClick={() => setActiveView('opportunities')}
-                  className="flex flex-col p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-500/40 cursor-pointer shadow-sm transition-all"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20">PPP OPPORTUNITIES</span>
-                    <ArrowRight className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">{t('municipalTenders')}</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed flex-1">
-                    Explore active Public-Private Partnership RFPs for commercial complexes, solar installations, and MIDC plot leases.
                   </p>
                 </div>
               </div>
@@ -348,6 +357,7 @@ const BusinessDashboardPage = () => {
               {/* Header Title */}
               <div className="flex items-center justify-between flex-wrap gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
                 <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-500">AI Enabled Intelligence</span>
                   <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 flex items-center space-x-2">
                     <Sparkles className="w-6 h-6 text-cyan-500" />
                     <span>AI Site Intelligence Engine</span>
@@ -360,7 +370,7 @@ const BusinessDashboardPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Photo Upload Box */}
                   <div className="space-y-2">
-                    <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">{t('uploadSitePhoto')}</label>
+                    <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">📸 1. Upload Site Photo / Imagery:</label>
                     <div className="border-2 border-dashed border-slate-300 dark:border-slate-800 hover:border-cyan-500 rounded-xl p-5 text-center bg-slate-50 dark:bg-slate-950 transition-colors cursor-pointer relative">
                       <Upload className="w-8 h-8 text-cyan-500 mx-auto mb-2" />
                       <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Click or Drag Ground Inspection Image</p>
@@ -371,7 +381,7 @@ const BusinessDashboardPage = () => {
                   {/* Location Selector */}
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1">{t('selectGisLocation')}</label>
+                      <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1">📍 2. Select GIS Location Parcel:</label>
                       <select
                         value={selectedSite}
                         onChange={e => setSelectedSite(e.target.value)}
@@ -432,7 +442,7 @@ const BusinessDashboardPage = () => {
                   <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-3">
                     <h4 className="font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
                       <Upload className="w-4 h-4 text-cyan-500" />
-                      <span>{t('photoObservations')}</span>
+                      <span>📸 Photo Observations</span>
                     </h4>
                     <ul className="space-y-1.5 text-slate-600 dark:text-slate-300">
                       {siteReport.photoObservations.map((obs, i) => (
@@ -448,7 +458,7 @@ const BusinessDashboardPage = () => {
                   <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-3">
                     <h4 className="font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
                       <Layers className="w-4 h-4 text-emerald-500" />
-                      <span>{t('landUseZoning')}</span>
+                      <span>🗺️ Land Use & Zoning</span>
                     </h4>
                     <p className="font-semibold text-emerald-600 dark:text-emerald-400">{siteReport.landUse}</p>
                     <span className="text-[10px] text-slate-500 block">Kopargaon Master Plan Vector Layer Verified</span>
@@ -458,7 +468,7 @@ const BusinessDashboardPage = () => {
                   <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-3">
                     <h4 className="font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
                       <MapPin className="w-4 h-4 text-blue-500" />
-                      <span>{t('roadAccessWidth')}</span>
+                      <span>🛣️ Road Access & DP Width</span>
                     </h4>
                     <p className="font-semibold text-slate-800 dark:text-slate-200">{siteReport.roadAccessibility}</p>
                   </div>
@@ -467,7 +477,7 @@ const BusinessDashboardPage = () => {
                   <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-3 lg:col-span-2">
                     <h4 className="font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
                       <Shield className="w-4 h-4 text-purple-500" />
-                      <span>{t('nearbyInfrastructureTitle')}</span>
+                      <span>⚡ Nearby Infrastructure (Power & Water)</span>
                     </h4>
                     <ul className="space-y-1.5 text-slate-600 dark:text-slate-300">
                       {siteReport.nearbyInfrastructure.map((inf, i) => (
@@ -483,7 +493,7 @@ const BusinessDashboardPage = () => {
                   <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-3">
                     <h4 className="font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
                       <TrendingUp className="w-4 h-4 text-amber-500" />
-                      <span>{t('footfallActivity')}</span>
+                      <span>🏢 Footfall & Commercial Activity</span>
                     </h4>
                     <p className="font-semibold text-slate-800 dark:text-slate-200">{siteReport.nearbyBusinesses}</p>
                   </div>
@@ -492,7 +502,7 @@ const BusinessDashboardPage = () => {
                   <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-3 lg:col-span-2">
                     <h4 className="font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
                       <Building2 className="w-4 h-4 text-blue-500" />
-                      <span>{t('nearbyMunicipalProjects')}</span>
+                      <span>🏗️ Nearby Municipal Projects (1km Buffer)</span>
                     </h4>
                     <ul className="space-y-1.5 text-slate-600 dark:text-slate-300">
                       {siteReport.nearbyProjects.map((proj, i) => (
@@ -508,14 +518,14 @@ const BusinessDashboardPage = () => {
                   <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-3">
                     <h4 className="font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
                       <AlertTriangle className="w-4 h-4 text-rose-500" />
-                      <span>{t('citizenComplaintsSla')}</span>
+                      <span>⚠️ Citizen Complaints & SLA</span>
                     </h4>
                     <p className="text-slate-600 dark:text-slate-300">{siteReport.citizenComplaints}</p>
                   </div>
 
                   {/* Opportunities & Risks */}
                   <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-3 lg:col-span-2">
-                    <h4 className="font-bold text-slate-900 dark:text-slate-100">{t('opportunitiesRisks')}</h4>
+                    <h4 className="font-bold text-slate-900 dark:text-slate-100">💡 Opportunities & ⚠️ Risks</h4>
                     <div className="space-y-2">
                       <div className="space-y-1">
                         <span className="text-[10px] font-bold text-emerald-500 uppercase">Opportunities:</span>
@@ -542,7 +552,7 @@ const BusinessDashboardPage = () => {
                   <div className="p-5 rounded-2xl bg-gradient-to-tr from-cyan-950 via-slate-900 to-blue-950 border border-cyan-500/30 text-white space-y-3 lg:col-span-1">
                     <h4 className="font-bold flex items-center space-x-2 text-cyan-400">
                       <Briefcase className="w-4 h-4" />
-                      <span>{t('recommendedBusinesses')}</span>
+                      <span>🏷️ Recommended Businesses</span>
                     </h4>
                     <div className="space-y-1.5">
                       {siteReport.recommendedBusinessTypes.map((b, i) => (
@@ -562,7 +572,7 @@ const BusinessDashboardPage = () => {
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
               <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
                 <MapPin className="w-5 h-5 text-cyan-500" />
-                <span>{t('commercialZoningMap')}</span>
+                <span>Commercial Zoning & Vector GIS Map</span>
               </h3>
               <div className="h-[400px] bg-slate-950 rounded-xl border border-slate-800 p-6 flex flex-col justify-between text-white relative overflow-hidden">
                 <div className="space-y-2">
@@ -575,7 +585,7 @@ const BusinessDashboardPage = () => {
                   <span className="text-xs text-slate-400">Density Score: 88/100</span>
                 </div>
                 <Link to="/business/gis" className="w-fit px-4 py-2 rounded-xl bg-cyan-600 text-white text-xs font-bold mx-auto">
-                  {t('launchInteractiveGis')}
+                  Launch Interactive Business GIS
                 </Link>
               </div>
             </div>
@@ -586,7 +596,7 @@ const BusinessDashboardPage = () => {
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
               <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
                 <BarChart3 className="w-5 h-5 text-cyan-500" />
-                <span>{t('wardPurchasingPower')}</span>
+                <span>Kopargaon Ward Purchasing Power & Demographics</span>
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
@@ -619,7 +629,7 @@ const BusinessDashboardPage = () => {
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
               <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
                 <Layers className="w-5 h-5 text-emerald-500" />
-                <span>{t('commercialPropertyLand')}</span>
+                <span>Commercial Property & Land Listings</span>
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
@@ -636,35 +646,40 @@ const BusinessDashboardPage = () => {
             </div>
           )}
 
-          {/* VIEW 6: BUSINESS OPPORTUNITIES */}
-          {activeView === 'opportunities' && (
+          {/* VIEW 8: AI BUSINESS ASSISTANT */}
+          {activeView === 'ai-assistant' && (
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
               <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
-                <Briefcase className="w-5 h-5 text-cyan-500" />
-                <span>{t('municipalPppTenders')}</span>
+                <Bot className="w-5 h-5 text-cyan-500" />
+                <span>AI Business Investment Advisor</span>
               </h3>
 
-              <div className="space-y-3 text-xs">
-                {[
-                  { title: 'Smart Commercial Complex & Multi-level Parking (PPP)', ward: 'Ward 3', deadline: '28 Aug 2026' },
-                  { title: 'Solar Rooftop Installation (BOOT Model)', ward: 'City-wide', deadline: '05 Sep 2026' }
-                ].map((t, i) => (
-                  <div key={i} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex justify-between items-center">
-                    <div>
-                      <h4 className="font-bold text-slate-900 dark:text-slate-100">{t.title}</h4>
-                      <p className="text-slate-500">Location: {t.ward} • Deadline: {t.deadline}</p>
+              <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 h-[350px] overflow-y-auto space-y-3 text-xs">
+                {aiChat.map((m, i) => (
+                  <div key={i} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-md p-3.5 rounded-2xl ${
+                      m.sender === 'user' ? 'bg-cyan-600 text-white rounded-br-none' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-bl-none'
+                    }`}>
+                      {m.text}
                     </div>
-                    <button className="px-4 py-2 bg-cyan-600 text-white rounded-xl font-bold">Apply</button>
                   </div>
                 ))}
               </div>
+
+              <form onSubmit={handleAiSend} className="flex gap-2 text-xs">
+                <input
+                  type="text"
+                  value={aiPrompt}
+                  onChange={e => setAiPrompt(e.target.value)}
+                  placeholder="Ask e.g. Is Ward 4 good for a solar logistics hub?"
+                  className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white"
+                />
+                <button type="submit" className="px-5 py-2.5 bg-cyan-600 text-white font-bold rounded-xl flex items-center space-x-1">
+                  <span>Send</span>
+                  <Send className="w-3.5 h-3.5" />
+                </button>
+              </form>
             </div>
-          )}
-
-
-          {/* VIEW 8: AI BUSINESS ASSISTANT */}
-          {activeView === 'ai-assistant' && (
-            <BusinessAiAssistant />
           )}
     </div>
   );

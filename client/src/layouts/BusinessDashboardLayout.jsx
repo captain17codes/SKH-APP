@@ -19,14 +19,12 @@ const BusinessDashboardLayout = () => {
   const businessNavItems = [
     { id: 'dashboard', label: t('dashboard'), icon: LayoutDashboard, path: '/business/dashboard' },
     { id: 'site-intelligence', label: t('aiSiteIntelligence'), icon: Sparkles, path: '/business/dashboard?view=site-intelligence' },
-    { id: 'business-gis', label: t('businessGis'), icon: MapPin, badge: t('liveGis'), path: '/business/gis' },
+    { id: 'business-gis', label: t('businessGis'), icon: MapPin, badge: 'Live GIS', path: '/business/gis' },
     { id: 'area-intelligence', label: t('areaIntelligence'), icon: BarChart3, path: '/business/dashboard?view=area-intelligence' },
     { id: 'properties-land', label: t('landProperty'), icon: Layers, path: '/business/properties' },
     { id: 'market-intelligence', label: t('marketCompetitorIntel'), icon: BarChart3, path: '/business/market-intelligence' },
     { id: 'upcoming-dev', label: t('upcomingDevelopment'), icon: Building2, path: '/business/upcoming-development' },
-    { id: 'opportunities', label: t('businessOpportunities'), icon: Briefcase, badge: `3 ${t('tenders')}`, path: '/business/dashboard?view=opportunities' },
-    { id: 'ai-assistant', label: t('aiBusinessAssistant'), icon: Bot, badge: t('aiAdvisor'), path: '/business/dashboard?view=ai-assistant' }
-
+    { id: 'ai-assistant', label: t('aiBusinessAssistant'), icon: Bot, badge: 'AI Advisor', path: '/business/dashboard?view=ai-assistant' }
   ];
 
   const themeCtx = useTheme() || {};
@@ -91,8 +89,8 @@ const BusinessDashboardLayout = () => {
               <Building2 className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-slate-900 dark:text-white tracking-wide leading-none">{t('brand')}</h1>
-              <span className="text-[10px] font-semibold tracking-wider text-cyan-600 dark:text-cyan-400 uppercase">{t('businessPortal')}</span>
+              <h1 className="text-sm font-bold text-slate-900 dark:text-white tracking-wide leading-none">KOPARGAON</h1>
+              <span className="text-[10px] font-semibold tracking-wider text-cyan-600 dark:text-cyan-400 uppercase">Business Portal</span>
             </div>
           </Link>
           <button
@@ -114,7 +112,7 @@ const BusinessDashboardLayout = () => {
             <div className="overflow-hidden">
               <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{user?.name || 'Vikram Shah'}</p>
               <span className="inline-block text-[10px] font-medium px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 mt-0.5">
-                {t('investorPersona')}
+                Commercial Investor
               </span>
             </div>
           </div>
@@ -132,15 +130,15 @@ const BusinessDashboardLayout = () => {
                   navigate(item.path);
                   setMobileMenuOpen(false);
                 }}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
+                className={`w-full text-left flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
                   active
                     ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/20 font-bold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60'
                 }`}
               >
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-3 text-left pr-2">
                   <Icon className="w-4 h-4 flex-shrink-0" />
-                  <span>{item.label}</span>
+                  <span className="leading-tight">{item.label}</span>
                 </div>
                 {item.badge && (
                   <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded ${
@@ -156,7 +154,7 @@ const BusinessDashboardLayout = () => {
 
         {/* Footer Info */}
         <div className="p-4 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 flex items-center justify-between">
-          <span>{t('businessGisFooter')}</span>
+          <span>Kopargaon Business GIS</span>
           <span className="font-semibold text-cyan-600 dark:text-cyan-400">v2.4 Live</span>
         </div>
       </aside>
@@ -174,8 +172,8 @@ const BusinessDashboardLayout = () => {
             </button>
 
             <div>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">{t('businessGovernancePortal')}</h2>
-              <p className="text-[10px] text-slate-500 dark:text-slate-400">{t('businessGovernanceDesc')}</p>
+              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">Kopargaon Commercial & Investment Portal</h2>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400">AI Location Intelligence, Land GIS & Commercial Opportunities</p>
             </div>
           </div>
 
@@ -213,14 +211,14 @@ const BusinessDashboardLayout = () => {
                 <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-2 z-50">
                   <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
                     <p className="text-xs font-bold text-slate-900 dark:text-slate-100">{user?.name || 'Vikram Shah'}</p>
-                    <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-semibold">{t('businessInvestor')}</span>
+                    <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-semibold">Business Investor</span>
                   </div>
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 flex items-center space-x-2"
                   >
                     <LogOut className="w-3.5 h-3.5" />
-                    <span>{t('logout')}</span>
+                    <span>Log Out</span>
                   </button>
                 </div>
               )}
@@ -234,7 +232,7 @@ const BusinessDashboardLayout = () => {
         </main>
 
         <footer className="border-t border-slate-200 dark:border-slate-800 py-4 px-6 text-center text-xs text-slate-500">
-          <p>{t('businessFooter')}</p>
+          <p>© 2026 Kopargaon Municipal Council — Commercial & Investment Intelligence Portal</p>
         </footer>
       </div>
     </div>

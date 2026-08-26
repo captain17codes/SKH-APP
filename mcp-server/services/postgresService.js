@@ -238,8 +238,8 @@ export const postgresService = {
     // If PostGIS is active, run real ST_DWithin query
     if (await postgresService.isDatabaseAvailable()) {
       const res = await postgresService.query(
-        `SELECT id, name, type, address, phone, website, ST_AsGeoJSON(geometry)::json as geometry, ST_Distance(geometry::geography, ST_MakePoint($1, $2)::geography) as distance 
-         FROM osm_features 
+        `SELECT id, name, type, ST_AsGeoJSON(geometry)::json as geometry, ST_Distance(geometry::geography, ST_MakePoint($1, $2)::geography) as distance 
+         FROM infrastructure 
          WHERE type = $3 AND ST_DWithin(geometry::geography, ST_MakePoint($1, $2)::geography, $4)
          ORDER BY distance ASC`,
         [lng, lat, amenityType, radiusMeters]
@@ -292,7 +292,7 @@ export const postgresService = {
   getNearbyRoads: async (lat, lng) => {
     if (await postgresService.isDatabaseAvailable()) {
       const res = await postgresService.query(
-        `SELECT name, lanes, status, ST_Distance(geometry::geography, ST_MakePoint($1, $2)::geography) as distance 
+        `SELECT name, road_type, ST_Distance(geometry::geography, ST_MakePoint($1, $2)::geography) as distance 
          FROM roads 
          ORDER BY distance ASC`,
         [lng, lat]

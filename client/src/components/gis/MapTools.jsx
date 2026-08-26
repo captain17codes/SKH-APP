@@ -15,7 +15,7 @@ const MapTools = ({
   onToggleFullscreen
 }) => {
   return (
-    <div className="absolute top-4 right-4 z-20 flex flex-wrap items-center gap-1.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 p-1.5 rounded-xl shadow-xl text-xs">
+    <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 p-1.5 rounded-xl shadow-xl text-xs">
       {/* Base Map Switcher */}
       <div className="flex items-center space-x-1 border-r border-slate-200 dark:border-slate-800 pr-1.5">
         <button
@@ -54,7 +54,7 @@ const MapTools = ({
         <button
           onClick={onToggleFullscreen}
           className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-          title={isFullscreen ? "Exit Fullscreen" : "Full Screen View"}
+          title={isFullscreen ? 'Exit Fullscreen' : 'Full Screen View'}
         >
           {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
         </button>
