@@ -1,20 +1,35 @@
 import React from 'react';
-import { Layers, X, Eye, EyeOff, BarChart2 } from 'lucide-react';
+import { Layers, X, Eye, EyeOff, BarChart2, MapPin, Square } from 'lucide-react';
 
-const GIS_LAYER_DEFINITIONS = [
-  { id: 'wards', label: 'Municipal Wards', category: 'Boundaries', color: '#3b82f6' },
-  { id: 'cadastralPlots', label: 'Cadastral Plots (Mahabhunakasha)', category: 'Boundaries', color: '#f59e0b' },
-  { id: 'landUse', label: 'Land Use Zoning', category: 'Boundaries', color: '#10b981' },
-  { id: 'roads', label: 'Road Network', category: 'Infrastructure', color: '#64748b' },
-  { id: 'buildings', label: 'Key Civic Buildings', category: 'Infrastructure', color: '#8b5cf6' },
-  { id: 'smartProjects', label: 'Smart City Projects', category: 'Infrastructure', color: '#3b82f6' },
-  { id: 'hospitals', label: 'Hospitals & Clinics', category: 'Civic Facilities', color: '#e11d48' },
-  { id: 'schools', label: 'Schools & Colleges', category: 'Civic Facilities', color: '#2563eb' },
-  { id: 'governmentLand', label: 'Government Land Reserves', category: 'Civic Facilities', color: '#6366f1' },
-  { id: 'waterPipeline', label: 'Water Supply Grid', category: 'Utilities', color: '#06b6d4' },
-  { id: 'drainage', label: 'Drainage & Sewerage', category: 'Utilities', color: '#a855f7' },
-  { id: 'electricity', label: 'Power Sub-stations', category: 'Utilities', color: '#eab308' },
-  { id: 'floodRisk', label: 'Flood Risk Buffer Zone', category: 'Environmental', color: '#ef4444' }
+const LAND_USE_LAYERS = [
+  { id: 'landUse_Residential', label: 'Residential Zone', category: 'Residential', color: '#3b82f6', shape: 'Polygon Area' },
+  { id: 'landUse_Commercial', label: 'Commercial Zone', category: 'Commercial', color: '#f59e0b', shape: 'Polygon Area' },
+  { id: 'landUse_Industrial', label: 'Industrial Zone', category: 'Industrial', color: '#ec4899', shape: 'Polygon Area' },
+  { id: 'landUse_Agricultural', label: 'Agricultural Belt', category: 'Agricultural', color: '#84cc16', shape: 'Polygon Area' },
+  { id: 'landUse_Government', label: 'Institutional & Government', category: 'Government', color: '#8b5cf6', shape: 'Polygon Area' },
+  { id: 'landUse_Green Zone', label: 'Open & Green Space Zone', category: 'Green Zone', color: '#10b981', shape: 'Polygon Area' }
+];
+
+const PROJECT_LAYERS = [
+  { id: 'projects_Road', label: 'Roads & Transport Projects', category: 'Road', color: '#ef4444', shape: 'Point Marker' },
+  { id: 'projects_Water', label: 'Water & SCADA Grid Projects', category: 'Water', color: '#06b6d4', shape: 'Point Marker' },
+  { id: 'projects_TownPlanning', label: 'Town Planning & Infrastructure', category: 'Infrastructure', color: '#3b82f6', shape: 'Point Marker' },
+  { id: 'projects_Energy', label: 'Energy & Power Projects', category: 'Energy', color: '#eab308', shape: 'Point Marker' },
+  { id: 'projects_Other', label: 'Eco-Tourism & Heritage Projects', category: 'Tourism', color: '#a855f7', shape: 'Point Marker' }
+];
+
+const OTHER_GIS_LAYERS = [
+  { id: 'wards', label: 'Municipal Wards Boundaries', color: '#3b82f6' },
+  { id: 'cadastralPlots', label: 'Cadastral Plots (Mahabhunakasha)', color: '#f59e0b' },
+  { id: 'roads', label: 'Road Network (GIS Lines)', color: '#64748b' },
+  { id: 'buildings', label: 'Key Civic Buildings', color: '#8b5cf6' },
+  { id: 'hospitals', label: 'Hospitals & Clinics', color: '#e11d48' },
+  { id: 'schools', label: 'Schools & Colleges', color: '#2563eb' },
+  { id: 'waterPipeline', label: 'Water Supply Grid', color: '#06b6d4' },
+  { id: 'drainage', label: 'Drainage & Sewerage Network', color: '#a855f7' },
+  { id: 'electricity', label: 'Power Sub-stations', color: '#eab308' },
+  { id: 'floodRisk', label: 'Flood Risk Buffer Zone', color: '#ef4444' },
+  { id: 'complaintHotspots', label: 'Grievance Hotspots', color: '#f97316' }
 ];
 
 const MapLayerControl = ({
@@ -25,7 +40,7 @@ const MapLayerControl = ({
   overlayMode,
   onSelectOverlayMode
 }) => {
-  // If the panel is closed, only show a compact "+ Layers" floating button
+  // If panel closed, render "+ Add Layers & Analytics" floating button
   if (!isOpen) {
     return (
       <button
@@ -34,19 +49,20 @@ const MapLayerControl = ({
         title="Open Layers & Analytics Panel"
       >
         <Layers className="w-4 h-4" />
-        <span>+ Add Layers & Analytics</span>
+        <span>+ GIS Layers Control</span>
       </button>
     );
   }
 
-  // If the panel is open, show the full floating side panel (bottom sheet on mobile)
+  const isLayerActive = (id) => activeLayers[id] !== false;
+
   return (
-    <div className="absolute top-4 bottom-auto left-4 right-4 sm:right-auto z-20 w-auto sm:w-64 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl flex flex-col max-h-[500px] overflow-hidden text-xs animate-in fade-in zoom-in-95 duration-200">
-      {/* Header bar with Close icon */}
-      <div className="px-4 py-2.5 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 font-bold text-slate-900 dark:text-slate-100 flex-shrink-0 bg-slate-50/55 dark:bg-slate-950/55">
+    <div className="absolute top-4 bottom-auto left-4 right-4 sm:right-auto z-20 w-auto sm:w-72 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl flex flex-col max-h-[560px] overflow-hidden text-xs animate-in fade-in zoom-in-95 duration-200">
+      {/* Header bar */}
+      <div className="px-4 py-2.5 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 font-bold text-slate-900 dark:text-slate-100 flex-shrink-0 bg-slate-50/75 dark:bg-slate-950/75">
         <div className="flex items-center space-x-1.5">
           <Layers className="w-4 h-4 text-blue-500" />
-          <span>GIS Layers & Analytics</span>
+          <span>GIS Layers & Control</span>
         </div>
         <button
           onClick={onToggleOpen}
@@ -57,28 +73,100 @@ const MapLayerControl = ({
         </button>
       </div>
 
-      {/* Layers list content scrollable */}
+      {/* Layers list scrollable container */}
       <div className="p-3 space-y-4 overflow-y-auto">
-        {/* Spatial Vector Layers */}
-        <div className="space-y-1.5">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Vector GIS Layers</span>
-          {GIS_LAYER_DEFINITIONS.map(layer => {
-            const isActive = activeLayers[layer.id];
+        {/* LAND USE GROUP (POLYGONS) */}
+        <div className="space-y-1.5 bg-emerald-500/5 p-2.5 rounded-xl border border-emerald-500/15">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider flex items-center">
+              <Square className="w-3 h-3 mr-1 fill-emerald-500/20 text-emerald-500" />
+              LAND USE (POLYGONS / AREAS)
+            </span>
+          </div>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400">
+            Zoning parcels displayed as filled polygon areas on map
+          </p>
+
+          <div className="space-y-1 pt-1">
+            {LAND_USE_LAYERS.map(layer => {
+              const active = isLayerActive(layer.id);
+              return (
+                <div
+                  key={layer.id}
+                  onClick={() => onToggleLayer(layer.id)}
+                  className={`flex items-center justify-between p-1.5 rounded-lg cursor-pointer transition-colors ${
+                    active
+                      ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-semibold'
+                      : 'hover:bg-slate-100 dark:hover:bg-slate-800/60 text-slate-500 dark:text-slate-400 opacity-60'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2 truncate">
+                    <span className="w-3 h-3 rounded border border-white/60 flex-shrink-0" style={{ backgroundColor: layer.color }} />
+                    <span className="truncate">{layer.label}</span>
+                  </div>
+                  {active ? <Eye className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* PROJECTS GROUP (POINT MARKERS) */}
+        <div className="space-y-1.5 bg-blue-500/5 p-2.5 rounded-xl border border-blue-500/15">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center">
+              <MapPin className="w-3 h-3 mr-1 text-blue-500" />
+              PROJECTS (POINT MARKERS)
+            </span>
+          </div>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400">
+            Development projects displayed as spatial point markers
+          </p>
+
+          <div className="space-y-1 pt-1">
+            {PROJECT_LAYERS.map(layer => {
+              const active = isLayerActive(layer.id);
+              return (
+                <div
+                  key={layer.id}
+                  onClick={() => onToggleLayer(layer.id)}
+                  className={`flex items-center justify-between p-1.5 rounded-lg cursor-pointer transition-colors ${
+                    active
+                      ? 'bg-blue-500/10 text-blue-700 dark:text-blue-300 font-semibold'
+                      : 'hover:bg-slate-100 dark:hover:bg-slate-800/60 text-slate-500 dark:text-slate-400 opacity-60'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2 truncate">
+                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 ring-1 ring-white" style={{ backgroundColor: layer.color }} />
+                    <span className="truncate">{layer.label}</span>
+                  </div>
+                  {active ? <Eye className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* OTHER GIS LAYERS & BOUNDARIES */}
+        <div className="space-y-1.5 pt-1">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Boundaries & Infrastructure</span>
+          {OTHER_GIS_LAYERS.map(layer => {
+            const active = isLayerActive(layer.id);
             return (
               <div
                 key={layer.id}
                 onClick={() => onToggleLayer(layer.id)}
-                className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors ${
-                  isActive
-                    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold'
-                    : 'hover:bg-slate-100 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-400'
+                className={`flex items-center justify-between p-1.5 rounded-lg cursor-pointer transition-colors ${
+                  active
+                    ? 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-medium'
+                    : 'hover:bg-slate-50 dark:hover:bg-slate-800/40 text-slate-400 opacity-60'
                 }`}
               >
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 truncate">
                   <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: layer.color }} />
                   <span className="truncate">{layer.label}</span>
                 </div>
-                {isActive ? <Eye className="w-3.5 h-3.5 text-blue-500" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400" />}
+                {active ? <Eye className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />}
               </div>
             );
           })}

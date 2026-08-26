@@ -21,10 +21,10 @@ router.post('/', async (req, res) => {
     });
     res.send(audioBuffer);
   } catch (error) {
-    console.error('TTS Endpoint Error:', error);
-    res.status(500).json({ 
+    console.warn('TTS Service Unavailable (Browser Fallback Triggered):', error.message);
+    res.status(200).json({ 
       success: false,
-      error: 'Google Cloud TTS is not configured.'
+      error: error.message || 'TTS service unavailable.'
     });
   }
 });

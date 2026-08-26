@@ -2,21 +2,24 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronRight, Home } from 'lucide-react';
 
-const routeNameMap = {
-  dashboard: 'Dashboard',
-  gis: 'GIS Smart Map',
-  projects: 'Projects',
-  'land-use': 'Land Use Planning',
-  complaints: 'Citizen Complaints',
-  analytics: 'Analytics',
-  'ai-planner': 'AI Urban Planner',
-  documents: 'Documents',
-  settings: 'Settings',
-};
+import { useTranslation } from '../../context/LanguageContext';
 
 const Breadcrumbs = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
+
+  const routeNameMap = {
+    dashboard: t('dashboard'),
+    gis: t('gisSmartMap'),
+    projects: t('projects'),
+    'land-use': t('landUsePlanning'),
+    complaints: t('citizenComplaints'),
+    analytics: t('analytics'),
+    'ai-planner': t('aiUrbanPlanner'),
+    documents: t('documents'),
+    settings: t('settings'),
+  };
 
   if (pathnames.length === 0) return null;
 
@@ -27,7 +30,7 @@ const Breadcrumbs = () => {
         className="flex items-center hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
       >
         <Home className="w-3.5 h-3.5 mr-1" />
-        Portal Home
+        {t('portalHome')}
       </Link>
 
       {pathnames.map((name, index) => {

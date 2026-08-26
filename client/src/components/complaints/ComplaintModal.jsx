@@ -3,6 +3,7 @@ import Modal from '../common/Modal';
 import { StatusBadge } from '../common/Badge';
 import { MapPin, User, Calendar, Phone, CheckCircle2, Shield, Cpu, BarChart3, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useTranslation } from '../../context/LanguageContext';
 
 const PRIORITY_CONFIG = {
   CRITICAL: { color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-100 dark:bg-rose-900/30', bar: 'bg-rose-500', label: '🚨 CRITICAL' },
@@ -16,6 +17,7 @@ const PRIORITY_CONFIG = {
 };
 
 const ComplaintModal = ({ isOpen, onClose, complaint, onUpdateStatus }) => {
+  const { t } = useTranslation();
   const [newStatus, setNewStatus] = useState('');
   const [overridePriority, setOverridePriority] = useState('');
 
@@ -120,7 +122,7 @@ const ComplaintModal = ({ isOpen, onClose, complaint, onUpdateStatus }) => {
           <div className="flex items-center gap-2 mb-2">
             <Cpu className="w-3.5 h-3.5 text-violet-500" />
             <span className="text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">AI Priority Engine Result</span>
-            <span className={`ml-auto text-xs font-black ${pc.color}`}>{pc.label}</span>
+            <span className={`ml-auto text-xs font-black ${pc.color}`}>{pc.label.split(' ')[0]} {t(pc.label.split(' ')[1])}</span>
           </div>
 
           {aiScore !== null && (
@@ -178,10 +180,10 @@ const ComplaintModal = ({ isOpen, onClose, complaint, onUpdateStatus }) => {
               className="flex-1 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100"
             >
               <option value="">Select Action Status...</option>
-              <option value="Pending">Pending</option>
-              <option value="Under Review">Under Review</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Resolved">Resolved</option>
+              <option value="Pending">{t('Pending')}</option>
+              <option value="Under Review">{t('Under Review')}</option>
+              <option value="In Progress">{t('In Progress')}</option>
+              <option value="Resolved">{t('Resolved')}</option>
             </select>
             <button
               onClick={handleStatusChange}

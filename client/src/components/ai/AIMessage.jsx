@@ -49,24 +49,22 @@ const AIMessage = ({ message }) => {
               {formatText(message.text)}
             </div>
 
-            {/* MCP Action Triggers (View Map / Create Project Pre-fills) */}
+            {/* MCP Action Triggers (View on Map) */}
             {message.data?.mapAction && (
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center space-x-2">
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-2">
                 <Link
-                  to={`/gis?lat=${message.data.mapAction.latitude}&lng=${message.data.mapAction.longitude}&zoom=${message.data.mapAction.zoom}`}
+                  to={`/gis?lat=${message.data.mapAction.latitude || ''}&lng=${message.data.mapAction.longitude || ''}&zoom=${message.data.mapAction.zoom || 15}&featureId=${encodeURIComponent(message.data.mapAction.featureId || '')}&featureType=${encodeURIComponent(message.data.mapAction.featureType || '')}`}
                   className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all inline-flex items-center space-x-1.5 shadow-sm"
                 >
                   <MapPin className="w-3.5 h-3.5" />
-                  <span>View on GIS Map</span>
+                  <span>View on Map</span>
                 </Link>
 
-                <Link
-                  to={`/projects?create=true&cat=${encodeURIComponent(message.data.intent === 'LOCATION_RECOMMENDATION' ? 'Healthcare' : 'Infrastructure')}&lat=${message.data.mapAction.latitude}&lng=${message.data.mapAction.longitude}&desc=${encodeURIComponent(`Project recommended by AI Planner for suitability site.`)}`}
-                  className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold transition-all inline-flex items-center space-x-1.5"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Create Project</span>
-                </Link>
+                {message.data.mapAction.featureId && (
+                  <span className="text-[10px] text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg font-mono">
+                    ID: {message.data.mapAction.featureId}
+                  </span>
+                )}
               </div>
             )}
           </>

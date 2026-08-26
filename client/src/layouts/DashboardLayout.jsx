@@ -4,8 +4,10 @@ import Sidebar from '../components/common/Sidebar';
 import Navbar from '../components/common/Navbar';
 import Breadcrumbs from '../components/common/Breadcrumbs';
 import { Toaster } from 'react-hot-toast';
+import { useTranslation } from '../context/LanguageContext';
 
 const DashboardLayout = () => {
+  const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -35,7 +37,7 @@ const DashboardLayout = () => {
 
         {/* Global Footer */}
         <footer className="border-t border-slate-200 dark:border-slate-800/80 py-4 px-6 text-center text-xs text-slate-500 dark:text-slate-400">
-          <p>© 2026 Kopargaon Municipal Council — Smart Development Planning & Digital GIS Platform</p>
+          <p>{t('footerCopyright')}</p>
         </footer>
       </div>
     </div>
