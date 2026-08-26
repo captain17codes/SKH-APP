@@ -16,6 +16,7 @@ import MapTools from './MapTools';
 import MapPopup from './MapPopup';
 import MapLegend from './MapLegend';
 import turfService from '../../services/turfService';
+import { area as turfArea } from '@turf/turf';
 
 const COMPLAINT_PRIORITY_COLORS = {
   CRITICAL: '#f43f5e',
@@ -228,10 +229,16 @@ const MapView = ({
 
   const buildingLayerStyle = {
     id: 'buildings-fill',
-    type: 'fill',
+    type: 'fill-extrusion',
     paint: {
-      'fill-color': '#8b5cf6',
-      'fill-opacity': 0.5
+      'fill-extrusion-color': '#8b5cf6',
+      'fill-extrusion-height': [
+        'interpolate', ['linear'], ['coalesce', ['get', 'floors'], 1],
+        1, 3.5,
+        10, 35
+      ],
+      'fill-extrusion-base': 0,
+      'fill-extrusion-opacity': 0.8
     }
   };
 
@@ -241,7 +248,15 @@ const MapView = ({
     
     if (clickedFeature && clickedFeature.layer.id === 'wards-fill') {
       if (onSelectFeature) {
-        onSelectFeature(clickedFeature.properties, 'ward');
+        // Turf.js dynamic area calculation
+        const calculatedAreaSqm = turfArea(clickedFeature.geometry);
+        const calculatedAreaSqKm = (calculatedAreaSqm / 1000000).toFixed(2);
+        
+        const enhancedProperties = {
+          ...clickedFeature.properties,
+          calculatedAreaSqKm: calculatedAreaSqKm
+        };
+        onSelectFeature(enhancedProperties, 'ward');
       }
     } else {
       // Turf.js Point-in-Polygon check example when clicking an empty spot
@@ -260,11 +275,36 @@ const MapView = ({
     setHoveredWardId(hoveredFeature ? hoveredFeature.properties.id : null);
   };
 
-  const mapStyleUrl = baseTileSource === 'osm' 
-    ? "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
-    : baseTileSource === 'satellite'
-      ? "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
-      : "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
+  const mapStyleUrl = useMemo(() => {
+    const tileUrls = baseTileSource === 'satellite' 
+      ? ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}']
+      : [
+          'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
+        ];
+    
+    return {
+      version: 8,
+      sources: {
+        'basemap-raster': {
+          type: 'raster',
+          tiles: tileUrls,
+          tileSize: 256,
+          attribution: baseTileSource === 'satellite' ? '&copy; Esri' : '&copy; OpenStreetMap contributors'
+        }
+      },
+      layers: [
+        {
+          id: 'basemap-raster-layer',
+          type: 'raster',
+          source: 'basemap-raster',
+          minzoom: 0,
+          maxzoom: 19
+        }
+      ]
+    };
+  }, [baseTileSource]);
 
   const displayHospitals = (osmData?.hospitals && osmData.hospitals.length > 0) ? osmData.hospitals : (infraData?.hospitals || []);
   const displaySchools = (osmData?.schools && osmData.schools.length > 0) ? osmData.schools : (infraData?.schools || []);

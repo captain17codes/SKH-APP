@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { getUserByEmail, createUser } from '../models/user.model.js';
 import { smsService } from '../services/sms.service.js';
+import { isDatabaseAvailable } from '../config/db.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
 
@@ -13,6 +14,24 @@ export const login = async (req, res, next) => {
 
     if (!email || !password) {
       return res.status(400).json({ success: false, message: 'Please provide email and password' });
+    }
+
+    // Offline mock fallback for Admin Login
+    const dbOnline = await isDatabaseAvailable();
+    if (!dbOnline) {
+      if (email === 'admin@kopargaon.gov.in' && password === 'admin123') {
+        const token = jwt.sign(
+          { id: 'U1', role: 'Admin', name: 'Super Admin' },
+          JWT_SECRET,
+          { expiresIn: '1d' }
+        );
+        return res.status(200).json({
+          success: true,
+          token,
+          user: { id: 'U1', name: 'Super Admin', email: 'admin@kopargaon.gov.in', role: 'Admin' }
+        });
+      }
+      return res.status(401).json({ success: false, message: 'Invalid credentials (Offline Mode)' });
     }
 
     const user = await getUserByEmail(email);
