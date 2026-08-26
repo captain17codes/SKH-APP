@@ -106,6 +106,25 @@ const MapPopup = ({ data, type }) => {
     );
   }
 
+  if (type === 'cadastral') {
+    const p = data.properties || data;
+    return (
+      <div className="p-1 space-y-2 min-w-[230px]">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-1.5">
+          <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400">{p.id}</span>
+          <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold">{p.category}</span>
+        </div>
+
+        <h4 className="text-xs font-bold text-slate-900 dark:text-white leading-tight">Cadastral Plot (Mahabhunakasha)</h4>
+
+        <div className="text-xs text-slate-700 dark:text-slate-300 space-y-1 mt-2">
+          <p><span className="text-slate-500 dark:text-slate-400">Area:</span> {p.area_sqm} sq m</p>
+          <p><span className="text-slate-500 dark:text-slate-400">Ward:</span> <span className="font-semibold text-blue-600 dark:text-blue-400">{p.ward}</span></p>
+        </div>
+      </div>
+    );
+  }
+
   if (type === 'landUse' || type === 'land') {
     const p = data.properties || data;
     return (

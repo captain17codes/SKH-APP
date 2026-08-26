@@ -144,3 +144,44 @@ export const getWardLandStats = async (req, res, next) => {
     next(error);
   }
 };
+
+import { query } from '../config/db.js';
+
+// @desc    Generate PostGIS vector tile for cadastral plots
+// @route   GET /api/gis/tiles/land_plots/:z/:x/:y.pbf
+export const getLandPlotTiles = async (req, res, next) => {
+  try {
+    const { z, x, y } = req.params;
+    
+    // ST_TileEnvelope dynamically calculates bounding box in EPSG:3857 for the requested tile (Z, X, Y)
+    // We intersect it with our plots (EPSG:4326 geometry).
+    const sqlQuery = `
+      WITH bounds AS (
+          SELECT ST_Transform(ST_TileEnvelope($1, $2, $3), 4326) AS geom
+      ),
+      mvtgeom AS (
+          SELECT 
+              id, category, area_sqm, ward,
+              ST_AsMVTGeom(land_plots.geometry, bounds.geom, 4096, 256, true) AS geom
+          FROM public.land_plots, bounds
+          WHERE ST_Intersects(land_plots.geometry, bounds.geom)
+      )
+      SELECT ST_AsMVT(mvtgeom, 'kopargaon_cadastral', 4096, 'geom') AS tile
+      FROM mvtgeom;
+    `;
+    
+    const result = await query(sqlQuery, [parseInt(z), parseInt(x), parseInt(y)]);
+    const tileData = result.rows[0].tile;
+    
+    if (tileData) {
+      res.setHeader('Content-Type', 'application/x-protobuf');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.send(tileData);
+    } else {
+      res.status(204).send();
+    }
+  } catch (error) {
+    console.error('[GIS Controller] Error generating MVT tile:', error);
+    next(error);
+  }
+};

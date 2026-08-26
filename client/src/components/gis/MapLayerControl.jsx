@@ -20,6 +20,7 @@ const PROJECT_LAYERS = [
 
 const OTHER_GIS_LAYERS = [
   { id: 'wards', label: 'Municipal Wards Boundaries', color: '#3b82f6' },
+  { id: 'cadastralPlots', label: 'Cadastral Plots (Mahabhunakasha)', color: '#f59e0b' },
   { id: 'roads', label: 'Road Network (GIS Lines)', color: '#64748b' },
   { id: 'buildings', label: 'Key Civic Buildings', color: '#8b5cf6' },
   { id: 'hospitals', label: 'Hospitals & Clinics', color: '#e11d48' },
