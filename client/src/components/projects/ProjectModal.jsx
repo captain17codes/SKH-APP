@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Modal from '../common/Modal';
 import toast from 'react-hot-toast';
+import { useTranslation } from '../../context/LanguageContext';
 
 const ProjectModal = ({ isOpen, onClose, onCreate, onSave, initialData = null }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: '',
     category: 'Road Construction',
@@ -184,12 +186,12 @@ const ProjectModal = ({ isOpen, onClose, onCreate, onSave, initialData = null })
               onChange={e => setFormData({ ...formData, status: e.target.value })}
               className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 font-bold"
             >
-              <option value="PLANNED">PLANNED</option>
-              <option value="APPROVED">APPROVED</option>
-              <option value="IN_PROGRESS">IN_PROGRESS</option>
-              <option value="DELAYED">DELAYED</option>
-              <option value="COMPLETED">COMPLETED</option>
-              <option value="CANCELLED">CANCELLED</option>
+              <option value="PLANNED">{t('PLANNED')}</option>
+              <option value="APPROVED">{t('APPROVED')}</option>
+              <option value="IN_PROGRESS">{t('IN_PROGRESS')}</option>
+              <option value="DELAYED">{t('DELAYED')}</option>
+              <option value="COMPLETED">{t('COMPLETED')}</option>
+              <option value="CANCELLED">{t('CANCELLED')}</option>
             </select>
           </div>
         </div>

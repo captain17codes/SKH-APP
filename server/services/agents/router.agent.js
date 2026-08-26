@@ -4,8 +4,12 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const GROK_API_KEY = process.env.GROK_API_KEY;
-const GROK_API_URL = process.env.GROK_API_URL || 'https://api.x.ai/v1/chat/completions';
-const GROK_MODEL = process.env.GROK_MODEL || 'grok-4.5';
+const GROK_API_URL = (GROK_API_KEY && GROK_API_KEY.startsWith('gsk_'))
+  ? 'https://api.groq.com/openai/v1/chat/completions'
+  : (process.env.GROK_API_URL || 'https://api.x.ai/v1/chat/completions');
+const GROK_MODEL = (GROK_API_KEY && GROK_API_KEY.startsWith('gsk_'))
+  ? (process.env.GROK_MODEL || 'openai/gpt-oss-120b')
+  : (process.env.GROK_MODEL || 'grok-4.5');
 
 export const INTENTS = {
   FACILITY_LOCATION: 'FACILITY_LOCATION',

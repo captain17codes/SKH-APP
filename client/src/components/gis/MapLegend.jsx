@@ -1,13 +1,20 @@
 import React from 'react';
-import { Info, Layers, ChevronDown, ChevronUp } from 'lucide-react';
+import { Info, ChevronDown, ChevronUp, Square, MapPin } from 'lucide-react';
 
 const ZONING_CATEGORIES = [
-  { name: 'Residential', color: '#3b82f6', desc: 'Housing & Apartments' },
-  { name: 'Commercial', color: '#f59e0b', desc: 'Markets & Businesses' },
-  { name: 'Industrial', color: '#ec4899', desc: 'MIDC Manufacturing' },
-  { name: 'Agricultural', color: '#84cc16', desc: 'Farms & Sugarcane' },
-  { name: 'Government', color: '#8b5cf6', desc: 'Civic Administrative' },
-  { name: 'Green Zone', color: '#10b981', desc: 'Parks & River Buffer' }
+  { name: 'Residential', color: '#3b82f6' },
+  { name: 'Commercial', color: '#f59e0b' },
+  { name: 'Industrial', color: '#ec4899' },
+  { name: 'Agricultural', color: '#84cc16' },
+  { name: 'Government', color: '#8b5cf6' },
+  { name: 'Green Zone', color: '#10b981' }
+];
+
+const PROJECT_MARKERS = [
+  { name: 'Low Risk Project', color: '#10b981' },
+  { name: 'Medium Risk Project', color: '#f59e0b' },
+  { name: 'High Risk Project', color: '#ef4444' },
+  { name: 'Critical Risk Project', color: '#a855f7' }
 ];
 
 const MapLegend = ({ isOpen, onToggleOpen, overlayMode = 'none' }) => {
@@ -19,7 +26,7 @@ const MapLegend = ({ isOpen, onToggleOpen, overlayMode = 'none' }) => {
       >
         <div className="flex items-center space-x-1.5">
           <Info className="w-3.5 h-3.5 text-blue-500" />
-          <span>GIS Spatial Legend</span>
+          <span>GIS Map Legend</span>
         </div>
         {isOpen ? <ChevronDown className="w-3.5 h-3.5 text-slate-400" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-400" />}
       </div>
@@ -38,14 +45,33 @@ const MapLegend = ({ isOpen, onToggleOpen, overlayMode = 'none' }) => {
             </div>
           )}
 
-          {/* Land Use Zoning Legend */}
+          {/* Land Use Zoning Legend (Polygons) */}
           <div>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Land-Use Master Zoning</span>
+            <span className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block mb-1.5 flex items-center">
+              <Square className="w-3 h-3 mr-1 fill-emerald-500/20 text-emerald-500" />
+              Land Use (Filled Polygons)
+            </span>
             <div className="grid grid-cols-2 gap-1.5 text-[11px]">
               {ZONING_CATEGORIES.map(cat => (
                 <div key={cat.name} className="flex items-center space-x-1.5">
-                  <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
+                  <span className="w-3 h-3 rounded border border-white/60 flex-shrink-0" style={{ backgroundColor: cat.color }} />
                   <span className="text-slate-700 dark:text-slate-300 font-medium truncate">{cat.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Projects Legend (Point Markers) */}
+          <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+            <span className="text-[10px] font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-wider block mb-1.5 flex items-center">
+              <MapPin className="w-3 h-3 mr-1 text-blue-500" />
+              Projects (Point Markers)
+            </span>
+            <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+              {PROJECT_MARKERS.map(pm => (
+                <div key={pm.name} className="flex items-center space-x-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 ring-1 ring-white" style={{ backgroundColor: pm.color }} />
+                  <span className="text-slate-700 dark:text-slate-300 font-medium truncate">{pm.name}</span>
                 </div>
               ))}
             </div>
@@ -53,7 +79,7 @@ const MapLegend = ({ isOpen, onToggleOpen, overlayMode = 'none' }) => {
 
           {/* Infrastructure Vectors */}
           <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1 text-[11px]">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Vectors & Boundaries</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Boundaries & Infrastructure</span>
             <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-300">
               <span className="w-4 h-0.5 bg-blue-500" />
               <span>Ward Boundary</span>

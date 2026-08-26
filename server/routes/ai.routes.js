@@ -6,21 +6,34 @@ const router = express.Router();
 
 // AI Urban Planner Query Endpoint
 router.post('/urban-planner', async (req, res) => {
-  const { query, language } = req.body;
-  if (!query) {
-    return res.status(400).json({ error: 'Query is required' });
+  const { query, language, role, userType, message, prompt, text } = req.body;
+  const queryText = query || message || prompt || text;
+
+  if (!queryText || typeof queryText !== 'string' || !queryText.trim()) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Query or message is required',
+      response: 'Please provide a valid query or message.',
+      answer: 'Please provide a valid query or message.'
+    });
   }
+
   try {
-    const result = await aiService.processPlannerQuery(query, language || 'en-IN');
+    const activeRole = role || userType || 'citizen';
+    const result = await aiService.processPlannerQuery(queryText.trim(), language, activeRole, req.body);
     
-    // Ensure the response meets the exact requested structure:
-    // { success, answer, recommendations, mapAction, sources }
+    const answer = result.answer || result.text || result.response || result.output || 'No description provided.';
+    
+    const resolvedLang = result.language || (language && language !== 'auto' ? language : 'mr');
     res.json({
       success: result.success !== undefined ? result.success : true,
-      answer: result.answer || result.text || 'No description provided.',
+      response: answer,
+      answer: answer,
+      text: answer,
       recommendations: result.recommendations || [],
       mapAction: result.mapAction || null,
-      sources: result.sources || []
+      sources: result.sources || [],
+      language: resolvedLang
     });
   } catch (e) {
     console.error('Urban Planner API Route Error:', e);
@@ -34,6 +47,7 @@ router.post('/urban-planner', async (req, res) => {
     res.status(500).json({
       success: false,
       error: e.message,
+      response: errorMsg,
       answer: errorMsg,
       recommendations: [],
       mapAction: null,
@@ -65,3 +79,4 @@ router.get('/health', async (req, res) => {
 });
 
 export default router;
+

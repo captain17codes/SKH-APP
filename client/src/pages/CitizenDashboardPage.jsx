@@ -9,7 +9,8 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
-import { complaintService } from '../services/api';
+import { complaintService, aiPlannerService } from '../services/api';
+import CitizenAiAssistant from '../components/ai/CitizenAiAssistant';
 import toast from 'react-hot-toast';
 
 const PROBLEM_CATEGORIES = [
@@ -138,6 +139,7 @@ const CitizenDashboardPage = () => {
   const [aiChat, setAiChat] = useState([
     { sender: 'bot', text: 'Namaste! I am your Kopargaon Citizen AI Assistant. How can I assist you today with grievance tracking, municipal building permits, or ward projects?' }
   ]);
+  const [isAiTyping, setIsAiTyping] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -284,48 +286,25 @@ const CitizenDashboardPage = () => {
     toast.success(`Complaint Submitted! Ticket ID: ${newTicket.id}`);
   };
 
-  const handleAiSend = (e) => {
+  const handleAiSend = async (e) => {
     e.preventDefault();
-    if (!aiPrompt.trim()) return;
+    if (!aiPrompt.trim() || isAiTyping) return;
 
     const userMsg = aiPrompt;
     setAiChat(prev => [...prev, { sender: 'user', text: userMsg }]);
     setAiPrompt('');
+    setIsAiTyping(true);
 
-    setTimeout(() => {
-      let reply = "All complaints logged via Kopargaon Citizen Portal carry a guaranteed resolution SLA monitored by the Municipal Commissioner. You can track your uploaded photo proof under 'My Complaints'.";
-      
-      const lower = userMsg.toLowerCase();
-
-      const isMarathi = /[\u0900-\u097F]/.test(userMsg) && (lower.includes('नमस्कार') || lower.includes('पाणी') || lower.includes('रस्ता') || lower.includes('कचरा') || lower.includes('कोपरगाव') || lower.includes('तक्रार'));
-      const isHindi = /[\u0900-\u097F]/.test(userMsg) || lower.includes('नमस्ते') || lower.includes('पानी') || lower.includes('सड़क') || lower.includes('कचरा') || lower.includes('शिकायत');
-
-      if (isMarathi || lower.includes('marathi') || lower.includes('मराठी')) {
-        if (lower.includes('पाणी') || lower.includes('water')) {
-          reply = "कोपरगाव नगर परिषद गोदावरी जलशुद्धीकरण केंद्रातून पाणीपुरवठा करते. पाणी गळती किंवा कमी दाबाची तक्रार 'Report Problem' विभागात दाखल करा. हेल्पलाइन: ०२४२३-२२२१०४.";
-        } else if (lower.includes('रस्ता') || lower.includes('खड्डा') || lower.includes('road')) {
-          reply = "रस्त्यावरील खड्ड्यांच्या तक्रारी २४ ते ४८ तासांत सोडवल्या जातात. फोटो अपलोड करून त्वरित नोंदणी करा.";
-        } else {
-          reply = "नमस्कार! मी आपला कोपरगाव नागरिक AI सहाय्यक आहे. मी आपणास पाणीपुरवठा, रस्ते, स्वच्छता व सार्वजनिक तक्रारी निवारणात मदत करू शकतो.";
-        }
-      } else if (isHindi || lower.includes('hindi') || lower.includes('हिंदी')) {
-        if (lower.includes('पानी') || lower.includes('water')) {
-          reply = "कोपरगांव नगर परिषद गोदावरी जल शोधन संयंत्र से पानी की आपूर्ति करती है। पानी के रिसाव या कम दबाव की शिकायत 'Report Problem' में दर्ज करें। हेल्पलाइन: 02423-222104.";
-        } else if (lower.includes('सड़क') || lower.includes('गड्ढा') || lower.includes('road')) {
-          reply = "सड़क के गड्ढों की शिकायतों का निवारण 24 से 48 घंटों के भीतर किया जाता है। फोटो प्रमाण अपलोड करके शिकायत दर्ज करें।";
-        } else {
-          reply = "नमस्ते! मैं आपका कोपरगांव नागरिक AI सहायक हूँ। मैं नागरिक सुविधाओं, शिकायत ट्रैकिंग और सार्वजनिक सेवाओं में आपकी सहायता कर सकता हूँ।";
-        }
-      } else {
-        if (lower.includes('water')) {
-          reply = "Kopargaon Municipal Corporation supplies water from the Godavari Filtration Plant. For low pressure or leaks, file a ticket under 'Report Problem'. Emergency helpdesk: 02423-222104.";
-        } else if (lower.includes('pothole') || lower.includes('road')) {
-          reply = "Pothole complaints are processed with Priority SLA (24-48 hrs). Be sure to upload photo proof in the 'Report Problem' section!";
-        }
-      }
-
-      setAiChat(prev => [...prev, { sender: 'bot', text: reply }]);
-    }, 500);
+    try {
+      const res = await aiPlannerService.queryAI(userMsg, 'auto', 'citizen');
+      setAiChat(prev => [...prev, { sender: 'bot', text: res.answer || res.text || 'No response provided.' }]);
+    } catch (err) {
+      console.error('Citizen AI Chat Error:', err);
+      toast.error('AI Assistant service encountered an error.');
+      setAiChat(prev => [...prev, { sender: 'bot', text: '⚠️ I am currently experiencing connection difficulties. Please try again later.' }]);
+    } finally {
+      setIsAiTyping(false);
+    }
   };
 
   return (
@@ -358,25 +337,25 @@ const CitizenDashboardPage = () => {
               {/* Citizen Stats */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1">
-                  <span className="text-xs text-slate-500 dark:text-slate-400">Active Grievances</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">{t('activeGrievances')}</span>
                   <p className="text-2xl font-bold text-amber-500">{myComplaints.filter(c => c.status !== 'Resolved').length} Tickets</p>
                   <span className="text-[10px] text-emerald-500 font-semibold">Under 48h SLA</span>
                 </div>
 
                 <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1">
-                  <span className="text-xs text-slate-500 dark:text-slate-400">Resolved Tickets</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">{t('resolvedTickets')}</span>
                   <p className="text-2xl font-bold text-emerald-500">12 Total</p>
                   <span className="text-[10px] text-slate-400">98% Satisfactory</span>
                 </div>
 
                 <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1">
-                  <span className="text-xs text-slate-500 dark:text-slate-400">Ward Infrastructure</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">{t('wardInfrastructure')}</span>
                   <p className="text-2xl font-bold text-blue-500">4 Works</p>
                   <span className="text-[10px] text-blue-400">Active in Ward 3</span>
                 </div>
 
                 <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1">
-                  <span className="text-xs text-slate-500 dark:text-slate-400">Public GIS Layers</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">{t('publicGisLayers')}</span>
                   <p className="text-2xl font-bold text-purple-500">11 Vector</p>
                   <span className="text-[10px] text-purple-400">GeoJSON Active</span>
                 </div>
@@ -386,8 +365,8 @@ const CitizenDashboardPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4">
                   <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center justify-between">
-                    <span>My Active Complaints & Photo Proof</span>
-                    <button onClick={() => setActiveView('my-complaints')} className="text-xs font-semibold text-emerald-500 hover:underline">View All →</button>
+                    <span>{t('myComplaints')} & Photo Proof</span>
+                    <button onClick={() => setActiveView('my-complaints')} className="text-xs font-semibold text-emerald-500 hover:underline">{t('viewAllArrow')}</button>
                   </h3>
 
                   <div className="space-y-3">
@@ -462,13 +441,13 @@ const CitizenDashboardPage = () => {
                     <div className="flex justify-between items-center flex-wrap gap-2">
                       <span className="text-sm font-black font-mono text-emerald-600 dark:text-emerald-400">{lastSubmittedComplaint.id}</span>
                       <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                        Status: {lastSubmittedComplaint.status}
+                        {t('status')}: {lastSubmittedComplaint.status}
                       </span>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-slate-700 dark:text-slate-300">
                       <div>
-                        <span className="text-slate-400 block text-[10px] uppercase font-bold">Category</span>
+                        <span className="text-slate-400 block text-[10px] uppercase font-bold">{t('category')}</span>
                         <span className="font-semibold">{lastSubmittedComplaint.category}</span>
                       </div>
                       <div>
@@ -518,13 +497,13 @@ const CitizenDashboardPage = () => {
                       onClick={() => setActiveView('my-complaints')}
                       className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs shadow-lg shadow-emerald-600/30 text-center"
                     >
-                      Track Ticket in My Complaints →
+                      {t('trackTicket')} →
                     </button>
                     <button
                       onClick={() => setLastSubmittedComplaint(null)}
                       className="px-5 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 rounded-xl font-bold text-xs"
                     >
-                      Submit Another Grievance
+                      {t('submitAnother')}
                     </button>
                   </div>
                 </div>
@@ -534,17 +513,17 @@ const CitizenDashboardPage = () => {
                   <div>
                     <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
                       <MessageSquareWarning className="w-5 h-5 text-emerald-500" />
-                      <span>Report a Problem / Submit Citizen Grievance</span>
+                      <span>{t('reportProblem')}</span>
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      Direct submission to Kopargaon Municipal Department Head with photo evidence & GPS tag.
+                      {t('directSubmissionInfo')}
                     </p>
                   </div>
 
                   <form onSubmit={handleFormSubmit} className="space-y-5 text-xs">
                     {/* 1. Category Selector */}
                     <div>
-                      <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">1. Select Problem Category *</label>
+                      <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">1. {t('problemCategory')} *</label>
                       <select
                         value={complaintForm.category}
                         onChange={e => setComplaintForm({ ...complaintForm, category: e.target.value })}
@@ -558,24 +537,23 @@ const CitizenDashboardPage = () => {
 
                     {/* 2. Problem Description */}
                     <div>
-                      <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">2. Problem Description *</label>
+                      <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">2. {t('problemDescription')} *</label>
                       <textarea
                         rows={4}
                         required
-                        placeholder="Describe the issue in detail (e.g. depth of pothole, road blockages, danger level)..."
+                        placeholder={t('describeIssue')}
                         value={complaintForm.description}
                         onChange={e => setComplaintForm({ ...complaintForm, description: e.target.value })}
                         className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white leading-relaxed"
                       />
                     </div>
 
-                    {/* 3. Upload Photo (JPG, JPEG, PNG, WEBP — Max 5 — Previews & Remove Button) */}
+                    {/* 3. Upload Photo */}
                     <div className="space-y-2">
                       <label className="block font-bold text-slate-800 dark:text-slate-200">
-                        3. Upload Ground Photos (Max 5 Images — JPG, PNG, WEBP)
+                        3. {t('uploadPhotos')}
                       </label>
 
-                      {/* File Inputs (Hidden triggers) */}
                       <input
                         type="file"
                         ref={fileInputRef}
@@ -593,7 +571,6 @@ const CitizenDashboardPage = () => {
                         className="hidden"
                       />
 
-                      {/* Drop-zone Box */}
                       <div className="border-2 border-dashed border-slate-300 dark:border-slate-800 hover:border-emerald-500 rounded-xl p-5 text-center bg-slate-50 dark:bg-slate-950 transition-colors">
                         <div className="flex justify-center items-center space-x-3 mb-2">
                           <button
@@ -602,7 +579,7 @@ const CitizenDashboardPage = () => {
                             className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold flex items-center space-x-1.5 shadow-sm"
                           >
                             <ImageIcon className="w-4 h-4" />
-                            <span>Browse Gallery Photos</span>
+                            <span>{t('browseGallery')}</span>
                           </button>
 
                           <button
@@ -611,19 +588,18 @@ const CitizenDashboardPage = () => {
                             className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-bold flex items-center space-x-1.5 shadow-sm"
                           >
                             <Camera className="w-4 h-4" />
-                            <span>Take Photo</span>
+                            <span>{t('takePhoto')}</span>
                           </button>
                         </div>
 
                         <p className="text-[11px] text-slate-500">
-                          {complaintForm.photos.length}/5 photos attached • Accepted formats: JPG, JPEG, PNG, WEBP (Max 10MB per file)
+                          {complaintForm.photos.length}/5 {t('photosAttached')}
                         </p>
                       </div>
 
-                      {/* Image Thumbnail Preview Grid with Remove Button */}
                       {complaintForm.photos.length > 0 && (
                         <div className="pt-2">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Attached Image Previews:</span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">{t('attachedPreviews')}:</span>
                           <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
                             {complaintForm.photos.map((item, idx) => (
                               <div key={idx} className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm aspect-square bg-slate-950">
@@ -632,7 +608,7 @@ const CitizenDashboardPage = () => {
                                   type="button"
                                   onClick={() => handleRemovePhoto(idx)}
                                   className="absolute top-1 right-1 p-1 rounded-full bg-rose-600 text-white hover:bg-rose-700 shadow-md transition-all"
-                                  title="Remove Photo"
+                                  title={t('removePhoto')}
                                 >
                                   <X className="w-3.5 h-3.5" />
                                 </button>
@@ -646,9 +622,9 @@ const CitizenDashboardPage = () => {
                       )}
                     </div>
 
-                    {/* 4. Location Controls & GPS */}
+                    {/* 4. Location Controls */}
                     <div className="space-y-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
-                      <label className="block font-bold text-slate-800 dark:text-slate-200">4. Location & GIS Coordinates</label>
+                      <label className="block font-bold text-slate-800 dark:text-slate-200">4. {t('location')} & GIS</label>
 
                       <div className="flex flex-wrap gap-2">
                         <button
@@ -657,7 +633,7 @@ const CitizenDashboardPage = () => {
                           className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold flex items-center space-x-1.5 shadow-sm"
                         >
                           <Navigation className="w-3.5 h-3.5" />
-                          <span>Use Current GPS Location</span>
+                          <span>{t('detectGps')}</span>
                         </button>
 
                         <button
@@ -666,13 +642,13 @@ const CitizenDashboardPage = () => {
                           className="px-3.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-slate-800 dark:text-slate-200 font-bold flex items-center space-x-1.5"
                         >
                           <MapPin className="w-3.5 h-3.5 text-emerald-500" />
-                          <span>Select Location on Citizen GIS</span>
+                          <span>{t('selectOnGis')}</span>
                         </button>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                         <div>
-                          <span className="text-[10px] font-semibold text-slate-500">Latitude / Longitude</span>
+                          <span className="text-[10px] font-semibold text-slate-500">{t('latLong')}</span>
                           <input
                             type="text"
                             readOnly
@@ -682,7 +658,7 @@ const CitizenDashboardPage = () => {
                         </div>
 
                         <div>
-                          <span className="text-[10px] font-semibold text-slate-500">Approximate Address</span>
+                          <span className="text-[10px] font-semibold text-slate-500">{t('address')}</span>
                           <input
                             type="text"
                             required
@@ -694,11 +670,10 @@ const CitizenDashboardPage = () => {
                       </div>
                     </div>
 
-                    {/* Progress Bar when uploading */}
                     {isSubmitting && (
                       <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 space-y-1.5 animate-pulse">
                         <div className="flex justify-between text-[11px] font-bold text-emerald-500">
-                          <span>Uploading Photos & Generating AI Observation...</span>
+                          <span>{t('uploadingInProgress')}</span>
                           <span>{uploadProgress}%</span>
                         </div>
                         <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
@@ -707,14 +682,13 @@ const CitizenDashboardPage = () => {
                       </div>
                     )}
 
-                    {/* Submit Button */}
                     <button
                       type="submit"
                       disabled={isSubmitting}
                       className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-sm shadow-lg shadow-emerald-600/30 flex items-center justify-center space-x-2 transition-all cursor-pointer"
                     >
                       <Send className="w-4 h-4" />
-                      <span>{isSubmitting ? 'Submitting Grievance...' : 'Submit Complaint'}</span>
+                      <span>{isSubmitting ? t('loading') : t('submitGrievance')}</span>
                     </button>
                   </form>
                 </div>
@@ -727,7 +701,7 @@ const CitizenDashboardPage = () => {
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
               <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
                 <Clock className="w-5 h-5 text-emerald-500" />
-                <span>My Active Complaints, Photo Proof & SLA Tracker</span>
+                <span>{t('myComplaintsTracker')}</span>
               </h3>
 
               <div className="space-y-4">
@@ -746,16 +720,15 @@ const CitizenDashboardPage = () => {
                         c.status === 'In Progress' ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20' :
                         'bg-amber-500/10 text-amber-500 border border-amber-500/20'
                       }`}>
-                        Status: {c.status}
+                        {t('status')}: {c.status}
                       </span>
                     </div>
 
                     <p className="text-xs text-slate-600 dark:text-slate-300">{c.description}</p>
 
-                    {/* Photo Proof Gallery */}
                     {c.photos && c.photos.length > 0 && (
                       <div>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">📷 Uploaded Photos</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">📷 {t('uploadedPhotos')}</span>
                         <div className="flex items-center gap-2 overflow-x-auto">
                           {c.photos.map((pUrl, i) => (
                             <a key={i} href={pUrl} target="_blank" rel="noopener noreferrer" className="shrink-0">
@@ -766,17 +739,16 @@ const CitizenDashboardPage = () => {
                       </div>
                     )}
 
-                    {/* AI Observation */}
                     {c.aiObservation && (
                       <div className="p-2.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-700 dark:text-cyan-300 text-xs">
-                        <span className="font-bold text-cyan-500 block">🤖 AI Observation:</span>
+                        <span className="font-bold text-cyan-500 block">🤖 {t('aiObservation')}:</span>
                         <span>{c.aiObservation}</span>
                       </div>
                     )}
 
                     <div className="flex justify-between items-center text-[11px] text-slate-500 pt-2 border-t border-slate-200/60 dark:border-slate-800">
-                      <span>Location: {c.location}</span>
-                      <span>Assigned: {c.officer}</span>
+                      <span>{t('location')}: {c.location}</span>
+                      <span>{t('assigned')}: {c.officer}</span>
                     </div>
                   </div>
                 ))}
@@ -789,20 +761,20 @@ const CitizenDashboardPage = () => {
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
               <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
                 <MapPin className="w-5 h-5 text-emerald-500" />
-                <span>Public Citizen Vector GIS Map</span>
+                <span>{t('publicGisMap')}</span>
               </h3>
               <div className="h-[400px] bg-slate-950 rounded-xl border border-slate-800 p-6 flex flex-col justify-between text-white relative overflow-hidden">
                 <div className="space-y-2">
-                  <p className="text-xs font-bold text-emerald-400">11-Layer OpenStreetMap Public Grid</p>
-                  <p className="text-xs text-slate-300">GeoJSON Ward Boundaries • Water Supply Lines • PWD Improvement Works</p>
+                  <p className="text-xs font-bold text-emerald-400">{t('osmPublicGrid')}</p>
+                  <p className="text-xs text-slate-300">{t('gisLayersDesc')}</p>
                 </div>
                 <div className="text-center py-8">
                   <MapPin className="w-12 h-12 text-emerald-400 mx-auto animate-bounce mb-2" />
-                  <p className="text-sm font-bold">Kopargaon Spatial GIS Viewer</p>
+                  <p className="text-sm font-bold">{t('kopargaonSpatial')}</p>
                   <span className="text-xs text-slate-400">Coordinates: 19.8916° N, 74.4789° E</span>
                 </div>
                 <Link to="/citizen/gis" className="w-fit px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold mx-auto">
-                  Open Citizen GIS
+                  {t('openGis')}
                 </Link>
               </div>
             </div>
@@ -813,7 +785,7 @@ const CitizenDashboardPage = () => {
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
               <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
                 <FolderKanban className="w-5 h-5 text-blue-500" />
-                <span>Infrastructure Projects in Kopargaon Wards</span>
+                <span>{t('infrastructureProjects')}</span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -831,7 +803,7 @@ const CitizenDashboardPage = () => {
                     <div className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                       <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${p.progress}%` }} />
                     </div>
-                    <p className="text-[10px] text-slate-500">{p.ward} • {p.progress}% Completed</p>
+                    <p className="text-[10px] text-slate-500">{p.ward} • {p.progress}% {t('completed')}</p>
                   </div>
                 ))}
               </div>
@@ -843,7 +815,7 @@ const CitizenDashboardPage = () => {
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
               <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
                 <AlertTriangle className="w-5 h-5 text-amber-500" />
-                <span>Kopargaon Municipal Announcements & Notices</span>
+                <span>{t('cityAlerts')} & Official Notices</span>
               </h3>
 
               <div className="space-y-3 text-xs">
@@ -862,38 +834,7 @@ const CitizenDashboardPage = () => {
 
           {/* VIEW 8: AI CITIZEN ASSISTANT */}
           {activeView === 'ai-assistant' && (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
-                <Bot className="w-5 h-5 text-cyan-500" />
-                <span>AI Citizen Assistant Chatbot</span>
-              </h3>
-
-              <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 h-[350px] overflow-y-auto space-y-3 text-xs">
-                {aiChat.map((m, i) => (
-                  <div key={i} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-md p-3.5 rounded-2xl ${
-                      m.sender === 'user' ? 'bg-emerald-600 text-white rounded-br-none' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-bl-none'
-                    }`}>
-                      {m.text}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <form onSubmit={handleAiSend} className="flex gap-2 text-xs">
-                <input
-                  type="text"
-                  value={aiPrompt}
-                  onChange={e => setAiPrompt(e.target.value)}
-                  placeholder="Ask e.g. How do I get a new water connection?"
-                  className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white"
-                />
-                <button type="submit" className="px-5 py-2.5 bg-emerald-600 text-white font-bold rounded-xl flex items-center space-x-1">
-                  <span>Send</span>
-                  <Send className="w-3.5 h-3.5" />
-                </button>
-              </form>
-            </div>
+            <CitizenAiAssistant />
           )}
     </div>
   );

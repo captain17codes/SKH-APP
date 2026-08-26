@@ -3,6 +3,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import postgresService from './services/postgresService.js';
 import spatialAnalysisService from './services/spatialAnalysisService.js';
 import projectRiskService from '../server/services/projectRiskService.js';
@@ -237,15 +240,11 @@ app.get('/tools', (req, res) => {
   res.json({ tools: MCP_TOOLS_REGISTRY });
 });
 
-// Parameterized Tool Calling Handler
-app.post('/call', async (req, res) => {
-  const { name, arguments: args = {} } = req.body;
-  console.log(`🤖 MCP Server tool called: ${name} with args:`, args);
+// Parameterized Tool Execution Engine (used by REST & MCP SSE)
+async function executeTool(name, args = {}) {
+  let result = null;
 
-  try {
-    let result = null;
-
-    switch (name) {
+  switch (name) {
       case 'get_ward_details': {
         const { wardId } = args;
         const wards = await postgresService.getWards();
@@ -261,10 +260,19 @@ app.post('/call', async (req, res) => {
         let schoolCount = 0;
         let hospitalCount = 0;
         try {
-          const filePath = path.resolve(process.cwd(), '../client/src/data/gis/infrastructure.geojson');
-          const infraData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-          schoolCount = infraData.features.filter(f => f.properties.type === 'school' && f.properties.ward.toLowerCase().includes(ward.properties.id.toLowerCase())).length;
-          hospitalCount = infraData.features.filter(f => f.properties.type === 'hospital' && f.properties.ward.toLowerCase().includes(ward.properties.id.toLowerCase())).length;
+          const filePaths = [
+            path.resolve(process.cwd(), 'client/src/data/gis/infrastructure.geojson'),
+            path.resolve(process.cwd(), '../client/src/data/gis/infrastructure.geojson'),
+            path.resolve('c:/Users/chava/OneDrive/Desktop/SKH/client/src/data/gis/infrastructure.geojson')
+          ];
+          for (const fp of filePaths) {
+            if (fs.existsSync(fp)) {
+              const infraData = JSON.parse(fs.readFileSync(fp, 'utf-8'));
+              schoolCount = infraData.features.filter(f => f.properties.type === 'school' && f.properties.ward.toLowerCase().includes(ward.properties.id.toLowerCase())).length;
+              hospitalCount = infraData.features.filter(f => f.properties.type === 'hospital' && f.properties.ward.toLowerCase().includes(ward.properties.id.toLowerCase())).length;
+              break;
+            }
+          }
         } catch {}
 
         result = {
@@ -285,10 +293,24 @@ app.post('/call', async (req, res) => {
         const { wardId, status } = args;
         let list = await postgresService.getProjects();
         if (wardId) {
-          list = list.filter(p => p.ward && p.ward.toLowerCase().includes(wardId.toLowerCase()));
+          const wardNum = wardId.replace(/\D/g, '');
+          list = list.filter(p => {
+            if (!p.ward) return false;
+            const pw = p.ward.toLowerCase();
+            const wId = wardId.toLowerCase();
+            return pw.includes(wId) || (wardNum && (pw.includes(`ward ${wardNum}`) || pw.includes(`w${wardNum}`) || pw === wardNum));
+          });
         }
         if (status) {
-          list = list.filter(p => p.status.toLowerCase() === status.toLowerCase());
+          const st = status.toLowerCase();
+          const filtered = list.filter(p => {
+            if (!p.status) return false;
+            const ps = p.status.toLowerCase();
+            return ps === st || ps.includes(st) || st.includes(ps) || (st.includes('plan') && ps.includes('plan')) || (st.includes('progress') && ps.includes('ongoing'));
+          });
+          if (filtered.length > 0) {
+            list = filtered;
+          }
         }
         result = list.map(p => ({
           id: p.id,
@@ -302,7 +324,8 @@ app.post('/call', async (req, res) => {
           expectedCompletion: p.expectedCompletion,
           department: p.department,
           ward: p.ward,
-          geometry: p.geometry
+          geometry: p.geometry,
+          coordinates: p.coordinates
         }));
         break;
       }
@@ -543,10 +566,19 @@ app.post('/call', async (req, res) => {
         let schoolCount = 0;
         let hospitalCount = 0;
         try {
-          const filePath = path.resolve(process.cwd(), '../client/src/data/gis/infrastructure.geojson');
-          const infraData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-          schoolCount = infraData.features.filter(f => f.properties.type === 'school' && f.properties.ward.toLowerCase().includes(ward.properties.id.toLowerCase())).length;
-          hospitalCount = infraData.features.filter(f => f.properties.type === 'hospital' && f.properties.ward.toLowerCase().includes(ward.properties.id.toLowerCase())).length;
+          const filePaths = [
+            path.resolve(process.cwd(), 'client/src/data/gis/infrastructure.geojson'),
+            path.resolve(process.cwd(), '../client/src/data/gis/infrastructure.geojson'),
+            path.resolve('c:/Users/chava/OneDrive/Desktop/SKH/client/src/data/gis/infrastructure.geojson')
+          ];
+          for (const fp of filePaths) {
+            if (fs.existsSync(fp)) {
+              const infraData = JSON.parse(fs.readFileSync(fp, 'utf-8'));
+              schoolCount = infraData.features.filter(f => f.properties.type === 'school' && f.properties.ward.toLowerCase().includes(ward.properties.id.toLowerCase())).length;
+              hospitalCount = infraData.features.filter(f => f.properties.type === 'hospital' && f.properties.ward.toLowerCase().includes(ward.properties.id.toLowerCase())).length;
+              break;
+            }
+          }
         } catch {}
 
         const complaints = ward.properties.complaintsCount || 0;
@@ -617,8 +649,18 @@ app.post('/call', async (req, res) => {
       }
 
       case 'get_complaints': {
-        const { wardId, status, category } = args;
-        result = await postgresService.getComplaints(wardId, status, category);
+        const { wardId, status, category, location, query } = args;
+        let list = await postgresService.getComplaints(wardId, status, category);
+        const searchTxt = (location || query || '').toLowerCase().trim();
+        if (searchTxt) {
+          list = list.filter(c => 
+            (c.location && c.location.toLowerCase().includes(searchTxt)) ||
+            (c.title && c.title.toLowerCase().includes(searchTxt)) ||
+            (c.description && c.description.toLowerCase().includes(searchTxt)) ||
+            (c.ward && c.ward.toLowerCase().includes(searchTxt))
+          );
+        }
+        result = list;
         break;
       }
 
@@ -659,12 +701,123 @@ app.post('/call', async (req, res) => {
         throw new Error(`Tool ${name} not found`);
     }
 
+    return result;
+}
+
+// Parameterized REST Tool Calling Handler
+app.post('/call', async (req, res) => {
+  const { name, arguments: args = {} } = req.body;
+  if (!name || name === 'undefined') {
+    console.warn('⚠️ MCP Server received call with missing or undefined tool name');
+    return res.status(400).json({ error: 'Tool name is required', result: null });
+  }
+  console.log(`🤖 MCP Server REST tool called: ${name} with args:`, args);
+
+  try {
+    const result = await executeTool(name, args);
     res.json({ result });
   } catch (error) {
-    console.error(`Error in tool execution (${name}):`, error);
-    res.status(500).json({ error: error.message });
+    console.error(`Error in REST tool execution (${name}):`, error);
+    res.status(400).json({ error: error.message, result: null });
   }
 });
+
+// Standard Model Context Protocol (MCP) Server Factory
+function createMcpServer() {
+  const server = new Server(
+    {
+      name: "kopargaon-mcp-server",
+      version: "1.0.0"
+    },
+    {
+      capabilities: {
+        tools: {}
+      }
+    }
+  );
+
+  // MCP Tool Discovery Handler (tools/list)
+  server.setRequestHandler(ListToolsRequestSchema, async () => {
+    return {
+      tools: MCP_TOOLS_REGISTRY
+    };
+  });
+
+  // MCP Tool Execution Handler (tools/call)
+  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    const { name, arguments: args = {} } = request.params;
+    console.log(`🤖 MCP SDK tool called: ${name} with args:`, args);
+    try {
+      const result = await executeTool(name, args);
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(result, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      console.error(`Error in MCP SDK tool execution (${name}):`, error);
+      return {
+        isError: true,
+        content: [
+          {
+            type: "text",
+            text: `Error executing tool ${name}: ${error.message}`
+          }
+        ]
+      };
+    }
+  });
+
+  return server;
+}
+
+const sseTransports = new Map();
+
+// SSE handshake endpoint for n8n / MCP clients
+app.get('/sse', async (req, res) => {
+  console.log('🔗 Incoming MCP SSE connection');
+  req.socket?.setNoDelay(true);
+
+  // Send SSE headers and initial 16KB comment padding to immediately flush Cloudflare / reverse proxy buffers
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    'Connection': 'keep-alive',
+    'X-Accel-Buffering': 'no'
+  });
+  res.write(': ' + 'X'.repeat(16384) + '\n\n');
+
+  // Prevent SSEServerTransport.start() from calling writeHead again on an already open stream
+  res.writeHead = function() { return res; };
+
+  const transport = new SSEServerTransport('/messages', res);
+  const server = createMcpServer();
+  sseTransports.set(transport.sessionId, { transport, server });
+
+  transport.onclose = () => {
+    console.log(`🔌 MCP SSE connection closed: ${transport.sessionId}`);
+    sseTransports.delete(transport.sessionId);
+  };
+
+  await server.connect(transport);
+});
+
+// SSE messages endpoint
+const handleIncomingSseMessage = async (req, res) => {
+  const sessionId = req.query.sessionId;
+  const session = sseTransports.get(sessionId);
+  if (!session) {
+    res.status(404).send('Session not found');
+    return;
+  }
+  await session.transport.handlePostMessage(req, res, req.body);
+};
+
+app.post('/messages', handleIncomingSseMessage);
+app.post('/message', handleIncomingSseMessage);
 
 const PORT = process.env.MCP_PORT || 7000;
 app.listen(PORT, () => {
@@ -672,5 +825,13 @@ app.listen(PORT, () => {
   console.log(`[MCP] Port: ${PORT}`);
   console.log(`[MCP] Status: RUNNING`);
   console.log(`[MCP] Health: http://localhost:${PORT}/health`);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('⚠️ Uncaught Exception caught in MCP server process:', err.message);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('⚠️ Unhandled Rejection caught in MCP server process:', reason);
 });
 

@@ -22,12 +22,12 @@ const Sidebar = ({ isOpen, onClose }) => {
 
   const navItems = [
     { path: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
-    { path: '/gis', label: t('gisSmartMap'), icon: MapPin, badge: 'Live GIS' },
+    { path: '/gis', label: t('gisSmartMap'), icon: MapPin, badge: t('liveGis') },
     { path: '/projects', label: t('projects'), icon: FolderKanban },
     { path: '/land-use', label: t('landUsePlanning'), icon: Layers },
-    { path: '/complaints', label: t('citizenComplaints'), icon: MessageSquareWarning, badge: '6 New' },
+    { path: '/complaints', label: t('citizenComplaints'), icon: MessageSquareWarning, badge: `6 ${t('new')}` },
     { path: '/analytics', label: t('analytics'), icon: BarChart3 },
-    { path: '/ai-planner', label: t('aiUrbanPlanner'), icon: Bot, badge: 'AI 2.0' },
+    { path: '/ai-planner', label: t('aiUrbanPlanner'), icon: Bot, badge: t('ai20') },
     { path: '/documents', label: t('documents'), icon: FileText },
     { path: '/settings', label: t('settings'), icon: Settings },
   ];
@@ -54,8 +54,8 @@ const Sidebar = ({ isOpen, onClose }) => {
               <Building2 className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-slate-900 dark:text-white tracking-wide leading-none">KOPARGAON</h1>
-              <span className="text-[10px] font-semibold tracking-wider text-blue-600 dark:text-blue-400 uppercase">Smart City GIS</span>
+              <h1 className="text-sm font-bold text-slate-900 dark:text-white tracking-wide leading-none">{t('brand')}</h1>
+              <span className="text-[10px] font-semibold tracking-wider text-blue-600 dark:text-blue-400 uppercase">{t('smartCityGis')}</span>
             </div>
           </div>
           <button
@@ -116,7 +116,7 @@ const Sidebar = ({ isOpen, onClose }) => {
 
         {/* Footer info */}
         <div className="p-4 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 flex items-center justify-between">
-          <span>Kopargaon Municipal GIS</span>
+          <span>{t('municipalGisFooter')}</span>
           <span className="font-semibold text-emerald-600 dark:text-emerald-400">v2.4 Live</span>
         </div>
       </aside>

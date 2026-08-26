@@ -157,6 +157,32 @@ export const LAND_USE_ZONING_GEOJSON = {
           ]
         ]
       }
+    },
+    {
+      type: "Feature",
+      id: "lu-gov-2",
+      properties: {
+        id: "PLOT-GOV-04",
+        category: "Government",
+        name: "Yesgaon Bypass Government Infrastructure Reserve",
+        ward: "Ward 4",
+        areaAcres: 22.0,
+        currentUsage: "Vacant Government Land",
+        recommendedUsage: "Public Hospital or Transit Terminal",
+        color: "#8b5cf6"
+      },
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [74.4820, 19.8880],
+            [74.4920, 19.8900],
+            [74.4940, 19.8820],
+            [74.4840, 19.8810],
+            [74.4820, 19.8880]
+          ]
+        ]
+      }
     }
   ]
 };

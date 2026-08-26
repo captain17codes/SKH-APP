@@ -18,12 +18,13 @@ const CitizenDashboardLayout = () => {
 
   const citizenNavItems = [
     { id: 'dashboard', label: t('dashboard'), icon: LayoutDashboard, path: '/citizen/dashboard' },
-    { id: 'report-problem', label: t('reportProblem'), icon: MessageSquareWarning, badge: 'New', path: '/citizen/dashboard?view=report-problem' },
-    { id: 'my-complaints', label: t('myComplaints'), icon: Clock, badge: '3 Active', path: '/citizen/dashboard?view=my-complaints' },
-    { id: 'citizen-gis', label: t('citizenGis'), icon: MapPin, badge: 'Live GIS', path: '/citizen/gis' },
+    { id: 'report-problem', label: t('reportProblem'), icon: MessageSquareWarning, badge: t('new'), path: '/citizen/dashboard?view=report-problem' },
+    { id: 'my-complaints', label: t('myComplaints'), icon: Clock, badge: `3 ${t('active')}`, path: '/citizen/dashboard?view=my-complaints' },
+    { id: 'citizen-gis', label: t('citizenGis'), icon: MapPin, badge: t('liveGis'), path: '/citizen/gis' },
     { id: 'projects-near-me', label: t('projectsNearMe'), icon: FolderKanban, path: '/citizen/dashboard?view=projects-near-me' },
-    { id: 'city-alerts', label: t('cityAlerts'), icon: AlertTriangle, badge: '2 Notices', path: '/citizen/dashboard?view=city-alerts' },
-    { id: 'ai-assistant', label: t('aiCitizenAssistant'), icon: Bot, badge: 'AI 2.0', path: '/citizen/dashboard?view=ai-assistant' }
+    { id: 'city-alerts', label: t('cityAlerts'), icon: AlertTriangle, badge: `2 ${t('notices')}`, path: '/citizen/dashboard?view=city-alerts' },
+    { id: 'ai-assistant', label: t('aiCitizenAssistant'), icon: Bot, badge: t('ai20'), path: '/citizen/dashboard?view=ai-assistant' }
+
   ];
 
   const themeCtx = useTheme() || {};
@@ -79,8 +80,8 @@ const CitizenDashboardLayout = () => {
               <Building2 className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-slate-900 dark:text-white tracking-wide leading-none">KOPARGAON</h1>
-              <span className="text-[10px] font-semibold tracking-wider text-emerald-600 dark:text-emerald-400 uppercase">Citizen Portal</span>
+              <h1 className="text-sm font-bold text-slate-900 dark:text-white tracking-wide leading-none">{t('brand')}</h1>
+              <span className="text-[10px] font-semibold tracking-wider text-emerald-600 dark:text-emerald-400 uppercase">{t('citizenPortal')}</span>
             </div>
           </Link>
           <button
@@ -102,7 +103,7 @@ const CitizenDashboardLayout = () => {
             <div className="overflow-hidden">
               <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{user?.name || 'Aniket Sharma'}</p>
               <span className="inline-block text-[10px] font-medium px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 mt-0.5">
-                Kopargaon Resident
+                {t('residentPersona')}
               </span>
             </div>
           </div>
@@ -144,7 +145,7 @@ const CitizenDashboardLayout = () => {
 
         {/* Footer Info */}
         <div className="p-4 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 flex items-center justify-between">
-          <span>Kopargaon Citizen Care</span>
+          <span>{t('citizenCare')}</span>
           <span className="font-semibold text-emerald-600 dark:text-emerald-400">v2.4 Live</span>
         </div>
       </aside>
@@ -162,8 +163,8 @@ const CitizenDashboardLayout = () => {
             </button>
 
             <div>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">Kopargaon Citizen Governance Portal</h2>
-              <p className="text-[10px] text-slate-500 dark:text-slate-400">Public Grievances, Photo Uploads & Land Intelligence</p>
+              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">{t('citizenGovernancePortal')}</h2>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400">{t('citizenGovernanceDesc')}</p>
             </div>
           </div>
 
@@ -201,14 +202,14 @@ const CitizenDashboardLayout = () => {
                 <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-2 z-50">
                   <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
                     <p className="text-xs font-bold text-slate-900 dark:text-slate-100">{user?.name || 'Aniket Sharma'}</p>
-                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">Citizen Persona</span>
+                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">{t('citizenPersona')}</span>
                   </div>
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 flex items-center space-x-2"
                   >
                     <LogOut className="w-3.5 h-3.5" />
-                    <span>Log Out</span>
+                    <span>{t('logout')}</span>
                   </button>
                 </div>
               )}
@@ -222,7 +223,7 @@ const CitizenDashboardLayout = () => {
         </main>
 
         <footer className="border-t border-slate-200 dark:border-slate-800 py-4 px-6 text-center text-xs text-slate-500">
-          <p>© 2026 Kopargaon Municipal Council — Citizen Services Portal</p>
+          <p>{t('citizenFooter')}</p>
         </footer>
       </div>
     </div>

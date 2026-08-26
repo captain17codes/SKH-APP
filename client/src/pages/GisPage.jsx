@@ -94,23 +94,58 @@ const GisPage = () => {
   useEffect(() => {
     const lat = searchParams.get('lat');
     const lng = searchParams.get('lng');
-    const projectId = searchParams.get('project');
+    const zoomParam = searchParams.get('zoom');
+    const featureId = searchParams.get('featureId') || searchParams.get('project');
+    const featureType = searchParams.get('featureType');
     const wardParam = searchParams.get('ward');
     const candidatesParam = searchParams.get('candidates');
 
-    if (lat && lng) {
+    const targetZoom = zoomParam ? parseInt(zoomParam, 10) : 16;
+
+    if (lat && lng && !isNaN(parseFloat(lat)) && !isNaN(parseFloat(lng))) {
       setMapCenter([parseFloat(lat), parseFloat(lng)]);
-      setMapZoom(16);
+      setMapZoom(targetZoom);
     }
-    if (projectId) {
+
+    if (featureId) {
+      // 1. Try finding in projects
       gisService.getProjects().then(list => {
-        const found = list.find(p => p.id === projectId);
+        const found = list.find(p => p.id === featureId || p.name.toLowerCase().includes(featureId.toLowerCase()));
         if (found) {
           setSelectedFeature({ feat: found, type: 'project' });
-          if (found.coordinates) {
+          if (found.coordinates && (!lat || !lng)) {
             setMapCenter(found.coordinates);
-            setMapZoom(16);
+            setMapZoom(targetZoom);
           }
+          return;
+        }
+
+        // 2. Try finding in Wards
+        const wardMatch = KOPARGAON_WARDS_GEOJSON.features.find(f =>
+          f.properties.id === featureId || f.properties.name.toLowerCase().includes(featureId.toLowerCase())
+        );
+        if (wardMatch) {
+          setSelectedWardId(wardMatch.properties.id);
+          setSelectedFeature({ feat: wardMatch.properties, type: 'ward' });
+          if (!lat || !lng) {
+            setMapCenter(wardMatch.geometry.coordinates[0][0].slice().reverse());
+            setMapZoom(targetZoom);
+          }
+          return;
+        }
+
+        // 3. Fallback generic feature location
+        if (lat && lng) {
+          setSelectedFeature({
+            feat: {
+              id: featureId,
+              name: featureId,
+              type: featureType || 'GIS Feature',
+              lat: parseFloat(lat),
+              lng: parseFloat(lng)
+            },
+            type: featureType || 'location'
+          });
         }
       });
     } else if (wardParam) {
@@ -119,6 +154,7 @@ const GisPage = () => {
         setSelectedWardId(wardParam);
         setMapCenter(wardFeature.geometry.coordinates[0][0].slice().reverse());
         setMapZoom(15);
+        setSelectedFeature({ feat: wardFeature.properties, type: 'ward' });
       }
     }
 
@@ -137,7 +173,7 @@ const GisPage = () => {
           area: c.area || 5.0
         }));
         setCandidateLocations(list);
-        if (list.length > 0) {
+        if (list.length > 0 && (!lat || !lng)) {
           setMapCenter([list[0].lat, list[0].lng]);
           setMapZoom(15);
         }

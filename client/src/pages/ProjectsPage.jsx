@@ -9,8 +9,10 @@ import FilterPanel from '../components/common/FilterPanel';
 import EmptyState from '../components/common/EmptyState';
 import { projectService } from '../services/api';
 import toast from 'react-hot-toast';
+import { useTranslation } from '../context/LanguageContext';
 
 const ProjectsPage = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
@@ -140,10 +142,10 @@ const ProjectsPage = () => {
         <div>
           <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center">
             <FolderKanban className="w-5 h-5 text-blue-500 mr-2" />
-            AI Project Monitoring & Risk Prediction
+            {t('aiProjectMonitoring')}
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Real-time project tracking, progress vs. schedule gap analysis, PostGIS grievance correlation, and AI risk scoring.
+            {t('projectTrackingDesc')}
           </p>
         </div>
 
@@ -153,7 +155,7 @@ const ProjectsPage = () => {
             className="px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-colors flex items-center space-x-1.5 cursor-pointer"
           >
             <Activity className="w-4 h-4 text-emerald-500" />
-            <span>GIS Map Risk Layer</span>
+            <span>{t('gisRiskLayer')}</span>
           </button>
           <button
             onClick={() => {
@@ -163,7 +165,7 @@ const ProjectsPage = () => {
             className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md transition-colors flex items-center space-x-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Register Project</span>
+            <span>{t('registerProject')}</span>
           </button>
         </div>
       </div>
@@ -171,56 +173,56 @@ const ProjectsPage = () => {
       {/* AI City Overview Dashboard Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-xl shadow-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Projects</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{t('projects')}</span>
           <div className="text-xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">{overview.totalProjects}</div>
-          <span className="text-[10px] text-slate-500">Total registered</span>
+          <span className="text-[10px] text-slate-500">{t('totalRegistered')}</span>
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-blue-500/20 p-3.5 rounded-xl shadow-xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-blue-500 flex items-center">
-            <Clock className="w-3 h-3 mr-1" /> Ongoing
+            <Clock className="w-3 h-3 mr-1" /> {t('ongoing')}
           </span>
           <div className="text-xl font-extrabold text-blue-600 dark:text-blue-400 mt-1">{overview.ongoing}</div>
-          <span className="text-[10px] text-slate-500">In execution</span>
+          <span className="text-[10px] text-slate-500">{t('inExecution')}</span>
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-emerald-500/20 p-3.5 rounded-xl shadow-xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500 flex items-center">
-            <CheckCircle2 className="w-3 h-3 mr-1" /> Completed
+            <CheckCircle2 className="w-3 h-3 mr-1" /> {t('completed')}
           </span>
           <div className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">{overview.completed}</div>
-          <span className="text-[10px] text-slate-500">Handed over</span>
+          <span className="text-[10px] text-slate-500">{t('handedOver')}</span>
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-amber-500/20 p-3.5 rounded-xl shadow-xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500 flex items-center">
-            <AlertTriangle className="w-3 h-3 mr-1" /> Delayed
+            <AlertTriangle className="w-3 h-3 mr-1" /> {t('delayed')}
           </span>
           <div className="text-xl font-extrabold text-amber-600 dark:text-amber-400 mt-1">{overview.delayed}</div>
-          <span className="text-[10px] text-slate-500">Behind schedule</span>
+          <span className="text-[10px] text-slate-500">{t('behindSchedule')}</span>
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-rose-500/20 p-3.5 rounded-xl shadow-xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-rose-500 flex items-center">
-            <ShieldAlert className="w-3 h-3 mr-1" /> High Risk
+            <ShieldAlert className="w-3 h-3 mr-1" /> {t('highRisk')}
           </span>
           <div className="text-xl font-extrabold text-rose-600 dark:text-rose-400 mt-1">{overview.highRisk}</div>
-          <span className="text-[10px] text-rose-500/80 font-medium">🔴 AI High Risk</span>
+          <span className="text-[10px] text-rose-500/80 font-medium">🔴 {t('aiHighRisk')}</span>
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-purple-500/20 p-3.5 rounded-xl shadow-xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-purple-500 flex items-center">
-            <ShieldAlert className="w-3 h-3 mr-1" /> Critical
+            <ShieldAlert className="w-3 h-3 mr-1" /> {t('criticalRisk')}
           </span>
           <div className="text-xl font-extrabold text-purple-600 dark:text-purple-400 mt-1">{overview.criticalRisk}</div>
-          <span className="text-[10px] text-purple-500/80 font-medium">🟣 Immediate Action</span>
+          <span className="text-[10px] text-purple-500/80 font-medium">🟣 {t('immediateActionReq')}</span>
         </div>
       </div>
 
       {/* Project Risk Filter Bar */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xs">
         <div className="flex items-center space-x-2 overflow-x-auto pb-1 md:pb-0">
-          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex-shrink-0 mr-1">Project Risk:</span>
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex-shrink-0 mr-1">{t('projectRiskLabel')}</span>
           {['All', 'Critical', 'High', 'Medium', 'Low', 'Unknown'].map((r) => {
             const isSelected = selectedRiskFilter.toLowerCase() === r.toLowerCase();
             let colorBadge = 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300';
@@ -243,7 +245,7 @@ const ProjectsPage = () => {
                 {r === 'Medium' && '🟠 '}
                 {r === 'Low' && '🟢 '}
                 {r === 'Unknown' && '⚪ '}
-                {r}
+                {t(r)}
               </button>
             );
           })}
@@ -278,7 +280,7 @@ const ProjectsPage = () => {
           <SearchBar
             value={searchQuery}
             onChange={setSearchQuery}
-            placeholder="Search projects by title, ward, ID..."
+            placeholder={t('searchProjectsPlaceholder')}
             className="w-full sm:w-72"
           />
 
