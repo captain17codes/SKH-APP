@@ -1,5 +1,5 @@
 import express from 'express';
-import { login, getMe, logout, sendAuthOtp, verifyAuthOtp, googleLoginMock } from '../controllers/auth.controller.js';
+import { login, getMe, logout, sendAuthOtp, verifyAuthOtp, googleVerify } from '../controllers/auth.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
@@ -11,8 +11,8 @@ router.post('/login', login); // Alias
 router.post('/otp/send', sendAuthOtp);
 router.post('/otp/verify', verifyAuthOtp);
 
-// Business Google OAuth Mock
-router.get('/google', googleLoginMock);
+// Business Google OAuth
+router.post('/google/verify', googleVerify);
 
 router.get('/me', protect, getMe);
 router.post('/logout', logout);
