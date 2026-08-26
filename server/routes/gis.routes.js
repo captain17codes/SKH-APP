@@ -5,7 +5,8 @@ import {
   getInfrastructure, 
   getRoads, 
   getLandUse,
-  getWardLandStats
+  getWardLandStats,
+  getLandPlotTiles
 } from '../controllers/gis.controller.js';
 
 const router = express.Router();
@@ -17,5 +18,8 @@ router.get('/wards/:id/land-stats', getWardLandStats);
 router.get('/infrastructure', getInfrastructure);
 router.get('/roads', getRoads);
 router.get('/land-use', getLandUse);
+
+// Dynamic Vector Tiles endpoint
+router.get('/tiles/land_plots/:z/:x/:y.pbf', getLandPlotTiles);
 
 export default router;

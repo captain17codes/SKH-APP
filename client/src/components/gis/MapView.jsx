@@ -96,7 +96,8 @@ const MapView = ({
     drainage: true,
     electricity: true,
     floodRisk: true,
-    complaintHotspots: true
+    complaintHotspots: true,
+    cadastralPlots: true
   });
 
   // Load Data
@@ -258,6 +259,9 @@ const MapView = ({
         };
         onSelectFeature(enhancedProperties, 'ward');
       }
+    } else if (clickedFeature && clickedFeature.layer.id === 'cadastral-fill') {
+      if (onSelectFeature) onSelectFeature(clickedFeature.properties, 'cadastral');
+      setPopupInfo({ type: 'cadastral', data: clickedFeature.properties, lngLat: [lngLat.lng, lngLat.lat] });
     } else {
       // Turf.js Point-in-Polygon check example when clicking an empty spot
       if (wardsData) {
@@ -347,7 +351,7 @@ const MapView = ({
         }}
         onClick={handleMapClick}
         onMouseMove={handleMapHover}
-        interactiveLayerIds={['wards-fill']}
+        interactiveLayerIds={['wards-fill', 'cadastral-fill']}
         mapStyle={mapStyleUrl}
         style={{ width: '100%', height: '100%' }}
       >
@@ -379,6 +383,44 @@ const MapView = ({
         {activeLayers.buildings && buildingsData && (
           <Source id="buildings-source" type="geojson" data={buildingsData}>
             <Layer {...buildingLayerStyle} />
+          </Source>
+        )}
+
+        {/* Cadastral Plots Layer (Vector Tiles from PostGIS) */}
+        {activeLayers.cadastralPlots && (
+          <Source 
+            id="cadastral-source" 
+            type="vector" 
+            tiles={[`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/gis/tiles/land_plots/{z}/{x}/{y}.pbf`]}
+          >
+            <Layer 
+              id="cadastral-fill" 
+              type="fill" 
+              source-layer="kopargaon_cadastral"
+              paint={{
+                'fill-color': [
+                  'match',
+                  ['get', 'category'],
+                  'Residential', '#fcd34d',
+                  'Commercial', '#f87171',
+                  'Agricultural', '#86efac',
+                  'Government/Public', '#93c5fd',
+                  '#cbd5e1'
+                ],
+                'fill-opacity': 0.6,
+                'fill-outline-color': '#475569'
+              }} 
+            />
+            <Layer 
+              id="cadastral-line" 
+              type="line" 
+              source-layer="kopargaon_cadastral"
+              paint={{
+                'line-color': '#1e293b',
+                'line-width': 1,
+                'line-opacity': 0.8
+              }} 
+            />
           </Source>
         )}
 

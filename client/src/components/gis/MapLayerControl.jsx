@@ -3,6 +3,7 @@ import { Layers, X, Eye, EyeOff, BarChart2 } from 'lucide-react';
 
 const GIS_LAYER_DEFINITIONS = [
   { id: 'wards', label: 'Municipal Wards', category: 'Boundaries', color: '#3b82f6' },
+  { id: 'cadastralPlots', label: 'Cadastral Plots (Mahabhunakasha)', category: 'Boundaries', color: '#f59e0b' },
   { id: 'landUse', label: 'Land Use Zoning', category: 'Boundaries', color: '#10b981' },
   { id: 'roads', label: 'Road Network', category: 'Infrastructure', color: '#64748b' },
   { id: 'buildings', label: 'Key Civic Buildings', category: 'Infrastructure', color: '#8b5cf6' },
