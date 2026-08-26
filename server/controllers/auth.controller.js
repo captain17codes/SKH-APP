@@ -2,9 +2,11 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { getUserByEmail, createUser } from '../models/user.model.js';
 import { smsService } from '../services/sms.service.js';
-import { isDatabaseAvailable } from '../config/db.js';
+import { query } from '../config/db.js';
+import { OAuth2Client } from 'google-auth-library';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'dummy-client-id');
 
 // @desc    Admin / Officer Login
 // @route   POST /api/auth/admin/login
@@ -14,24 +16,6 @@ export const login = async (req, res, next) => {
 
     if (!email || !password) {
       return res.status(400).json({ success: false, message: 'Please provide email and password' });
-    }
-
-    // Offline mock fallback for Admin Login
-    const dbOnline = await isDatabaseAvailable();
-    if (!dbOnline) {
-      if (email === 'admin@kopargaon.gov.in' && password === 'admin123') {
-        const token = jwt.sign(
-          { id: 'U1', role: 'Admin', name: 'Super Admin' },
-          JWT_SECRET,
-          { expiresIn: '1d' }
-        );
-        return res.status(200).json({
-          success: true,
-          token,
-          user: { id: 'U1', name: 'Super Admin', email: 'admin@kopargaon.gov.in', role: 'Admin' }
-        });
-      }
-      return res.status(401).json({ success: false, message: 'Invalid credentials (Offline Mode)' });
     }
 
     const user = await getUserByEmail(email);
@@ -97,9 +81,6 @@ export const logout = (req, res) => {
   });
 };
 
-// ---- Mock OTP & Google Logins for Hackathon ----
-const authOtpCodes = new Map();
-
 // @desc    Send Auth OTP
 // @route   POST /api/auth/otp/send
 export const sendAuthOtp = async (req, res) => {
@@ -109,67 +90,109 @@ export const sendAuthOtp = async (req, res) => {
   const isDev = process.env.DEV_MODE === 'true';
   const code = isDev ? '123456' : Math.floor(100000 + Math.random() * 900000).toString();
   
-  authOtpCodes.set(phone, code);
-  
   try {
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    await query(
+      `INSERT INTO otp_codes (phone, otp, expires_at) VALUES ($1, $2, $3) 
+       ON CONFLICT (phone) DO UPDATE SET otp = EXCLUDED.otp, expires_at = EXCLUDED.expires_at`,
+      [phone, code, expiresAt]
+    );
+
     await smsService.sendSms(phone, `Your Kopargaon Smart City auth code is: ${code}`);
     res.json({ success: true, message: `OTP sent to ${phone}` });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to send OTP via SMS gateway' });
+    console.error('OTP Error:', error);
+    res.status(500).json({ error: 'Failed to send OTP or save to database' });
   }
 };
 
 // @desc    Verify Auth OTP & Login
 // @route   POST /api/auth/otp/verify
-export const verifyAuthOtp = (req, res) => {
+export const verifyAuthOtp = async (req, res) => {
   const { phone, otp, role } = req.body;
   if (!phone || !otp) return res.status(400).json({ error: 'Phone and OTP required' });
   
-  if (authOtpCodes.get(phone) !== otp) {
-    return res.status(401).json({ error: 'Invalid OTP' });
+  try {
+    const otpResult = await query('SELECT otp, expires_at FROM otp_codes WHERE phone = $1', [phone]);
+    
+    if (otpResult.rows.length === 0 || otpResult.rows[0].otp !== otp) {
+      return res.status(401).json({ error: 'Invalid OTP' });
+    }
+    
+    if (new Date() > new Date(otpResult.rows[0].expires_at)) {
+      return res.status(401).json({ error: 'OTP Expired' });
+    }
+    
+    await query('DELETE FROM otp_codes WHERE phone = $1', [phone]);
+
+    // Create user if not exists
+    let userResult = await query('SELECT * FROM users WHERE phone = $1', [phone]);
+    let user;
+
+    if (userResult.rows.length === 0) {
+      const newUser = {
+        id: `CITIZEN-${Date.now()}`,
+        name: 'Citizen (Verified)',
+        email: `${phone}@citizen.local`,
+        phone,
+        role: role || 'Citizen',
+        password_hash: null
+      };
+      user = await createUser(newUser);
+    } else {
+      user = userResult.rows[0];
+    }
+
+    const token = jwt.sign(
+      { id: user.id, role: user.role, name: user.name, phone: user.phone },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({ success: true, token, user });
+  } catch (error) {
+    console.error('Verify OTP error:', error);
+    res.status(500).json({ error: 'Internal Server Error during OTP verification' });
   }
-  
-  authOtpCodes.delete(phone);
-
-  const user = {
-    id: `CITIZEN-${Date.now()}`,
-    name: 'Citizen (Verified)',
-    email: `${phone}@citizen.local`, // Fallback for components requiring email
-    phone,
-    role: role || 'Citizen'
-  };
-
-  const token = jwt.sign(
-    { id: user.id, role: user.role, name: user.name, phone: user.phone },
-    JWT_SECRET,
-    { expiresIn: '7d' }
-  );
-
-  res.json({
-    success: true,
-    token,
-    user
-  });
 };
 
-// @desc    Mock Google Login Redirect
-// @route   GET /api/auth/google
-export const googleLoginMock = (req, res) => {
-  const role = req.query.role || 'Business';
-  
-  const user = {
-    id: `BIZ-${Date.now()}`,
-    name: 'Demo Investor',
-    email: 'investor@example.com',
-    role
-  };
+// @desc    Google OAuth Verify Endpoint
+// @route   POST /api/auth/google/verify
+export const googleVerify = async (req, res) => {
+  const { credential, role } = req.body;
+  if (!credential) return res.status(400).json({ error: 'Google credential required' });
 
-  const token = jwt.sign(
-    { id: user.id, role: user.role, name: user.name },
-    JWT_SECRET,
-    { expiresIn: '1d' }
-  );
-  
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-  res.redirect(`${frontendUrl}/login?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+
+    const { email, name, sub } = payload;
+    let user = await getUserByEmail(email);
+
+    if (!user) {
+      const newUser = {
+        id: `GOOGLE-${sub}`,
+        name,
+        email,
+        phone: null,
+        role: role || 'Business',
+        password_hash: null
+      };
+      user = await createUser(newUser);
+    }
+
+    const token = jwt.sign(
+      { id: user.id, role: user.role, name: user.name },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({ success: true, token, user });
+  } catch (error) {
+    console.error('Google verification error:', error);
+    res.status(401).json({ error: 'Invalid Google credential' });
+  }
 };

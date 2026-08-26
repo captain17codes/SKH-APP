@@ -545,6 +545,10 @@ export const authService = {
     const res = await apiClient.post('/auth/admin/login', { email, password });
     return res.data;
   },
+  googleVerify: async (credential, role) => {
+    const res = await apiClient.post('/auth/google/verify', { credential, role });
+    return res.data;
+  },
   me: async () => {
     const res = await apiClient.get('/auth/me');
     return res.data;

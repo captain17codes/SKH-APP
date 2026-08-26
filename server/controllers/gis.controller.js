@@ -1,5 +1,6 @@
 import { getAllWards, getWardById, getAllInfrastructure, getAllRoads } from '../models/gis.model.js';
 import { getAllLandUse, getLandStatsByWard, getFragmentationIndex } from '../models/land.model.js';
+import { query } from '../config/db.js';
 
 // @desc    Get all wards with geometry
 // @route   GET /api/gis/wards
@@ -145,7 +146,7 @@ export const getWardLandStats = async (req, res, next) => {
   }
 };
 
-import { query } from '../config/db.js';
+
 
 // @desc    Generate PostGIS vector tile for cadastral plots
 // @route   GET /api/gis/tiles/land_plots/:z/:x/:y.pbf

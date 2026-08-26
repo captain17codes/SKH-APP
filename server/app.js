@@ -18,7 +18,10 @@ dotenv.config();
 const app = express();
 
 app.use(cors({
-  origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
+  origin: function(origin, callback) {
+    // Allow any origin for hackathon/demo deployment
+    return callback(null, true);
+  },
   credentials: true
 }));
 app.use(express.json());
