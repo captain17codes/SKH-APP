@@ -1,14 +1,40 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import Map, { NavigationControl } from 'react-map-gl';
+import Map, { NavigationControl } from 'react-map-gl/maplibre';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import { Layers, MapPin, CheckCircle2, ShieldAlert, GitCompare, Save, Trash2, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { scenarioService, gisService } from '../services/api';
+import { scenarioService } from '../services/api';
 import { KOPARGAON_CENTER } from '../data/mockData';
+
+// OSM tile style matching MapView.jsx
+const OSM_STYLE = {
+  version: 8,
+  sources: {
+    'osm-raster': {
+      type: 'raster',
+      tiles: [
+        'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
+      ],
+      tileSize: 256,
+      attribution: '&copy; OpenStreetMap contributors'
+    }
+  },
+  layers: [
+    {
+      id: 'osm-raster-layer',
+      type: 'raster',
+      source: 'osm-raster',
+      minzoom: 0,
+      maxzoom: 19
+    }
+  ]
+};
 
 const ScenarioPage = () => {
   const [activeTab, setActiveTab] = useState('draw'); // 'draw', 'list', 'compare'
@@ -290,7 +316,7 @@ const ScenarioPage = () => {
                   latitude: mapCenter[0],
                   zoom: 15
                 }}
-                mapStyle={`https://api.maptiler.com/maps/streets-v2/style.json?key=x`} // Fallback style, normally use app styles
+                mapStyle={OSM_STYLE}
                 style={{ width: '100%', height: '100%' }}
               >
                 <NavigationControl position="bottom-right" />

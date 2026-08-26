@@ -32,11 +32,14 @@ This file maintains a detailed record of the development progress, architecture 
 4. **Phase 4: Frontend — Project Execution Enhancements**
    - Enhanced `ProjectDetailsPage.jsx` to fetch and render milestones using a new timeline component.
    - Added forms to allow Admin/Officers to add new project milestones.
+   - Built a comprehensive Budget Tracking Breakdown card showing sanctioned budget, spent amount, remaining balance, burn rate per percent progress, and a dynamic utilization warning bar.
    - **Status:** ✅ 100% Working
 
 5. **Phase 5: Login Stubs & Polish**
    - Ensured `LoginPage.jsx` handles role-based default credentials correctly for dev/hackathon purposes.
    - OTP mechanism is functional (or properly mocked) through the backend `auth.service.js`.
+   - Fixed MapStyle bug in `ScenarioPage.jsx` to correctly use OSM tiles (maplibre-gl).
+   - Fixed SQL parameter injection count bug in `updateScenarioStatus` within `scenario.model.js`.
    - **Status:** ✅ 100% Working
 
 ### Technologies Used:

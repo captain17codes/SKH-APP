@@ -83,27 +83,23 @@ export const getScenarioById = async (id) => {
 };
 
 export const updateScenarioStatus = async (id, status, userId, role) => {
-  let sql = `UPDATE scenarios SET status = $1, updated_at = CURRENT_TIMESTAMP`;
-  const params = [status];
-  let paramCount = 2;
+  const isReviewer = role === 'ENGINEER' || role === 'PLANNER' || role === 'ADMIN';
 
-  if (role === 'ENGINEER') {
-    sql += `, reviewed_by_engineer = $${paramCount}`;
-    params.push(userId);
-  } else if (role === 'PLANNER' || role === 'ADMIN') {
-    sql += `, reviewed_by_planner = $${paramCount}`;
-    params.push(userId);
-  }
-  
-  sql += ` WHERE id = $${paramCount + (role === 'ENGINEER' || role === 'PLANNER' || role === 'ADMIN' ? 1 : 0)} RETURNING *`;
-  if (!(role === 'ENGINEER' || role === 'PLANNER' || role === 'ADMIN')) {
-    sql = `UPDATE scenarios SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *`;
-    params.push(id);
-  } else {
-    params.push(id);
+  if (!isReviewer) {
+    // Simple status update — no reviewer field
+    const result = await query(
+      `UPDATE scenarios SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *`,
+      [status, id]
+    );
+    return result.rows[0];
   }
 
-  const result = await query(sql, params);
+  // Status update + reviewer tracking
+  const reviewerColumn = role === 'ENGINEER' ? 'reviewed_by_engineer' : 'reviewed_by_planner';
+  const result = await query(
+    `UPDATE scenarios SET status = $1, ${reviewerColumn} = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING *`,
+    [status, userId, id]
+  );
   return result.rows[0];
 };
 

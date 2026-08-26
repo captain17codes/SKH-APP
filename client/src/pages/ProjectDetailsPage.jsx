@@ -484,6 +484,54 @@ const ProjectDetailsPage = () => {
               </button>
             </div>
           </div>
+
+          {/* Budget Tracking Breakdown */}
+          <div className="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-xs space-y-4">
+            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">Budget Tracking Breakdown</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-700">
+                <span className="block text-[10px] uppercase font-bold text-slate-400">Sanctioned Budget</span>
+                <span className="text-lg font-black text-slate-900 dark:text-slate-100">{budgetFormatted}</span>
+              </div>
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-700">
+                <span className="block text-[10px] uppercase font-bold text-slate-400">Spent to Date</span>
+                <span className="text-lg font-black text-blue-600 dark:text-blue-400">{spentFormatted}</span>
+              </div>
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-700">
+                <span className="block text-[10px] uppercase font-bold text-slate-400">Remaining</span>
+                <span className={`text-lg font-black ${(Number(project.budget) - Number(project.spent)) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                  {formatMoney(Number(project.budget) - Number(project.spent))}
+                </span>
+              </div>
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-700">
+                <span className="block text-[10px] uppercase font-bold text-slate-400">Burn Rate</span>
+                <span className="text-lg font-black text-amber-600 dark:text-amber-400">
+                  {project.progress > 0 ? `${((Number(project.spent) / Number(project.budget)) * 100 / project.progress * 100).toFixed(0)}%` : 'N/A'}
+                </span>
+                <span className="block text-[10px] text-slate-400 mt-0.5">per % progress</span>
+              </div>
+            </div>
+
+            {/* Budget vs Progress bar */}
+            <div className="space-y-2 pt-2">
+              <div className="flex justify-between text-xs font-bold">
+                <span className="text-slate-600 dark:text-slate-300">Budget Utilization</span>
+                <span className="text-blue-600">{metrics.budgetUtilization || 0}%</span>
+              </div>
+              <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
+                <div className={`h-3 rounded-full ${(metrics.budgetUtilization || 0) > 90 ? 'bg-rose-500' : (metrics.budgetUtilization || 0) > 70 ? 'bg-amber-500' : 'bg-blue-600'}`} style={{ width: `${Math.min(metrics.budgetUtilization || 0, 100)}%` }} />
+              </div>
+              <p className={`text-[11px] font-semibold p-2 rounded-lg ${
+                (metrics.budgetUtilization || 0) > (project.progress || 0)
+                  ? 'bg-rose-500/10 text-rose-600'
+                  : 'bg-emerald-500/10 text-emerald-600'
+              }`}>
+                {(metrics.budgetUtilization || 0) > (project.progress || 0)
+                  ? `⚠️ Budget outpacing progress: ${metrics.budgetUtilization}% spent vs ${project.progress}% completed. Potential cost overrun.`
+                  : `✓ Budget tracking within safe bounds relative to physical progress.`}
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
