@@ -1,4 +1,5 @@
 import { complaintPriorityService } from '../services/complaintPriorityService.js';
+import { smsService } from '../services/sms.service.js';
 
 // In-memory store (no DB required; swapped with PostGIS queries when available)
 let complaints = [
@@ -304,18 +305,22 @@ function resolveDept(category) {
 const mockOtpStore = new Map(); // token -> phone
 const mockOtpCodes = new Map(); // phone -> code
 
-export const sendOtp = (req, res) => {
+export const sendOtp = async (req, res) => {
   const { phone } = req.body;
   if (!phone) return res.status(400).json({ error: 'Phone number required' });
   
-  // Always use 123456 for demo purposes, or generate a random one
-  const code = '123456';
+  // Generate a real OTP or use 123456 if DEV_MODE
+  const isDev = process.env.DEV_MODE === 'true';
+  const code = isDev ? '123456' : Math.floor(100000 + Math.random() * 900000).toString();
+  
   mockOtpCodes.set(phone, code);
   
-  // In a real app, integrate Twilio/AWS SNS here
-  console.log(`[OTP SERVICE] Sent OTP ${code} to ${phone}`);
-  
-  res.json({ success: true, message: `OTP sent to ${phone}` });
+  try {
+    await smsService.sendSms(phone, `Your Kopargaon Smart City verification code is: ${code}`);
+    res.json({ success: true, message: `OTP sent to ${phone}` });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to send OTP via SMS gateway' });
+  }
 };
 
 export const verifyOtp = (req, res) => {

@@ -11,6 +11,8 @@ import {
   verifyOtp
 } from '../controllers/complaint.controller.js';
 
+import { protect, authorize } from '../middleware/auth.middleware.js';
+
 const router = express.Router();
 
 // GET  /api/complaints/hotspots  — MUST be before /:id route
@@ -23,9 +25,11 @@ router.post('/otp/verify', verifyOtp);
 // CRUD
 router.get('/', getAllComplaints);
 router.get('/:id', getComplaintById);
-router.post('/', createComplaint);
-router.patch('/:id', updateComplaint);
-router.post('/:id/upvote', upvoteComplaint);
-router.delete('/:id', deleteComplaint);
+router.post('/', createComplaint); // Open for citizens
+
+// Protected routes (Admin / Officers only)
+router.patch('/:id', protect, authorize('Admin', 'Officer'), updateComplaint);
+router.post('/:id/upvote', upvoteComplaint); // Open for citizens to upvote
+router.delete('/:id', protect, authorize('Admin'), deleteComplaint);
 
 export default router;

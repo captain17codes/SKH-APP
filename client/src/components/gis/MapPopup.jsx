@@ -32,6 +32,9 @@ const MapPopup = ({ data, type }) => {
           <p><span className="text-slate-500 dark:text-slate-400">Councillor:</span> {p.councillor || 'Shri Municipal Representative'}</p>
           <p><span className="text-slate-500 dark:text-slate-400">Active Infra Projects:</span> <span className="font-bold text-blue-600 dark:text-blue-400">{p.activeProjects || 4}</span></p>
           <p><span className="text-slate-500 dark:text-slate-400">Pending Complaints:</span> <span className="font-bold text-amber-600 dark:text-amber-400">{p.complaintsCount || 6}</span></p>
+          {p.calculatedAreaSqKm && (
+            <p><span className="text-slate-500 dark:text-slate-400">Turf.js Calc Area:</span> <span className="font-bold text-emerald-600 dark:text-emerald-400">{p.calculatedAreaSqKm} sq. km</span></p>
+          )}
         </div>
 
         <Link

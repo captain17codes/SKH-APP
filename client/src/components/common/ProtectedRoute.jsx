@@ -20,7 +20,10 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
+  // Normalize: DB stores 'Admin' but frontend routes use 'Administrator'
+  const normalizedRole = user.role === 'Admin' ? 'Administrator' : user.role;
+
+  if (allowedRoles && !allowedRoles.includes(normalizedRole)) {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center text-white">
         <ShieldAlert className="w-16 h-16 text-rose-500 mb-4" />
