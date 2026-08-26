@@ -1,5 +1,6 @@
 import projectRiskService from '../services/projectRiskService.js';
 import postgresService from '../services/postgresService.js';
+import { promoteProjectToDigitalTwin } from '../services/asBuiltService.js';
 
 // Fallback in-memory project store if database is offline
 let fallbackProjects = [
@@ -252,6 +253,11 @@ export const projectController = {
             id
           ]
         );
+        
+        // AS-BUILT UPDATE: Close the loop for the Digital Twin
+        if (updatedProject.status === 'COMPLETED' && updatedProject.progress === 100) {
+          await promoteProjectToDigitalTwin(updatedProject);
+        }
       } else {
         fallbackProjects[projectIndex] = updatedProject;
       }

@@ -26,7 +26,7 @@ import MapView from '../components/gis/MapView';
 import ProjectTimeline from '../components/projects/ProjectTimeline';
 import ProjectModal from '../components/projects/ProjectModal';
 import { StatusBadge, DepartmentBadge, RiskBadge } from '../components/common/Badge';
-import { projectService, complaintService } from '../services/api';
+import { projectService, complaintService, milestoneService } from '../services/api';
 import Loading from '../components/common/Loading';
 import toast from 'react-hot-toast';
 
@@ -57,6 +57,8 @@ const ProjectDetailsPage = () => {
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'risk' | 'timeline' | 'complaints' | 'photos' | 'documents'
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [nearbyComplaints, setNearbyComplaints] = useState([]);
+  const [milestones, setMilestones] = useState([]);
+  const [newMilestone, setNewMilestone] = useState({ name: '', target_date: '' });
 
   const fetchProjectDetails = async () => {
     setLoading(true);
@@ -73,6 +75,14 @@ const ProjectDetailsPage = () => {
           return false;
         });
         setNearbyComplaints(matching);
+
+        // Fetch milestones
+        try {
+          const mList = await milestoneService.getByProject(id);
+          setMilestones(mList);
+        } catch(e) {
+          console.error("Failed to load milestones:", e);
+        }
       }
     } catch {
       setError(true);
@@ -102,6 +112,23 @@ const ProjectDetailsPage = () => {
       await projectService.delete(id);
       toast.success(`Project #${id} deleted successfully`);
       navigate('/projects');
+    }
+  };
+
+  const handleAddMilestone = async () => {
+    if (!newMilestone.name || !newMilestone.target_date) {
+      toast.error('Name and target date are required');
+      return;
+    }
+    try {
+      await milestoneService.create(id, newMilestone);
+      toast.success('Milestone added successfully');
+      setNewMilestone({ name: '', target_date: '' });
+      // Refresh milestones
+      const mList = await milestoneService.getByProject(id);
+      setMilestones(mList);
+    } catch(e) {
+      toast.error('Failed to add milestone');
     }
   };
 
@@ -413,12 +440,50 @@ const ProjectDetailsPage = () => {
 
       {/* 3. TIMELINE TAB */}
       {activeTab === 'timeline' && (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 max-w-2xl shadow-xs">
-          <ProjectTimeline timeline={project.timeline || [
-            { date: startFormatted, title: "Project Approved & Initialized", status: "completed" },
-            { date: "Current Date", title: `Execution Progress: ${project.progress}%`, status: "in-progress" },
-            { date: completionFormatted, title: "Target Completion Date", status: "pending" }
-          ]} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-xs">
+            <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-4 text-sm">Project Milestones</h3>
+            {milestones.length > 0 ? (
+              <ProjectTimeline timeline={milestones.map(m => ({
+                title: m.name,
+                date: formatDate(m.target_date),
+                status: m.status === 'COMPLETED' ? 'completed' : m.status === 'IN_PROGRESS' ? 'in-progress' : 'pending'
+              }))} />
+            ) : (
+              <div className="text-slate-500 text-xs italic">No milestones defined yet. Add one to track progress.</div>
+            )}
+          </div>
+          
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-xs h-fit space-y-4">
+            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">Add New Milestone</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Milestone Name</label>
+                <input 
+                  type="text" 
+                  value={newMilestone.name}
+                  onChange={(e) => setNewMilestone({...newMilestone, name: e.target.value})}
+                  className="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-sm" 
+                  placeholder="e.g., Land Acquisition Complete"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Target Date</label>
+                <input 
+                  type="date" 
+                  value={newMilestone.target_date}
+                  onChange={(e) => setNewMilestone({...newMilestone, target_date: e.target.value})}
+                  className="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-sm" 
+                />
+              </div>
+              <button
+                onClick={handleAddMilestone}
+                className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow transition-colors text-xs"
+              >
+                Save Milestone
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
