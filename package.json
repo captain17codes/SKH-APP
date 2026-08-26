@@ -4,6 +4,11 @@
   "description": "Kopargaon Smart City GIS AI Platform",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "client",
+    "server",
+    "mcp-server"
+  ],
   "scripts": {
     "dev": "npm --prefix client run dev",
     "dev:client": "npm --prefix client run dev",
