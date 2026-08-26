@@ -1,5 +1,5 @@
 import projectRiskService from '../services/projectRiskService.js';
-import postgresService from '../../mcp-server/services/postgresService.js';
+import postgresService from '../services/postgresService.js';
 
 // Fallback in-memory project store if database is offline
 let fallbackProjects = [

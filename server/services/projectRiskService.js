@@ -1,4 +1,4 @@
-import postgresService from '../../mcp-server/services/postgresService.js';
+import postgresService from './postgresService.js';
 
 // Configurable risk thresholds
 const DEFAULT_THRESHOLDS = {
