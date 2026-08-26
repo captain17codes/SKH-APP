@@ -37,9 +37,14 @@ This file maintains a detailed record of the development progress, architecture 
 
 5. **Phase 5: Login Stubs & Polish**
    - Ensured `LoginPage.jsx` handles role-based default credentials correctly for dev/hackathon purposes.
-   - OTP mechanism is functional (or properly mocked) through the backend `auth.service.js`.
    - Fixed MapStyle bug in `ScenarioPage.jsx` to correctly use OSM tiles (maplibre-gl).
    - Fixed SQL parameter injection count bug in `updateScenarioStatus` within `scenario.model.js`.
+   - **Status:** ✅ 100% Working
+
+6. **Phase 6: Canonical V3 Data Migration (Medium Priority)**
+   - Migrated backend GIS map API endpoints (`gis.model.js` and `land.model.js`) to query the single canonical `master_gis_features` table instead of legacy mock tables (`infrastructure`, `roads`, `land_use`, etc).
+   - Migrated the WHAT-IF Scenario Engine (`scenario.model.js`) to run spatial intersection conflict queries against the `master_gis_features` table (`layer_name = 'buildings'`).
+   - Created `setup_mcp.sh` to provide an easy script for configuring a Supabase read-only PostgreSQL MCP connector for Claude Code.
    - **Status:** ✅ 100% Working
 
 ### Technologies Used:

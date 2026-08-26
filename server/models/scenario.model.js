@@ -8,17 +8,22 @@ export const createScenario = async ({ name, scenario_type, description, geometr
   // We use ST_Intersects to find if the scenario polygon overlaps with any building
   const conflictQuery = `
     SELECT count(*) as count
-    FROM kopargaon_buildings b
-    WHERE ST_Intersects(b.geometry, ST_GeomFromGeoJSON($1))
+    FROM master_gis_features b
+    WHERE b.layer_name = 'buildings' 
+    AND ST_Intersects(b.geometry, ST_GeomFromGeoJSON($1))
   `;
   const conflictRes = await query(conflictQuery, [geomString]);
   const conflictCount = parseInt(conflictRes.rows[0].count);
 
   // We can fetch details of up to 10 conflicting buildings
   const conflictDetailsQuery = `
-    SELECT id, "building", "addr:street"
-    FROM kopargaon_buildings b
-    WHERE ST_Intersects(b.geometry, ST_GeomFromGeoJSON($1))
+    SELECT 
+      id, 
+      COALESCE(name, properties->>'building', 'Unknown Building') as "building", 
+      COALESCE(properties->>'addr:street', properties->>'address', 'No address') as "addr:street"
+    FROM master_gis_features b
+    WHERE b.layer_name = 'buildings' 
+    AND ST_Intersects(b.geometry, ST_GeomFromGeoJSON($1))
     LIMIT 10
   `;
   const detailsRes = await query(conflictDetailsQuery, [geomString]);
