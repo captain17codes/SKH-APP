@@ -147,6 +147,7 @@ export const getWardLandStats = async (req, res, next) => {
 };
 
 
+
 // @desc    Generate PostGIS vector tile for cadastral plots
 // @route   GET /api/gis/tiles/land_plots/:z/:x/:y.pbf
 export const getLandPlotTiles = async (req, res, next) => {
