@@ -10,6 +10,8 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
 import toast from 'react-hot-toast';
+import { aiPlannerService } from '../services/api';
+import BusinessAiAssistant from '../components/ai/BusinessAiAssistant';
 
 const BusinessDashboardPage = () => {
   const { user, logout } = useAuth();
@@ -95,6 +97,7 @@ const BusinessDashboardPage = () => {
   const [aiChat, setAiChat] = useState([
     { sender: 'bot', text: 'Welcome to Kopargaon AI Site Intelligence! Ask me anything regarding commercial site viability, zoning laws, upcoming municipal tenders, or footfall density.' }
   ]);
+  const [isAiTyping, setIsAiTyping] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -234,52 +237,25 @@ const BusinessDashboardPage = () => {
     }, 2400);
   };
 
-  const handleAiSend = (e) => {
+  const handleAiSend = async (e) => {
     e.preventDefault();
-    if (!aiPrompt.trim()) return;
+    if (!aiPrompt.trim() || isAiTyping) return;
 
     const userMsg = aiPrompt;
     setAiChat(prev => [...prev, { sender: 'user', text: userMsg }]);
     setAiPrompt('');
+    setIsAiTyping(true);
 
-    setTimeout(() => {
-      let reply = "Based on Kopargaon's 11-layer vector GIS data, commercial plots along Station Road and Bypass Road offer the highest ROI due to upcoming 24m DP road widenings and low flood risk scores.";
-      
-      const lower = userMsg.toLowerCase();
-
-      // Check for Marathi Language / Script
-      const isMarathi = /[\u0900-\u097F]/.test(userMsg) && (lower.includes('नमस्कार') || lower.includes('व्यवसाय') || lower.includes('जागा') || lower.includes('जमीन') || lower.includes('कोपरगाव') || lower.includes('दुकान'));
-      // Check for Hindi Language / Script
-      const isHindi = /[\u0900-\u097F]/.test(userMsg) || lower.includes('नमस्ते') || lower.includes('व्यापार') || lower.includes('जगह') || lower.includes('जमीन') || lower.includes('दुकान');
-
-      if (isMarathi || lower.includes('marathi') || lower.includes('मराठी')) {
-        if (lower.includes('जागा') || lower.includes('जमीन') || lower.includes('plot')) {
-          reply = "कोपरगाव व्यापारी माहिती: स्टेशन रोड (वॉर्ड ३) आणि बायपास रस्ता (वॉर्ड ४) येथे २४ मीटर डीपी रस्ता रुंदीकरणामुळे व्यावसायिक गुंतवणुकीसाठी सर्वाधिक संधी उपलब्ध आहे.";
-        } else if (lower.includes('दुकान') || lower.includes('व्यवसाय') || lower.includes('shop')) {
-          reply = "किरकोळ विक्री आणि बँकिंगसाठी वॉर्ड ३ (स्टेशन भाग) मध्ये दररोज १४,००० हून अधिक पादचाऱ्यांची वर्दळ आहे. लॉजिस्टिक्ससाठी वॉर्ड ४ बायपास रस्ता उत्तम आहे.";
-        } else {
-          reply = "नमस्कार! मी आपला कोपरगाव व्यावसायिक AI सल्लागार आहे. मी आपणास जागा निवड, जीआयएस मॅपिंग आणि टेंडर माहिती पुरवू शकतो.";
-        }
-      } else if (isHindi || lower.includes('hindi') || lower.includes('हिंदी')) {
-        if (lower.includes('जगह') || lower.includes('जमीन') || lower.includes('plot')) {
-          reply = "कोपरगांव व्यावसायिक विश्लेषण: स्टेशन रोड (वार्ड 3) और बाईपास रोड (वार्ड 4) में 24 मीटर डीपी सड़क चौड़ीकरण के कारण व्यावसायिक निवेश के लिए सर्वोत्तम अवसर उपलब्ध हैं।";
-        } else if (lower.includes('दुकान') || lower.includes('व्यापार') || lower.includes('shop')) {
-          reply = "रिटेल और बैंकिंग व्यवसाय के लिए वार्ड 3 (स्टेशन क्षेत्र) में दैनिक 14,000+ लोगों का फुटफॉल है। लॉजिस्टिक्स के लिए वार्ड 4 बाईपास कॉरिडोर उपयुक्त है।";
-        } else {
-          reply = "नमस्ते! मैं आपका कोपरगांव व्यावसायिक AI सलाहकार हूँ। मैं स्थान विश्लेषण, जीआईएस मैपिंग और टेंडर जानकारी में आपकी मदद कर सकता हूँ।";
-        }
-      } else {
-        if (lower.includes('good for my business') || lower.includes('location')) {
-          reply = "To evaluate if a location is good for your business, run our 'AI Site Intelligence' analysis above! It combines footfall index, DP road width, power grid proximity, and municipal project activity.";
-        } else if (lower.includes('where') || lower.includes('open')) {
-          reply = "For retail and banking: Ward 3 Station Area offers peak footfall (14k+/day). For warehousing/logistics: Ward 4 Bypass Corridor has direct highway connectivity and commercial plot availability.";
-        } else if (lower.includes('land') || lower.includes('commercial')) {
-          reply = "Kopargaon Municipal Council currently has 3 commercial land lease plots open for bidding in Ward 3 and Ward 4 under the Business Opportunities section.";
-        }
-      }
-
-      setAiChat(prev => [...prev, { sender: 'bot', text: reply }]);
-    }, 500);
+    try {
+      const res = await aiPlannerService.queryAI(userMsg, 'auto', 'business');
+      setAiChat(prev => [...prev, { sender: 'bot', text: res.answer || res.text || 'No response provided.' }]);
+    } catch (err) {
+      console.error('Business AI Chat Error:', err);
+      toast.error('AI Assistant service encountered an error.');
+      setAiChat(prev => [...prev, { sender: 'bot', text: '⚠️ I am currently experiencing connection difficulties. Please try again later.' }]);
+    } finally {
+      setIsAiTyping(false);
+    }
   };
 
   return (
@@ -688,38 +664,7 @@ const BusinessDashboardPage = () => {
 
           {/* VIEW 8: AI BUSINESS ASSISTANT */}
           {activeView === 'ai-assistant' && (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
-                <Bot className="w-5 h-5 text-cyan-500" />
-                <span>AI Business Investment Advisor</span>
-              </h3>
-
-              <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 h-[350px] overflow-y-auto space-y-3 text-xs">
-                {aiChat.map((m, i) => (
-                  <div key={i} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-md p-3.5 rounded-2xl ${
-                      m.sender === 'user' ? 'bg-cyan-600 text-white rounded-br-none' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-bl-none'
-                    }`}>
-                      {m.text}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <form onSubmit={handleAiSend} className="flex gap-2 text-xs">
-                <input
-                  type="text"
-                  value={aiPrompt}
-                  onChange={e => setAiPrompt(e.target.value)}
-                  placeholder="Ask e.g. Is Ward 4 good for a solar logistics hub?"
-                  className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white"
-                />
-                <button type="submit" className="px-5 py-2.5 bg-cyan-600 text-white font-bold rounded-xl flex items-center space-x-1">
-                  <span>Send</span>
-                  <Send className="w-3.5 h-3.5" />
-                </button>
-              </form>
-            </div>
+            <BusinessAiAssistant />
           )}
     </div>
   );

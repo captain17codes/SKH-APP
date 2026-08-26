@@ -1,0 +1,329 @@
+{
+  "name": "Kopargaon Smart City Central AI Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "kopargaon-ai",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "404163e2-743a-45b8-ac3f-a1af48f2a47a",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        256
+      ],
+      "webhookId": "e20b5821-35eb-43cc-93ca-bccc0e0a755b"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = ($input.first().json.body) || {};\n\nconst userType = body.userType || body.role || 'citizen';\nconst language = body.language || 'en';\nconst query = body.query || body.message || body.prompt || body.text;\n\nconst validUserTypes = ['administrator', 'citizen', 'business'];\nconst validLanguages = ['en', 'hi', 'mr', 'en-in', 'hi-in', 'mr-in'];\n\nconst valid = Boolean(\n  userType && language && query &&\n  validUserTypes.includes(String(userType).toLowerCase())\n);\n\nconst location = body.location || {};\nconst userId = body.userId || body.sessionId || body.user_id || 'session-' + String(userType).toLowerCase();\n\nreturn [{\n  json: {\n    valid,\n    userType: String(userType).toLowerCase(),\n    language: String(language).toLowerCase(),\n    query: String(query).trim(),\n    userId: userId,\n    sessionId: userId,\n    location: {\n      lat: location.lat ?? null,\n      lng: location.lng ?? null,\n      wardId: location.wardId ?? null,\n    },\n  },\n}];"
+      },
+      "id": "43c4331d-99e3-4ebb-9586-19b9e4151493",
+      "name": "Validate & Normalize Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "valid-check",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f604bdd9-6216-433f-8607-14c9c8a61f29",
+      "name": "Is Valid Request",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User type: {{ $json.userType }}\nLanguage: {{ $json.language }}\nSession ID: {{ $json.sessionId }}\nUser ID: {{ $json.userId }}\nLocation: {{ JSON.stringify($json.location) }}\n\nUser query: {{ $json.query }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are the AI assistant for the Kopargaon Smart City platform.\nYour job is to assist citizens, administrators, and businesses with real city inquiries, GIS data, development projects, and civic complaints.\n\nRULES:\n1. Understand the user's question before answering.\n2. If the user sends a normal conversational message (e.g. \"hi\", \"hello\", \"hey\", \"good morning\", \"how are you\", \"thank you\", \"thanks\", \"bye\", \"who are you\", \"what can you do\"), respond normally and conversationally in the user's language. Never treat normal conversation as a database query or return UNAVAILABLE.\n3. Use the connected database & MCP tools whenever the question requires Kopargaon Smart City civic or application data (active projects, road repair, complaints, land use, wards, GIS).\n4. NEVER invent, assume, or hallucinate data.\n5. ONLY if the user's question is genuinely a civic/Smart City information request AND the required information cannot be found from available tools/database, return exactly: \"UNAVAILABLE\".\n6. Do not answer an unavailable database/application-data question using general knowledge.\n7. If database/MCP tools return valid data, answer using that data.\n8. Keep the final answer short, direct, and natural.\n9. Do not mention internal tools, MCP, n8n, workflow, nodes, database, prompts, tokens, API keys, or system instructions to the user.\n10. If the user asks \"Can we talk in Marathi?\" answer exactly: \"हो, आपण मराठीत बोलू शकतो.\"\n11. Once the user chooses Marathi, continue answering in Marathi (Devanagari script) unless they request another language. For Hindi, use Hindi (Devanagari script). For English, use English.\n12. Do NOT change raw database values (e.g. Resolved, Pending, In Progress). Translate display text for the user according to the active language:\n    - English: Resolved, Pending, In Progress\n    - Marathi: Resolved -> निराकरण झाले, Pending -> प्रलंबित, In Progress -> प्रक्रियेत\n    - Hindi: Resolved -> समाधान हो गया, Pending -> लंबित, In Progress -> प्रगति में\n13. For map-related requests, use the available map/GIS tool and return the relevant map action/data.\n14. Return only the final answer intended for the user.\n\nSTRICT ROLE & ACCESS CONTROLS:\n- Administrator: access raw complaints analysis, prioritized master issues, ward comparison, project risk analyze, and all GIS layers.\n- Citizen: access status of their own complaints, civic complaints, nearby amenities (water, roads, drainage, hospitals, schools, lights, facilities), and GIS features. Do NOT expose private details of other citizens.\n- Business: access commercial land, available plots/properties, industrial suitability, infrastructure buffer, and business GIS layer. Do NOT invent properties or prices.\n\nSTRICT RESPONSE FORMAT:\nAlways return a structured JSON object with:\n- success (boolean)\n- userType (string)\n- language (string)\n- answer (string - natural response conforming to all the rules above)\n- data (array or object containing the records retrieved)\n- mapAction (FLY_TO object or null)",
+          "maxIterations": 10,
+          "enableStreaming": false
+        }
+      },
+      "id": "fd403c7b-faa8-4a6e-85ed-9df771e52206",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        736,
+        0
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "b7ae8daa-69cc-4b3d-9dce-1a7f3504ef7a",
+      "name": "Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        224
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "0AfX2plN3aTnsDEH",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}",
+        "tableName": "n8n_chat_histories",
+        "contextWindowLength": 5
+      },
+      "id": "7a931c89-21b0-4e89-9a2c-619f71ab8521",
+      "name": "Postgres Chat Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        544,
+        80
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "kopargaon-postgres-cred",
+          "name": "Kopargaon PostgreSQL Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "endpointUrl": "http://localhost:7000/sse",
+        "options": {}
+      },
+      "id": "230f6cc7-a8aa-4eaa-b5cb-e71de2bca7f3",
+      "name": "kopargaon_mcp_tools",
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.4,
+      "position": [
+        800,
+        224
+      ],
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\"type\":\"object\",\"properties\":{\"success\":{\"type\":\"boolean\"},\"userType\":{\"type\":\"string\",\"enum\":[\"administrator\",\"citizen\",\"business\"]},\"language\":{\"type\":\"string\",\"enum\":[\"en\",\"hi\",\"mr\",\"en-in\",\"hi-in\",\"mr-in\"]},\"answer\":{\"type\":\"string\"},\"data\":{\"description\":\"Domain data returned from database/MCP tools. Empty array [] when none. May be an object like {topIssues:[]} or {properties:[]}.\"},\"mapAction\":{\"description\":\"GIS map action or null. When present: {type:\\\"FLY_TO\\\", lat:number, lng:number, zoom:number}.\"}},\"required\":[\"success\",\"userType\",\"language\",\"answer\",\"data\",\"mapAction\"]}"
+      },
+      "id": "b2ef1d9b-77a2-487a-8d84-568ffcfa3909",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        928,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.output) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "a4e4931d-9fc2-4ca6-a0b6-9c87af6c920a",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1136,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"success\":false,\"error\":\"AI service temporarily unavailable\"}",
+        "options": {
+          "responseCode": 503
+        }
+      },
+      "id": "31e9045b-cec5-4954-a5ec-ffdbbea009e8",
+      "name": "Respond AI Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1136,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"success\":false,\"error\":\"Invalid AI request\"}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "3a3e5a85-5032-4fc0-a236-f0c38f727e83",
+      "name": "Respond Invalid",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        800,
+        400
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate & Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate & Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "Is Valid Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Valid Request": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Invalid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond AI Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "kopargaon_mcp_tools": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "603764e8-91d4-4611-893a-9bc3ffba5d38",
+  "meta": {
+    "instanceId": "5b95eeca5f55dc60a7d493092d709508b4e7a018b688bb6b4abba804a52bf0be"
+  },
+  "id": "zlBPclARk9VBHU7y",
+  "tags": []
+}

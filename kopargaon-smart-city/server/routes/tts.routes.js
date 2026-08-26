@@ -21,10 +21,12 @@ router.post('/', async (req, res) => {
     });
     res.send(audioBuffer);
   } catch (error) {
-    console.error('TTS Endpoint Error:', error);
-    res.status(500).json({ 
+    console.warn('TTS Service Unavailable (Fallback Triggered):', error.message);
+    // Return 200 so the browser does not log a network error. 
+    // The invalid audio blob will cause audio.play() to fail, which elegantly triggers the browser TTS fallback in the frontend.
+    res.status(200).json({ 
       success: false,
-      error: 'Google Cloud TTS is not configured.'
+      error: error.message || 'Google Cloud TTS is not configured.'
     });
   }
 });

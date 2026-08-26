@@ -1,0 +1,276 @@
+{
+  "id": "kopargaon-ai-workflow",
+  "name": "Kopargaon AI Agent Pipeline",
+  "active": true,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "kopargaon-ai-agent",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "e229e614-3866-419f-b79e-a8de4a0d9e2b",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "agentType": "conversational",
+        "promptType": "define",
+        "text": "={{ $json.body.query || $json.body.message }}",
+        "options": {
+            "systemMessage": "=You are the central AI Agent for Kopargaon Smart City GIS AI Platform.\nYour response must directly address the user query: '{{$json.body.query || $json.body.message}}'\nLanguage: '{{$json.body.language || 'en-IN'}}'\nUser Role: '{{$json.body.role || $json.body.userType || 'citizen'}}'\n\nCRITICAL CONVERSATIONAL & DATABASE INSTRUCTIONS:\n1. If the user sends a normal conversational message (e.g. \"hi\", \"hello\", \"hey\", \"good morning\", \"how are you\", \"thank you\", \"thanks\", \"bye\", \"who are you\", \"what can you do\"), reply directly and conversationally in the user's language. Never treat normal conversation as a database query or return the database fallback.\n2. If the user asks a Kopargaon civic / Smart City information question (e.g. water supply schedule, projects in Ward 4, road repair status, complaint status, municipal projects, GIS/location info, infrastructure gaps, ward info), use the connected PostGIS/PostgreSQL tools and return the actual factual answer from the database.\n3. ONLY if the user's question is genuinely a civic/Smart City information request AND the required information cannot be found in the database, return: \"UNAVAILABLE\".\n4. If the user asks in or requests Marathi (e.g. \"Can we talk in Marathi?\", \"मराठीत बोलू शकतो का?\"), respond naturally in Marathi (Devanagari script), e.g.: \"हो, आपण मराठीत बोलू शकतो.\" and continue answering in Marathi.\n5. Return ONLY your direct, natural, user-facing answer."
+        }
+      },
+      "id": "e2118318-7b96-419b-ab29-06f15ccdfc22",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {
+          "temperature": 0.2,
+          "baseURL": "https://api.groq.com/openai/v1"
+        }
+      },
+      "id": "6fd2c2cc-a3cc-49ff-95f2-959c1180fbdf",
+      "name": "Grok LLM (OpenAI Connection)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        400,
+        500
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "grok-credentials",
+          "name": "Grok xAI Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.sessionId || $json.body.userId || 'default-session' }}",
+        "tableName": "n8n_chat_histories",
+        "contextWindowLength": 5
+      },
+      "id": "7a931c89-21b0-4e89-9a2c-619f71ab8521",
+      "name": "Postgres Chat Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        300,
+        450
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "kopargaon-postgres-cred",
+          "name": "Kopargaon PostgreSQL Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "Kopargaon_MCP_Tool",
+        "description": "Query the Kopargaon Smart City PostGIS database or spatial GIS service to retrieve real data. Supported tools: get_ward_details, get_projects, get_project_details, analyze_project_risk, get_projects_at_risk, get_land_use, find_suitable_locations, get_complaints, analyze_infrastructure_gap, analyze_complaint_priority, get_nearby_hospitals, get_nearby_schools, get_road_accessibility.",
+        "jsonSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"toolName\": {\n      \"type\": \"string\",\n      \"description\": \"The name of the MCP tool to execute (e.g. get_ward_details, find_suitable_locations, get_complaints, etc)\"\n    },\n    \"arguments\": {\n      \"type\": \"object\",\n      \"description\": \"The arguments JSON object for the tool.\"\n    }\n  },\n  \"required\": [\"toolName\"]\n}",
+        "jsCode": "const axios = require('axios');\nconst toolName = $parameter.toolName;\nconst args = $parameter.arguments || {};\nconst primaryUrl = process.env.MCP_SERVER_URL || 'http://localhost:7000';\ntry {\n  const response = await axios.post(`${primaryUrl}/call`, {\n    name: toolName,\n    arguments: args\n  }, { timeout: 8000 });\n  return JSON.stringify(response.data.result || response.data);\n} catch (e) {\n  try {\n    const cfResponse = await axios.post('https://jump-targeted-fighter-hardwood.trycloudflare.com/call', {\n      name: toolName,\n      arguments: args\n    }, { timeout: 8000 });\n    return JSON.stringify(cfResponse.data.result || cfResponse.data);\n  } catch (err) {\n    return `Error calling MCP tool ${toolName}: ${e.message}`;\n  }\n}"
+      },
+      "id": "aa123b36-a111-47ef-a0d9-b2de135e6123",
+      "name": "Kopargaon_MCP_Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1,
+      "position": [
+        600,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = items[0].json;\nconst webhookBody = ($node['Webhook']?.json?.body) || {};\nconst rawQuery = (webhookBody.query || webhookBody.message || '').toLowerCase().trim().replace(/[!?.,;]/g, '');\nlet rawText = inputData.output || inputData.text || inputData.answer || '';\nconst lang = (webhookBody.language || 'en').toLowerCase();\n\n// Conversational Handlers\nif (['hi', 'hello', 'hey', 'good morning', 'namaste', 'namaskar', 'नमस्कार', 'नमस्ते', 'शुभ सकाळ'].includes(rawQuery)) {\n  if (lang.includes('mr')) rawText = \"नमस्कार! 👋 मी कोपरगाव स्मार्ट सिटी AI नागरिक सहाय्यक आहे. मी तुम्हाला पाणीपुरवठा वेळापत्रक, चालू विकास प्रकल्प, रस्ता दुरुस्ती, तक्रारी आणि नागरी सुविधांबद्दल मदत करू शकतो. आज मी आपली काय मदत करू?\";\n  else if (lang.includes('hi')) rawText = \"नमस्ते! 👋 मैं कोपरगांव स्मार्ट सिटी AI नागरिक सहायक हूँ। मैं आपको जल आपूर्ति समय सारणी, विकास परियोजनाओं, सड़क मरम्मत, शिकायतों और नागरिक सुविधाओं के बारे में जानकारी दे सकता हूँ। आज मैं आपकी क्या मदद कर सकता हूँ?\";\n  else rawText = \"Hello! 👋 I am the Kopargaon Smart City AI Citizen Assistant. I can help you with water supply schedules, ongoing development projects, road repairs, civic complaints, and municipal services. How can I help you today?\";\n} else if (['how are you', 'how are u', 'how r u', 'कसे आहात', 'कसा आहेस', 'आप कैसे हैं', 'कैसे हो', 'क्या हाल है'].some(p => rawQuery.includes(p))) {\n  if (lang.includes('mr')) rawText = \"मी एकदम मजेत आणि पूर्णपणे कार्यरत आहे! 😊 कोपरगावच्या नागरिकांची सेवा करण्यासाठी मी २४ तास उपलब्ध आहे. तुम्हाला पाणीपुरवठा, वॉर्डातील प्रकल्प किंवा तक्रारींबद्दल काही विचारायचे आहे का?\";\n  else if (lang.includes('hi')) rawText = \"मैं बिल्कुल ठीक और आपकी सेवा के लिए तत्पर हूँ! 😊 कोपरगांव के नागरिकों की सहायता के लिए मैं 24x7 उपलब्ध हूँ। क्या आप जल आपूर्ति, विकास कार्यों या शिकायतों के बारे में कुछ जानना चाहते हैं?\";\n  else rawText = \"I am doing very well, thank you for asking! 😊 As your Kopargaon Smart City AI Assistant, I'm here 24/7 to help you with civic services, projects, water schedules, and grievances. How can I assist you today?\";\n} else if (['thank you', 'thanks', 'धन्यवाद', 'आभार', 'शुक्रिया'].some(p => rawQuery.includes(p))) {\n  if (lang.includes('mr')) rawText = \"आपले खूप खूप स्वागत आहे! 😊 कोपरगाव स्मार्ट सिटी सेवेचा भाग असल्याचा मला आनंद आहे. तुम्हाला आणखी काही माहिती हवी असल्यास नक्की विचारा!\";\n  else if (lang.includes('hi')) rawText = \"आपका बहुत-बहुत स्वागत है! 😊 कोपरगांव स्मार्ट सिटी सेवा में आपकी मदद करके मुझे खुशी हुई।\";\n  else rawText = \"You're very welcome! 😊 Glad I could help you with Kopargaon Smart City information. Please feel free to ask if you need anything else!\";\n} else if (['bye', 'goodbye', 'अलविदा', 'पुन्हा भेटू', 'निरोप'].some(p => rawQuery.includes(p))) {\n  if (lang.includes('mr')) rawText = \"निरोप! आपला दिवस आनंदाचा जावो. 👋 कोपरगाव स्मार्ट सिटी संदर्भात कधीही काही अडचण असल्यास पुन्हा नक्की संपर्क साधा!\";\n  else if (lang.includes('hi')) rawText = \"अलविदा! आपका दिन शुभ हो। 👋\";\n  else rawText = \"Goodbye! Have a wonderful day ahead. 👋 Feel free to reach out whenever you need assistance with Kopargaon Smart City services!\";\n} else if (rawQuery.includes('talk in marathi') || rawQuery.includes('speak in marathi') || rawQuery.includes('speak marathi') || rawQuery.includes('मराठीत बोलू')) {\n  rawText = \"हो, आपण मराठीत बोलू शकतो.\";\n} else if (rawQuery.includes('talk in hindi') || rawQuery.includes('speak in hindi') || rawQuery.includes('speak hindi') || rawQuery.includes('हिंदी में बात')) {\n  rawText = \"हाँ, बिल्कुल! हम हिंदी में बात कर सकते हैं।\";\n} else if (rawQuery.includes('talk in english') || rawQuery.includes('speak in english') || rawQuery.includes('speak english')) {\n  rawText = \"Yes, absolutely! We can talk in English.\";\n}\n\nlet cleanAnswer = '';\ntry {\n  let jsonStr = String(rawText).trim();\n  const jsonMatch = rawText.match(/```json\\s*([\\s\\S]*?)\\s*```/) || rawText.match(/```\\s*([\\s\\S]*?)\\s*```/);\n  if (jsonMatch) {\n    jsonStr = jsonMatch[1].trim();\n  }\n  const parsed = JSON.parse(jsonStr);\n  cleanAnswer = parsed.answer || parsed.text || parsed.output || parsed.response || rawText;\n} catch (e) {\n  cleanAnswer = rawText;\n}\n\nif (typeof cleanAnswer === 'object' && cleanAnswer !== null) {\n  cleanAnswer = cleanAnswer.answer || cleanAnswer.text || cleanAnswer.output || JSON.stringify(cleanAnswer);\n}\n\ncleanAnswer = String(cleanAnswer || '').trim();\n\nreturn [{\n  json: {\n    answer: cleanAnswer,\n    text: cleanAnswer,\n    output: cleanAnswer,\n    response: cleanAnswer,\n    success: true\n  }\n}];"
+      },
+      "id": "e229e614-3866-419f-b79e-a8de4a0d9e2c",
+      "name": "Final Clean Answer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        750,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "voiceId": "EST9Ui6982FZPSi7gCHi",
+        "url": "https://api.elevenlabs.io/v1/text-to-speech/EST9Ui6982FZPSi7gCHi",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "xi-api-key",
+              "value": "={{ $env.ELEVENLABS_API_KEY || '' }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"{{ $json.answer }}\",\n  \"model_id\": \"eleven_multilingual_v2\",\n  \"voice_settings\": {\n    \"stability\": 0.5,\n    \"similarity_boost\": 0.75\n  }\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "e229e614-3866-419f-b79e-a8de4a0d9e2e",
+      "name": "Convert Text to Speech",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        950,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const finalAnswerNode = $('Final Clean Answer').first()?.json || {};\nconst finalAnswer = finalAnswerNode.answer || finalAnswerNode.text || finalAnswerNode.output || '';\nconst binaryData = $input.first()?.binary;\n\nlet audioDataUri = null;\nif (binaryData && binaryData.data && binaryData.data.data) {\n  audioDataUri = `data:audio/mpeg;base64,${binaryData.data.data}`;\n}\n\nreturn [{\n  json: {\n    success: true,\n    answer: finalAnswer,\n    response: finalAnswer,\n    text: finalAnswer,\n    audio: audioDataUri,\n    audioAvailable: Boolean(audioDataUri)\n  },\n  binary: binaryData || {}\n}];"
+      },
+      "id": "e229e614-3866-419f-b79e-a8de4a0d9e2f",
+      "name": "Format Final Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1150,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "e229e614-3866-419f-b79e-a8de4a0d9e2d",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1350,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Grok LLM (OpenAI Connection)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kopargaon_MCP_Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Final Clean Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Clean Answer": {
+      "main": [
+        [
+          {
+            "node": "Convert Text to Speech",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Text to Speech": {
+      "main": [
+        [
+          {
+            "node": "Format Final Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Final Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

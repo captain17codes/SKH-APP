@@ -127,15 +127,50 @@ const AiPlannerPage = () => {
     };
   }, []);
 
-  // ─── Text-to-Speech (Google Cloud TTS Integration with Browser Fallback) ───
-  const speakText = async (text, langCode, msgId) => {
+  const unlockAudio = () => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        if (!window.__appAudioCtx) {
+          window.__appAudioCtx = new AudioCtx();
+        }
+        if (window.__appAudioCtx.state === 'suspended') {
+          window.__appAudioCtx.resume();
+        }
+      }
+    } catch (e) {}
+  };
+
+  const fallbackBrowserTTS = (text, targetLang, msgId) => {
+    if ('speechSynthesis' in window) {
+      const cleanText = stripMarkdownForTTS(text);
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.lang = targetLang;
+      utterance.volume = 1;
+      utterance.rate = 1;
+      utterance.onstart = () => setSpeakingMsgId(msgId || null);
+      utterance.onend = () => setSpeakingMsgId(null);
+      utterance.onerror = () => setSpeakingMsgId(null);
+      window.speechSynthesis.speak(utterance);
+    } else {
+      setSpeakingMsgId(null);
+    }
+  };
+
+  // ─── Text-to-Speech (Google Cloud TTS & ElevenLabs Integration with Browser Fallback) ───
+  const speakText = async (text, langCode, msgId, directAudioUrl = null) => {
     // Stop any existing speech before starting new one
     stopSpeaking();
 
     const targetLang = langCode || language;
     try {
-      // Call backend Google TTS service to synthesize speech and get local object URL
-      const audioUrl = await ttsService.speak(text, targetLang);
+      let audioUrl = directAudioUrl;
+      let needsRevoke = false;
+
+      if (!audioUrl) {
+        audioUrl = await ttsService.speak(text, targetLang);
+        needsRevoke = true;
+      }
       
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
@@ -146,7 +181,7 @@ const AiPlannerPage = () => {
 
       audio.onended = () => {
         setSpeakingMsgId(null);
-        URL.revokeObjectURL(audioUrl);
+        if (needsRevoke) URL.revokeObjectURL(audioUrl);
         if (audioRef.current === audio) {
           audioRef.current = null;
         }
@@ -155,34 +190,24 @@ const AiPlannerPage = () => {
       audio.onerror = (e) => {
         console.error("HTML5 Audio playback error:", e);
         setSpeakingMsgId(null);
-        URL.revokeObjectURL(audioUrl);
+        if (needsRevoke) URL.revokeObjectURL(audioUrl);
         if (audioRef.current === audio) {
           audioRef.current = null;
         }
+        fallbackBrowserTTS(text, targetLang, msgId);
       };
 
-      await audio.play();
-    } catch (err) {
-      console.error("Failed to generate/play Google Cloud TTS voice, falling back to browser TTS:", err);
-      
-      if ('speechSynthesis' in window) {
-        toast.success("Using browser's built-in voice as fallback.", { id: 'voice-fallback' });
-        const cleanText = stripMarkdownForTTS(text);
-        const utterance = new SpeechSynthesisUtterance(cleanText);
-        utterance.lang = targetLang;
-        
-        utterance.onstart = () => setSpeakingMsgId(msgId || null);
-        utterance.onend = () => setSpeakingMsgId(null);
-        utterance.onerror = () => {
-           setSpeakingMsgId(null);
-           toast.error("AI response generated, but voice output is temporarily unavailable.");
-        };
-        
-        window.speechSynthesis.speak(utterance);
-      } else {
-        toast.error("AI response generated, but voice output is temporarily unavailable.");
-        setSpeakingMsgId(null);
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.warn("Auto-play error or blocked, using browser speech fallback:", error);
+          if (audioRef.current === audio) audioRef.current = null;
+          fallbackBrowserTTS(text, targetLang, msgId);
+        });
       }
+    } catch (err) {
+      console.error("TTS generation failed, falling back to browser TTS:", err);
+      fallbackBrowserTTS(text, targetLang, msgId);
     }
   };
 
@@ -190,9 +215,7 @@ const AiPlannerPage = () => {
     if (audioRef.current) {
       try {
         audioRef.current.pause();
-      } catch (e) {
-        console.warn("Error pausing audio:", e);
-      }
+      } catch (e) {}
       audioRef.current = null;
     }
     if ('speechSynthesis' in window) {
@@ -220,6 +243,7 @@ const AiPlannerPage = () => {
 
   // ─── Send Query to AI (existing flow + language support) ───
   const handleSend = async (queryText, overrideLang) => {
+    unlockAudio();
     const query = queryText || input;
     if (!query.trim()) return;
 
@@ -237,21 +261,26 @@ const AiPlannerPage = () => {
     stopSpeaking();
 
     try {
+      console.log("🔥 AI PLANNER REQUEST:", { query, queryLang, userType: "administrator" });
       // Pass language to the existing AI Urban Planner API
       const res = await aiPlannerService.queryAI(query, queryLang);
+      console.log("🔥 AI PLANNER RESPONSE:", res);
 
       const aiMsgId = Date.now() + 1;
       const aiMsg = {
         id: aiMsgId,
         sender: 'ai',
-        text: res.answer || res.text || 'Analysis completed.',
+        text: res.answer || res.text || res.output || (res.data && res.data.answer) || 'Analysis completed.',
         data: res,
         lang: queryLang
       };
       setMessages(prev => [...prev, aiMsg]);
 
-      // Auto-speak the AI response aloud
-      speakText(aiMsg.text, queryLang, aiMsgId);
+      // Auto-speak the AI response aloud (fire and forget so it never blocks)
+      const directAudio = res?.audio || res?.data?.audio || null;
+      speakText(aiMsg.text, queryLang, aiMsgId, directAudio).catch(err => {
+        console.warn("Non-blocking TTS execution failed:", err);
+      });
 
       // ── Apply Map Action (existing functionality preserved) ──
       if (res.mapAction && res.mapAction.type === 'SHOW_CANDIDATES' && res.recommendations) {
@@ -293,6 +322,7 @@ const AiPlannerPage = () => {
 
   // ─── Voice Input (natural conversation — auto-send after recognition) ───
   const handleVoiceInput = () => {
+    unlockAudio();
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       toast.error('Voice input is not supported in this browser.');

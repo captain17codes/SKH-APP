@@ -215,12 +215,87 @@ const callGrok = async (systemInstruction, prompt) => {
   }
 };
 
+const isCasualGreeting = (text) => {
+  const q = (text || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[!?.,]+$/g, '');
+
+  const greetings = [
+    'hi',
+    'hello',
+    'hey',
+    'hii',
+    'hiii',
+    'good morning',
+    'good afternoon',
+    'good evening',
+    'namaste',
+    'namaskar',
+    'नमस्ते',
+    'नमस्कार',
+    'हाय',
+    'हॅलो'
+  ];
+
+  return greetings.includes(q);
+};
+
 export const aiService = {
-  processPlannerQuery: async (query, language) => {
+  processPlannerQuery: async (query, language, role = 'administrator', extraData = {}) => {
     let targetLang = language;
     if (!targetLang || targetLang === 'auto' || targetLang === 'en-IN') {
       targetLang = detectLanguageFromText(query);
     }
+
+    if (isCasualGreeting(query)) {
+      console.log(`[AI] Casual greeting detected. Skipping n8n/MCP pipeline.`);
+      console.log(`[AI] Greeting language: ${targetLang}`);
+
+      let greetingAnswer = 'Hello! 👋 I am the Kopargaon AI Urban Planner. I can help you with hospitals, schools, roads, water & drainage, infrastructure gaps, ongoing projects, and high-risk projects. What would you like to explore?';
+      
+      if (targetLang === 'hi-IN') {
+        greetingAnswer = 'नमस्ते! 👋 मैं कोपरगांव AI अर्बन प्लानर हूँ। मैं अस्पताल, स्कूल, सड़क, पानी और ड्रेनेज, इंफ्रास्ट्रक्चर गैप, चालू परियोजनाओं और जोखिम वाली परियोजनाओं के बारे में जानकारी दे सकता हूँ। आप क्या जानना चाहते हैं?';
+      } else if (targetLang === 'mr-IN') {
+        greetingAnswer = 'नमस्कार! 👋 मी कोपरगाव AI अर्बन प्लॅनर आहे. मी रुग्णालये, शाळा, रस्ते, पाणी व ड्रेनेज, पायाभूत सुविधांची कमतरता, चालू प्रकल्प आणि जोखमीतील प्रकल्प याबद्दल माहिती देऊ शकतो. तुम्हाला काय जाणून घ्यायचे आहे?';
+      }
+
+      return {
+        success: true,
+        answer: greetingAnswer,
+        recommendations: [],
+        mapAction: null,
+        sources: [],
+        mcpToolUsed: null,
+        mcpSuccess: true,
+        conversational: true,
+        language: targetLang
+      };
+    }
+
+    const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL;
+    if (n8nWebhookUrl) {
+      try {
+        console.log(`[AI] Forwarding query to n8n AI agent pipeline (${n8nWebhookUrl}) for role: ${role}`);
+        const response = await axios.post(n8nWebhookUrl, {
+          query,
+          language: targetLang,
+          role,
+          userType: role,
+          userId: extraData.userId || null,
+          location: extraData.location || null,
+          conversation: extraData.conversation || []
+        }, { timeout: 15000 });
+
+        if (response.data && (response.data.answer || response.data.output || response.data.text || (response.data.data && response.data.data.answer))) {
+          console.log('[AI] Successfully retrieved response from n8n AI agent:', response.data);
+          return response.data;
+        }
+      } catch (e) {
+        console.warn(`[AI] n8n pipeline execution failed: ${e.message}. Falling back to local solver.`);
+      }
+    }
+
     const intentInfo = detectPlannerIntent(query, targetLang);
     const langName = LANG_NAMES[targetLang] || 'English';
     console.log(`[AI] Query received: "${query}" (Target Language: ${langName})`);
@@ -267,36 +342,46 @@ export const aiService = {
           }
         }));
 
-        const synthesisSysInstruction = `You are a professional AI Urban Planner. Formulate planning recommendations based ONLY on provided tool data. Do not hallucinate coordinates or statistics. Return only a JSON object.\n\nCRITICAL LANGUAGE INSTRUCTION: The user is communicating in ${langName}. You MUST write your entire 'answer' field in ${langName}. All explanations, analysis text, and recommendations must be written in ${langName}. Keep technical terms, project IDs, coordinates, ward names, and numbers as-is. If the language is Marathi, respond in natural Marathi (Devanagari script). If Hindi, respond in Hindi (Devanagari script). If English, respond in English.`;
-        const synthesisPrompt = `Synthesize a spatial planning report for: "${query}".
-        Real GIS data gathered:
-        ${JSON.stringify(toolResults)}
+        const synthesisSysInstruction = "You are a helpful conversational AI Assistant for Kopargaon Smart City. You are talking directly to the user.\n" +
+"CRITICAL CONVERSATIONAL RULES:\n" +
+"1. Act like a real human assistant communicating directly with the user.\n" +
+"2. DO NOT generate a report unless the user explicitly asks for a report, detailed analysis, or structured list.\n" +
+"3. For normal questions, answer naturally and briefly (1-4 sentences).\n" +
+"4. NEVER repeat the user's question.\n" +
+"5. NEVER output system headers like \"Kopargaon AI Urban Planning Response\" or \"### GIS विश्लेषण\".\n" +
+"6. NEVER use unnecessary markdown like headings (##, ###), bold (**), or structural labels like \"Response:\", \"Answer:\". Use normal sentences.\n" +
+"7. If a list is genuinely necessary, use simple bullet points only.\n" +
+"8. ALWAYS answer in " + langName + ". If the language is Marathi, respond in natural Marathi (Devanagari). If Hindi, respond in Hindi (Devanagari). If English, respond in English.\n" +
+"9. Always end with ONE short helpful natural follow-up if applicable (e.g., \"Would you like me to show it on the map?\").";
 
-        Return ONLY a JSON object formatted exactly as:
-        {
-          "success": true,
-          "answer": "Formulated markdown explanation of the recommendation including reasons...",
-          "recommendations": [
-            {
-              "name": "Location Name",
-              "latitude": 19.883,
-              "longitude": 74.488,
-              "score": 91,
-              "reasons": [ "..." ]
-            }
-          ],
-          "mapAction": {
-            "type": "FLY_TO",
-            "latitude": 19.883,
-            "longitude": 74.488,
-            "zoom": 15
-          },
-          "sources": [ "PostgreSQL Database", "PostGIS Spatial Analysis", "OpenStreetMap" ]
-        }`;
+        const synthesisPrompt = "Formulate a natural, conversational response for the user's query: \"" + query + "\".\n" +
+        "Real data gathered from system:\n" +
+        JSON.stringify(toolResults) + "\n\n" +
+        "Return ONLY a JSON object formatted exactly as:\n" +
+        "{\n" +
+        "  \"success\": true,\n" +
+        "  \"answer\": \"Your natural, brief, conversational answer in " + langName + " here...\",\n" +
+        "  \"recommendations\": [\n" +
+        "    {\n" +
+        "      \"name\": \"Location Name\",\n" +
+        "      \"latitude\": 19.883,\n" +
+        "      \"longitude\": 74.488,\n" +
+        "      \"score\": 91,\n" +
+        "      \"reasons\": [ \"...\" ]\n" +
+        "    }\n" +
+        "  ],\n" +
+        "  \"mapAction\": {\n" +
+        "    \"type\": \"FLY_TO\",\n" +
+        "    \"latitude\": 19.883,\n" +
+        "    \"longitude\": 74.488,\n" +
+        "    \"zoom\": 15\n" +
+        "  },\n" +
+        "  \"sources\": [ \"Database\" ]\n" +
+        "}";
 
         const finalReport = await callGrok(synthesisSysInstruction, synthesisPrompt);
         if (finalReport) {
-          console.log(`[AI] Final response generated via Grok LLM`);
+          console.log("[AI] Final response generated via Grok LLM");
           return finalReport;
         }
       } catch (e) {
@@ -382,11 +467,11 @@ export const aiService = {
 
       let answerText = '';
       if (targetLang === 'mr-IN') {
-        answerText = `🏥 **कोपरगाव AI शहरी नियोजन शिफारस (रुग्णालय जागा शोध)**\n\nआम्ही **${wardId}** मध्ये नवीन **रुग्णालयासाठी** स्थानिक भौगोलिक उपयुक्ततेचे विश्लेषण केले आहे.\n\n### 📍 शिफारस केलेले ठिकाण: **${recs[0].name}**\n- **उपयुक्तता गुण**: **${recs[0].score}/100**\n- **अक्षांश/रेखांश**: [${recs[0].latitude.toFixed(5)}, ${recs[0].longitude.toFixed(5)}]\n\n#### 📝 प्रमुख उपयुक्तता कारणे:\n${recs[0].reasons.map(r => `- ✓ ${r}`).join('\n')}\n\n*माहिती स्रोत: पोस्टग्रेस/पोस्टजीआयएस भू-वापर डेटा आणि ओपनस्ट्रीटमॅप प्रदाता.*`;
+        answerText = "वॉर्ड " + wardId + " मध्ये " + recs[0].name + " जवळ नवीन रुग्णालयासाठी जागा उपलब्ध आहे. हा परिसर रुग्णालयासाठी योग्य दिसतो. हवे असल्यास मी हे नकाशावर दाखवू शकतो.";
       } else if (targetLang === 'hi-IN') {
-        answerText = `🏥 **कोपरगांव AI शहरी नियोजन अनुशंसा (अस्पताल स्थान चयन)**\n\nहमने **${wardId}** में नए **अस्पताल** के लिए स्थानिक उपयुक्तता का विश्लेषण किया है।\n\n### 📍 अनुशंसित स्थान: **${recs[0].name}**\n- **उपयुक्तता स्कोर**: **${recs[0].score}/100**\n- **अक्षांश/रेखांश**: [${recs[0].latitude.toFixed(5)}, ${recs[0].longitude.toFixed(5)}]\n\n#### 📝 प्रमुख उपयुक्तता कारण:\n${recs[0].reasons.map(r => `- ✓ ${r}`).join('\n')}\n\n*डेटा स्रोत: पोस्टग्रेएसक्यूएल/पोस्टजीआईएस भूमि उपयोग डेटा।*`;
+        answerText = "वार्ड " + wardId + " में " + recs[0].name + " के पास नए अस्पताल के लिए जगह उपलब्ध है। यह क्षेत्र अस्पताल के लिए उपयुक्त लगता है। अगर आप चाहें तो मैं इसे नक्शे पर दिखा सकता हूँ।";
       } else {
-        answerText = `🏥 **AI URBAN PLANNER RECOMMENDATION (Hospital Site Selection)**\n\nWe analyzed **${wardId}** for a new **hospital** site using local spatial suitability rules.\n\n### 📍 Recommended Location: **${recs[0].name}**\n- **Suitability Score**: **${recs[0].score}/100**\n- **Coordinates**: [${recs[0].latitude.toFixed(5)}, ${recs[0].longitude.toFixed(5)}]\n\n#### 📝 Key Suitability Reasons:\n${recs[0].reasons.map(r => `- ✓ ${r}`).join('\n')}\n\n*Data Sources: PostgreSQL/PostGIS Land Use Data & OpenStreetMap.*`;
+        answerText = "There is a suitable location for a new hospital in Ward " + wardId + " at " + recs[0].name + ". I can show you this location on the map if you'd like.";
       }
 
       return {
@@ -453,11 +538,11 @@ export const aiService = {
 
       let answerText = '';
       if (targetLang === 'mr-IN') {
-        answerText = `🏫 **कोपरगाव AI शहरी नियोजन शिफारस (शाळा/शैक्षणिक जागा शोध)**\n\nआम्ही **${wardId}** मध्ये नवीन **शाळेसाठी** भू-वापर व लोकसंख्या घनतेचे विश्लेषण केले आहे.\n\n### 📍 शिफारस केलेले ठिकाण: **${recs[0].name}**\n- **उपयुक्तता गुण**: **${recs[0].score}/100**\n- **अक्षांश/रेखांश**: [${recs[0].latitude.toFixed(5)}, ${recs[0].longitude.toFixed(5)}]\n\n#### 📝 प्रमुख उपयुक्तता कारणे:\n${recs[0].reasons.map(r => `- ✓ ${r}`).join('\n')}`;
+        answerText = "वॉर्ड " + wardId + " मध्ये " + recs[0].name + " येथे नवीन शाळेसाठी जागा उपलब्ध आहे. हा परिसर शैक्षणिक सुविधेसाठी योग्य दिसतो. हवे असल्यास मी हे नकाशावर दाखवू शकतो.";
       } else if (targetLang === 'hi-IN') {
-        answerText = `🏫 **कोपरगांव AI शहरी नियोजन अनुशंसा (स्कूल स्थान चयन)**\n\nहमने **${wardId}** में नए **स्कूल** के लिए उपयुक्त भूमि का विश्लेषण किया है।\n\n### 📍 अनुशंसित स्थान: **${recs[0].name}**\n- **उपयुक्तता स्कोर**: **${recs[0].score}/100**\n- **अक्षांश/रेखांश**: [${recs[0].latitude.toFixed(5)}, ${recs[0].longitude.toFixed(5)}]\n\n#### 📝 प्रमुख उपयुक्तता कारण:\n${recs[0].reasons.map(r => `- ✓ ${r}`).join('\n')}`;
+        answerText = "वार्ड " + wardId + " में " + recs[0].name + " के पास नए स्कूल के लिए जगह उपलब्ध है। यह क्षेत्र शैक्षणिक सुविधा के लिए उपयुक्त लगता है। अगर आप चाहें तो मैं इसे नक्शे पर दिखा सकता हूँ।";
       } else {
-        answerText = `🏫 **AI URBAN PLANNER RECOMMENDATION (School Site Selection)**\n\nWe analyzed **${wardId}** for a new **school/educational facility** site.\n\n### 📍 Recommended Location: **${recs[0].name}**\n- **Suitability Score**: **${recs[0].score}/100**\n- **Coordinates**: [${recs[0].latitude.toFixed(5)}, ${recs[0].longitude.toFixed(5)}]\n\n#### 📝 Key Suitability Reasons:\n${recs[0].reasons.map(r => `- ✓ ${r}`).join('\n')}`;
+        answerText = "There is a suitable location for a new school in Ward " + wardId + " at " + recs[0].name + ". I can show you this location on the map if you'd like.";
       }
 
       return {
@@ -497,11 +582,11 @@ export const aiService = {
 
       let answerText = '';
       if (targetLang === 'mr-IN') {
-        answerText = `🤖 **कोपरगाव शहर - ${gapAnalysis.ward || wardId} इन्फ्रास्ट्रक्चर गॅप (तूट) अहवाल**\n\nआम्ही पोस्टजीआयएस (PostGIS) द्वारे नागरिक तक्रारी व नागरी सुविधांचे विश्लेषण केले आहे:\n\n### 📋 आढळलेल्या महत्त्वाच्या त्रुटी:\n${gapAnalysis.gaps.map(g => `- **वर्गवारी: ${g.category}** (तीव्रता: **${g.severity}**)\n  *पुरावा:* ${g.evidence.join(' ')}`).join('\n')}\n\n#### 💡 शिफारस केलेली कृती योजना:\n- आरोग्य व शैक्षणिक तूट भरून काढण्यासाठी नवीन सार्वजनिक प्रकल्प मंजूर करा.\n- मुख्य रस्त्यांवरील सांडपाणी आणि जलनिस्सारण वाहिन्या दुरुस्त करा.`;
+        answerText = (gapAnalysis.ward || wardId) + " मध्ये काही पायाभूत सुविधांची कमतरता आढळली आहे, जसे की " + gapAnalysis.gaps.map(g => g.category).join(' आणि ') + ". यावर लवकर उपाययोजना करणे गरजेचे आहे.";
       } else if (targetLang === 'hi-IN') {
-        answerText = `🤖 **कोपरगांव शहर - ${gapAnalysis.ward || wardId} इन्फ्रास्ट्रक्चर गैप रिपोर्ट**\n\nपोस्टजीआईएस द्वारा नागरिक शिकायतों एवं नागरिक सुविधाओं का विश्लेषण किया गया है:\n\n### 📋 मुख्य बुनियादी समस्याएं:\n${gapAnalysis.gaps.map(g => `- **श्रेणी: ${g.category}** (गंभीरता: **${g.severity}**)\n  *साक्ष्य:* ${g.evidence.join(' ')}`).join('\n')}\n\n#### 💡 अनुशंसित कार्य योजना:\n- नए स्वास्थ्य और शैक्षणिक केंद्र प्रस्तावित करें।`;
+        answerText = (gapAnalysis.ward || wardId) + " में कुछ बुनियादी ढाँचे की कमियां पाई गई हैं, जैसे कि " + gapAnalysis.gaps.map(g => g.category).join(' और ') + "। इन पर जल्द ध्यान देने की आवश्यकता है।";
       } else {
-        answerText = `🤖 **KOPARGAON SMART CITY - ${gapAnalysis.ward || wardId} INFRASTRUCTURE GAP REPORT**\n\nAnalyzed spatial utility distributions and citizen grievance patterns:\n\n### 📋 Identified Infrastructure Gaps:\n${gapAnalysis.gaps.map(g => `- **Category: ${g.category}** (Severity: **${g.severity}**)\n  *Evidence:* ${g.evidence.join(' ')}`).join('\n')}\n\n#### 💡 Recommended Action Plan:\n- Prioritize new civic health nodes and stormwater channel maintenance in this ward.`;
+        answerText = "There are some infrastructure gaps identified in " + (gapAnalysis.ward || wardId) + ", specifically concerning " + gapAnalysis.gaps.map(g => g.category).join(' and ') + ". These require early attention.";
       }
 
       return {
@@ -529,11 +614,11 @@ export const aiService = {
 
       let answerText = '';
       if (targetLang === 'mr-IN') {
-        answerText = `💧 **कोपरगाव पाणी व जलनिस्सारण (Water & Drainage) समस्या विश्लेषण**\n\n**स्थानिक वॉर्ड (${wardId}) आणि शहरामधील पाणीपुरवठा व ड्रेनेज अहवाल:**\n\n### 🚨 मुख्य समस्या क्षेत्रे:\n1. **टिळक रस्ता / बायपास परिसर**: कमी दाबाने पाणीपुरवठा व गळती तक्रारी.\n2. **वॉर्ड ४ सांडपाणी वाहिनी**: पावसाळ्यात पाणी साचणे व चोक-अप समस्या.\n3. **गोदावरी नदीकाठ भाग**: मुख्य जलवाहिनी प्रेशर व्हॉल्व दुरुस्ती आवश्यक.\n\n#### 📋 प्रस्तावित उपाययोजना:\n- जलनिस्सारण वाहिनीचे डिजिटायझेशन व नवीन ड्रेनेज लाईन टाकणे.\n- अमृत जल योजनेअंतर्गत प्रलंबित कामे तातडीने पूर्ण करणे.`;
+        answerText = "वॉर्ड " + wardId + " मध्ये प्रामुख्याने पाणीपुरवठा आणि जलनिस्सारणाच्या काही समस्या आहेत. उदा. टिळक रस्ता परिसरात कमी दाबाने पाणी येणे. हवे असल्यास मी या समस्येचे ठिकाण नकाशावर दाखवू शकतो.";
       } else if (targetLang === 'hi-IN') {
-        answerText = `💧 **कोपरगांव जल आपूर्ति एवं जल निकासी (Water & Drainage) समस्या विश्लेषण**\n\n**वार्ड (${wardId}) रिपोर्ट:**\n\n### 🚨 मुख्य जल समस्याएं:\n1. **तिलक रोड / बायपास**: कम दबाव वाली जल आपूर्ति की शिकायतें।\n2. **वार्ड 4 ड्रेनेज लाइन**: जलजमाव की समस्या।\n\n#### 📋 प्रस्तावित समाधान:\n- नई जल निकासी पाइपलाइन और अमृत जल योजना का क्रियान्वयन।`;
+        answerText = "वार्ड " + wardId + " में मुख्य रूप से जल आपूर्ति और जल निकासी की कुछ समस्याएं हैं। उदाहरण के लिए, तिलक रोड क्षेत्र में कम दबाव से पानी आना। अगर आप चाहें तो मैं इस समस्या का स्थान नक्शे पर दिखा सकता हूँ।";
       } else {
-        answerText = `💧 **KOPARGAON WATER SUPPLY & DRAINAGE ANALYSIS**\n\n**Grievance and Spatial Pipeline Report (${wardId}):**\n\n### 🚨 Priority Problem Hotspots:\n1. **Tilak Road / Bypass Corridor**: Low water pressure and pipeline leakage issues.\n2. **Ward 4 Stormwater Line**: Waterlogging and drainage blockages during monsoon.\n\n#### 📋 Recommended Interventions:\n- Deploy pipe leak detection sensors and upgrade Ward 4 trunk drainage capacity.`;
+        answerText = "There are some water supply and drainage issues in Ward " + wardId + ", such as low water pressure in the Tilak Road area. I can show you the affected locations on the map if you'd like.";
       }
 
       return {
@@ -569,11 +654,11 @@ export const aiService = {
 
       let answerText = '';
       if (targetLang === 'mr-IN') {
-        answerText = `🛣️ **कोपरगाव रस्ते व वाहतूक (Roads & Transport) विश्लेषण**\n\n**नवीन रस्ता विकास आणि खड्डे दुरुस्ती प्राधान्य यादी:**\n\n### 📍 तातडीने कामाची गरज असलेले रस्ते:\n1. **वॉर्ड ४ येसगाव बायपास रस्ता** (प्रकल्प PRJ-2026-002): काम उशिराने चालू आहे (४८% पूर्ण).\n2. **स्टेशन रोड जोड रस्ता**: डांबरीकरण आणि फूटपाथ रुंदीकरण आवश्यक.\n3. **साईबाबा मंदिर मार्ग**: वाहतूक कोंडी टाळण्यासाठी सिग्नल यंत्रणा आवश्यक.\n\n#### 📋 शिफारस:\n- प्रलंबित बायपास रस्त्याचे काम त्वरित पूर्ण करून रस्ता सुरक्षेचे ऑडिट करावे.`;
+        answerText = "येसगाव बायपास रस्त्याचे (PRJ-2026-002) काम संथ गतीने चालू आहे. यासोबतच स्टेशन रोड जोड रस्त्याचे डांबरीकरण आवश्यक आहे. हवे असल्यास मी बायपास रस्त्याचे काम नकाशावर दाखवू शकतो.";
       } else if (targetLang === 'hi-IN') {
-        answerText = `🛣️ **कोपरगांव सड़क एवं परिवहन (Roads & Transport) विश्लेषण**\n\n### 📍 प्राथमिकता वाली सड़क परियोजनाएं:\n1. **वार्ड 4 यसगांव बायपास रोड** (PRJ-2026-002): कार्य में देरी (48% पूर्ण)।\n2. **स्टेशन रोड कनेक्टिंग मार्ग**: डामरीकरण आवश्यक।`;
+        answerText = "यसगांव बायपास रोड (PRJ-2026-002) का काम धीमी गति से चल रहा है। इसके साथ ही स्टेशन रोड कनेक्टिंग मार्ग का डामरीकरण आवश्यक है। अगर आप चाहें तो मैं बायपास रोड का काम नक्शे पर दिखा सकता हूँ।";
       } else {
-        answerText = `🛣️ **KOPARGAON ROADS & TRANSPORT INFRASTRUCTURE ANALYSIS**\n\n### 📍 Key Road Construction Priorities:\n1. **Ward 4 Yesgaon Bypass Road** (PRJ-2026-002): Delayed execution (48% actual progress vs 70% target).\n2. **Station Road Connector**: Asphalt resurfacing and junction improvement.\n\n#### 📋 Action Recommended:\n- Accelerate bypass road completion and clear road damage citizen complaints.`;
+        answerText = "The Ward 4 Yesgaon Bypass Road project is currently delayed. There is also a need for asphalt resurfacing on the Station Road Connector. I can show you the bypass road on the map if you'd like.";
       }
 
       return {
@@ -634,15 +719,11 @@ export const aiService = {
         }).join('\n\n');
         answerText = `🚨 **कोपरगाव स्मार्ट सिटी - तातडीने लक्ष देण्याची गरज असलेले प्रलंबित व धोक्यातील प्रकल्प**\n\nभौगोलिक तक्रारी आणि बजेट-प्रगती तफावतीनुसार तयार केलेली जोखीम यादी:\n\n${items}\n\n### 💡 नगरपालिका प्रशासनासाठी शिफारस:\nउच्च जोखीम असलेल्या प्रकल्पांचे जागेवर प्रत्यक्ष पाहणी करून निधी वितरण नियंत्रित करावे.`;
       } else if (targetLang === 'hi-IN') {
-        const items = rankedList.map((p, idx) => 
-          `${idx + 1}. **${p.name}** (${p.id}) — 🚨 **जोखिम: ${p.risk}** (स्कोर: **${p.score}/100**)\n   - प्रगति: **${p.progress}%**\n   - मुख्य समस्या: ${p.reasons[0]}`
-        ).join('\n\n');
-        answerText = `🚨 **तत्काल ध्यान देने योग्य उच्च जोखिम वाली परियोजनाएं**\n\n${items}`;
+        const items = rankedList.map((p) => p.name === 'Road Development — Ward 4' ? 'सड़क विकास — वार्ड 4' : p.name).join(', ');
+        answerText = "वर्तमान में " + items + " जैसी परियोजनाओं में देरी हो रही है और ये उच्च जोखिम वाली परियोजनाएं हैं। अगर आप चाहें तो मैं उनके स्थान नक्शे पर दिखा सकता हूँ।";
       } else {
-        const items = rankedList.map((p, idx) => 
-          `${idx + 1}. **${p.name}** (${p.id}) — 🚨 **Risk Level: ${p.risk}** (Score: **${p.score}/100**)\n   - Ward: ${p.ward} | Progress: **${p.progress}%**\n   - Key Issue: ${p.reasons[0]}`
-        ).join('\n\n');
-        answerText = `🚨 **SMART CITY PROJECTS REQUIRING IMMEDIATE ATTENTION**\n\nRanked risk list evaluated using PostGIS spatial complaints & budget-timeline gap analysis:\n\n${items}\n\n### 💡 Municipal Executive Recommendation:\nHigh & Critical risk projects require site verification and contractor review before releasing remaining funds.`;
+        const items = rankedList.map((p) => p.name).join(', ');
+        answerText = "Currently, projects like " + items + " are delayed and considered high risk. I can show you their locations on the map if you'd like.";
       }
 
       return {
@@ -690,14 +771,8 @@ export const aiService = {
 
       let answerText = '';
       if (targetLang === 'mr-IN') {
-        const pList = projects.map(p => `- **${p.name}** (${p.id}) — प्रगती: **${p.progress}%** | स्थिती: **${p.status}** | बजेट: ₹${((p.budget || 0)/10000000).toFixed(2)} कोटी`).join('\n');
-        answerText = `📊 **कोपरगाव चालू/प्रस्तावित प्रकल्प अहवाल**\n\nएकूण चालू प्रकल्प: **${projects.length}**\n- **एकूण मंजूर बजेट**: ₹${(totalBudget / 10000000).toFixed(2)} कोटी\n- **सरासरी काम प्रगती**: **${avgProgress}%**\n\n### 📋 प्रकल्पांची सूची:\n${pList}`;
-      } else if (targetLang === 'hi-IN') {
-        const pList = projects.map(p => `- **${p.name}** (${p.id}) — प्रगति: **${p.progress}%** | स्थिति: **${p.status}**`).join('\n');
-        answerText = `📊 **कोपरगांव चालू परियोजनाएं**\n\nकुल चालू परियोजनाएं: **${projects.length}**\n\n### 📋 परियोजना सूची:\n${pList}`;
-      } else {
-        const pList = projects.map(p => `- **${p.name}** (${p.id}) — Progress: **${p.progress}%** | Status: **${p.status}** | Budget: ₹${((p.budget || 0)/10000000).toFixed(2)} Cr`).join('\n');
-        answerText = `📊 **KOPARGAON ACTIVE SMART CITY PROJECTS PORTFOLIO**\n\nFound **${projects.length}** active/approved projects:\n- **Total Budget**: ₹${(totalBudget / 10000000).toFixed(2)} Cr\n- **Average Physical Progress**: **${avgProgress}%**\n\n### 📋 Active Project Directory:\n${pList}`;
+        const pList = projects.map(p => p.name).slice(0, 3).join(', ');
+        answerText = "There are currently " + projects.length + " active projects in the city, including " + pList + ". I can provide more details or show a specific project on the map if you'd like.";
       }
 
       return {
@@ -750,7 +825,7 @@ export const aiService = {
           .replace('Site verification of physical asphalt work required', 'प्रत्यक्ष डांबरीकरणाच्या कामाची जागेवर प्रत्यक्ष पडताळणी आवश्यक')
           .replace('Address drainage grievances on bypass', 'बायपासवरील ड्रेनेज तक्रारींचे निवारण करा')
         );
-        answerText = `🚧 **प्रकल्प विश्लेषण: ${pName} (${analysis.projectId || pId})**\n\n**AI जोखीम श्रेणी:** 🚨 **${pRisk}**\n**जोखीम गुण:** **${analysis.score}/100**\n\n### 📊 महत्त्वाचे निर्देशांक:\n- **अपेक्षित प्रगती**: ${analysis.metrics?.expectedProgress || 70}%\n- **प्रत्यक्ष प्रगती**: ${analysis.metrics?.actualProgress || 48}%\n- **प्रगती तफावत**: ${analysis.metrics?.progressGap || -22}%\n- **बजेट वापर**: ${analysis.metrics?.budgetUtilization || 78}%\n- **परिसरातील तक्रारी**: ${analysis.metrics?.nearbyComplaintsCount || 12}\n\n### 🤖 AI निष्कर्ष:\n"${pReasonsTranslated.join('. ')}."\n\n### 📋 उपाययोजना:\n${pRecommendationsTranslated.map(r => `• ${r}`).join('\n')}`;
+        answerText = pName + " या प्रकल्पाचे काम अपेक्षित वेळेपेक्षा मागे आहे (प्रगती: " + (analysis.metrics?.actualProgress || 48) + "%). हवे असल्यास मी हा प्रकल्प नकाशावर दाखवू शकतो.";
       } else if (targetLang === 'hi-IN') {
         const pName = analysis.projectName === "Road Development — Ward 4" ? "सड़क विकास — वार्ड 4" : analysis.projectName;
         const pRisk = analysis.risk === "HIGH" ? "उच्च" : analysis.risk;
@@ -766,9 +841,9 @@ export const aiService = {
           .replace('Site verification of physical asphalt work required', 'भौतिक डामर कार्य का स्थल सत्यापन आवश्यक')
           .replace('Address drainage grievances on bypass', 'बायपास पर जल निकासी की शिकायतों का निवारण करें')
         );
-        answerText = `🚧 **परियोजना विश्लेषण: ${pName} (${analysis.projectId || pId})**\n\n**जोखिम स्तर:** 🚨 **${pRisk}**\n**जोखिम स्कोर:** **${analysis.score}/100**\n\n### 📊 मुख्य बिंदु:\n- **अपेक्षित प्रगति**: ${analysis.metrics?.expectedProgress || 70}%\n- **वास्तविक प्रगति**: ${analysis.metrics?.actualProgress || 48}%\n- **प्रगति का अंतर**: ${analysis.metrics?.progressGap || -22}%\n- **बजट उपयोग**: ${analysis.metrics?.budgetUtilization || 78}%\n- **पास की शिकायतें**: ${analysis.metrics?.nearbyComplaintsCount || 12}\n\n### 🤖 AI मूल्यांकन:\n"${pReasonsTranslated.join('. ')}."\n\n### 📋 अनुशंसित कार्रवाई:\n${pRecommendationsTranslated.map(r => `• ${r}`).join('\n')}`;
+        answerText = pName + " परियोजना का काम अपेक्षित समय से पीछे चल रहा है (प्रगति: " + (analysis.metrics?.actualProgress || 48) + "%)। अगर आप चाहें तो मैं इस परियोजना को नक्शे पर दिखा सकता हूँ।";
       } else {
-        answerText = `🚧 **PROJECT ANALYSIS: ${analysis.projectName} (${analysis.projectId || pId})**\n\n**AI Risk Level:** 🚨 **${analysis.risk}**\n**Risk Score:** **${analysis.score}/100**\n\n### 📊 Performance Metrics:\n- **Expected progress**: ${analysis.metrics?.expectedProgress}%\n- **Actual progress**: ${analysis.metrics?.actualProgress}%\n- **Progress gap**: ${analysis.metrics?.progressGap}%\n- **Budget utilization**: ${analysis.metrics?.budgetUtilization}%\n- **Nearby unresolved grievances**: ${analysis.metrics?.nearbyComplaintsCount}\n\n### 🤖 AI Assessment:\n*"${(analysis.reasons || []).join('. ')}."*\n\n### 📋 Recommended Action:\n${(analysis.recommendations || []).map(r => `• ${r}`).join('\n')}`;
+        answerText = "The " + analysis.projectName + " project is currently delayed with " + (analysis.metrics?.actualProgress) + "% progress. I can show you this project on the map if you'd like.";
       }
 
       return {
@@ -825,11 +900,11 @@ export const aiService = {
 
     let answerText = '';
     if (targetLang === 'mr-IN') {
-      answerText = `🏙️ **कोपरगाव AI नागरी नियोजन व डेटा विश्लेषक (Kopargaon Urban Planning Response)**\n\nतुमचा प्रश्न: *"${query}"*\n\n### 📊 कोपरगाव शहर GIS सद्यस्थिती (${wardStats?.name || wardId}):\n- **लोकसंख्या**: ~${wardStats?.population || '३५,०००'}\n- **क्षेत्रफळ**: ${wardStats?.area || 3.5} चौ.किमी\n- **सक्रिय प्रकल्प**: ${wardStats?.activeProjects || 4} स्मार्ट सिटी प्रकल्प\n- **नोंदणीकृत नागरी तक्रारी**: ${wardStats?.complaints || 12} प्रकरणांचे निवारण सुरू\n\n#### 💡 नागरी नियोजन शिफारस:\nकोपरगाव शहराच्या शाश्वत विकासासाठी येसगाव बायपास व्यावसायिक क्षेत्र आणि वॉर्ड ४ मधील रस्ते व सांडपाणी प्रकल्पांना प्रथम प्राधान्य देणे आवश्यक आहे. अधिक तपशीलासाठी हॉस्पिटल, शाळा, रस्ते किंवा प्रलंबित प्रकल्पांबद्दल विचारा.`;
+      answerText = `तुम्ही विचारलेला प्रश्न कोपरगावच्या नागरी नियोजनाशी संबंधित आहे. सद्यस्थितीत ${wardStats?.name || wardId} ची लोकसंख्या सुमारे ${wardStats?.population || '३५,०००'} असून येथे ${wardStats?.activeProjects || 4} प्रकल्प चालू आहेत. तुम्हाला कोणत्याही विशिष्ट प्रकल्पाची, रस्त्यांची किंवा रुग्णालयांची माहिती हवी असल्यास मला विचारू शकता.`;
     } else if (targetLang === 'hi-IN') {
-      answerText = `🏙️ **कोपरगांव AI शहरी नियोजन और जीआईएस इंटेलिजेंस (Kopargaon Urban Planning Response)**\n\nआपका प्रश्न: *"${query}"*\n\n### 📊 कोपरगांव नगर पालिका जीआईएस अवलोकन (${wardStats?.name || wardId}):\n- **जनसंख्या**: ~${wardStats?.population || '35,000'}\n- **वार्ड क्षेत्रफल**: ${wardStats?.area || 3.5} वर्ग किमी\n- **सक्रिय स्मार्ट परियोजनाएं**: ${wardStats?.activeProjects || 4} परियोजनाएं प्रगति पर हैं\n- **दर्ज शिकायतें**: ${wardStats?.complaints || 12} सक्रिय मामले\n\n#### 💡 शहरी नियोजन अनुशंसा:\nकोपरगांव के सतत विकास के लिए यसगांव बायपास व्यावसायिक क्षेत्र और वार्ड 4 सड़क-जल निकासी बुनियादी ढांचे पर ध्यान केंद्रित करना आवश्यक है। अस्पताल, स्कूल, पानी, सड़क या परियोजना में देरी के बारे में विशेष प्रश्न पूछें।`;
+      answerText = `आपका प्रश्न कोपरगांव के शहरी नियोजन से संबंधित है। वर्तमान में ${wardStats?.name || wardId} की जनसंख्या लगभग ${wardStats?.population || '35,000'} है और यहाँ ${wardStats?.activeProjects || 4} परियोजनाएं चल रही हैं। यदि आपको किसी विशिष्ट परियोजना, सड़कों या अस्पतालों की जानकारी चाहिए तो आप मुझसे पूछ सकते हैं।`;
     } else {
-      answerText = `🏙️ **KOPARGAON AI URBAN PLANNING & GIS INTELLIGENCE**\n\nYour Query: *"${query}"*\n\n### 📊 Kopargaon Municipal GIS Overview (${wardStats?.name || wardId}):\n- **Population**: ~${wardStats?.population || '35,000'}\n- **Ward Area**: ${wardStats?.area || 3.5} sq km\n- **Active Smart Projects**: ${wardStats?.activeProjects || 4} projects underway\n- **Logged Grievances**: ${wardStats?.complaints || 12} active cases\n\n#### 💡 Urban Planning Insight:\nFor optimal civic growth in Kopargaon, focus development on Yesgaon Bypass commercial zone and complete Ward 4 road-drainage infrastructure. Ask specifically about hospitals, schools, water, roads, or project delays for deeper spatial analysis.`;
+      answerText = `Your question is related to Kopargaon's urban planning. Currently, ${wardStats?.name || wardId} has a population of around ${wardStats?.population || '35,000'} and ${wardStats?.activeProjects || 4} active projects. If you need details on specific projects, roads, or hospitals, feel free to ask.`;
     }
 
     return {

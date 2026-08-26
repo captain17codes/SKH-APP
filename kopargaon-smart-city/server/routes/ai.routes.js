@@ -6,18 +6,21 @@ const router = express.Router();
 
 // AI Urban Planner Query Endpoint
 router.post('/urban-planner', async (req, res) => {
-  const { query, language } = req.body;
+  const { query, language, role, userType, userId, location, conversation } = req.body;
+  console.log('AI PLANNER REQUEST (Backend Route):', req.body);
   if (!query) {
     return res.status(400).json({ error: 'Query is required' });
   }
   try {
-    const result = await aiService.processPlannerQuery(query, language || 'en-IN');
+    const activeRole = role || userType || 'administrator';
+    const result = await aiService.processPlannerQuery(query, language || 'en-IN', activeRole, { userId, location, conversation });
+    console.log('AI PLANNER RESPONSE (Backend Route):', result);
     
     // Ensure the response meets the exact requested structure:
     // { success, answer, recommendations, mapAction, sources }
     res.json({
       success: result.success !== undefined ? result.success : true,
-      answer: result.answer || result.text || 'No description provided.',
+      answer: result.answer || result.text || result.output || (result.data && result.data.answer) || 'No description provided.',
       recommendations: result.recommendations || [],
       mapAction: result.mapAction || null,
       sources: result.sources || []

@@ -7,6 +7,8 @@
     "dev": "npm --prefix client run dev",
     "dev:client": "npm --prefix client run dev",
     "dev:server": "npm --prefix server run dev",
+    "server": "npm --prefix server run dev",
+    "mcp": "npm --prefix mcp-server start",
     "start:mcp": "npm --prefix mcp-server start",
     "start:server": "npm --prefix server start",
     "build:client": "npm --prefix client run build"

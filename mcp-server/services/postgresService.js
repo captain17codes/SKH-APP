@@ -58,13 +58,20 @@ const pointInPolygon = (point, ring) => {
 
 // Loader helpers for static JSON files
 const loadLocalGeoJSON = (filename) => {
-  try {
-    const filePath = path.resolve(process.cwd(), '../client/src/data/gis', filename);
-    if (fs.existsSync(filePath)) {
-      return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+  const possiblePaths = [
+    path.resolve(process.cwd(), 'client/src/data/gis', filename),
+    path.resolve(process.cwd(), '../client/src/data/gis', filename),
+    path.resolve(process.cwd(), 'src/data/gis', filename),
+    path.resolve('c:/Users/chava/OneDrive/Desktop/SKH/client/src/data/gis', filename)
+  ];
+  for (const filePath of possiblePaths) {
+    try {
+      if (fs.existsSync(filePath)) {
+        return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      }
+    } catch (e) {
+      console.error(`Failed to load local GeoJSON file at ${filePath}:`, e);
     }
-  } catch (e) {
-    console.error(`Failed to load local GeoJSON file: ${filename}`, e);
   }
   return { type: 'FeatureCollection', features: [] };
 };
@@ -153,6 +160,75 @@ export const postgresService = {
       };
     }
     return loadLocalGeoJSON('land_use.geojson');
+  },
+
+  // --------------------------------------------------
+  // COMPLAINTS DATA API
+  // --------------------------------------------------
+  getComplaints: async (wardId, status, category) => {
+    let list = [];
+    if (await postgresService.isDatabaseAvailable()) {
+      try {
+        const res = await postgresService.query(
+          `SELECT id, title, category, ward_id as "ward", location, reported_date as "reportedDate", status, priority, description, ST_AsGeoJSON(geometry)::json as geometry FROM complaints`
+        );
+        list = res.rows.map(row => ({
+          ...row,
+          coordinates: row.geometry?.coordinates ? [row.geometry.coordinates[1], row.geometry.coordinates[0]] : null
+        }));
+      } catch (err) {
+        list = [];
+      }
+    }
+    if (!list.length) {
+      try {
+        const mockPaths = [
+          path.resolve(process.cwd(), 'client/src/data/mockData.js'),
+          path.resolve(process.cwd(), '../client/src/data/mockData.js'),
+          path.resolve('c:/Users/chava/OneDrive/Desktop/SKH/client/src/data/mockData.js')
+        ];
+        for (const mp of mockPaths) {
+          if (fs.existsSync(mp)) {
+            const fileContent = fs.readFileSync(mp, 'utf-8');
+            const match = fileContent.match(/export const mockComplaints\s*=\s*(\[[\s\S]*?\]);/);
+            if (match) {
+              const parsed = Function('"use strict";return (' + match[1] + ')')();
+              list = parsed.map(c => ({
+                id: c.id,
+                title: c.title,
+                category: c.category,
+                status: c.status,
+                priority: c.priority,
+                ward: c.ward,
+                location: c.location,
+                description: c.description,
+                createdAt: c.createdAt,
+                coordinates: c.coordinates
+              }));
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load mockComplaints in postgresService', e);
+      }
+    }
+
+    if (wardId) {
+      const wardNum = wardId.replace(/\D/g, '');
+      list = list.filter(c => {
+        if (!c.ward) return false;
+        const cw = c.ward.toLowerCase();
+        const wId = wardId.toLowerCase();
+        return cw.includes(wId) || (wardNum && (cw.includes(`ward ${wardNum}`) || cw.includes(`w${wardNum}`) || cw === wardNum));
+      });
+    }
+    if (status) {
+      list = list.filter(c => (c.status || '').toLowerCase().includes(status.toLowerCase()));
+    }
+    if (category) {
+      list = list.filter(c => (c.category || '').toLowerCase().includes(category.toLowerCase()));
+    }
+    return list;
   },
 
   // --------------------------------------------------
@@ -313,21 +389,19 @@ export const postgresService = {
     if (await postgresService.isDatabaseAvailable()) {
       try {
         const res = await postgresService.query(`SELECT * FROM complaints ORDER BY created_at DESC`);
-        if (res.rows.length > 0) {
-          list = res.rows.map(r => ({
-            id: r.id,
-            title: r.title,
-            category: r.category,
-            ward: r.ward,
-            location: r.location,
-            status: r.status,
-            priority: r.priority,
-            aiScore: r.ai_score || r.aiScore || 50,
-            aiReasons: r.ai_reasons || r.aiReasons || [],
-            coordinates: r.latitude && r.longitude ? [Number(r.latitude), Number(r.longitude)] : null,
-            upvotes: r.upvotes || 0
-          }));
-        }
+        list = res.rows.map(r => ({
+          id: r.id,
+          title: r.title,
+          category: r.category,
+          ward: r.ward,
+          location: r.location,
+          status: r.status,
+          priority: r.priority,
+          aiScore: r.ai_score || r.aiScore || 50,
+          aiReasons: r.ai_reasons || r.aiReasons || [],
+          coordinates: r.latitude && r.longitude ? [Number(r.latitude), Number(r.longitude)] : null,
+          upvotes: r.upvotes || 0
+        }));
       } catch (e) {
         console.warn('DB getComplaints query failed, using static list:', e.message);
       }

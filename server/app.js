@@ -5,6 +5,7 @@ import aiRouter from "./routes/ai.routes.js";
 import complaintRouter from "./routes/complaint.routes.js";
 import projectRouter from "./routes/project.routes.js";
 import ttsRouter from "./routes/tts.routes.js";
+import gisRouter from "./routes/gis.routes.js";
 import mcpClient from "./services/mcpClient.js";
 
 
@@ -12,18 +13,42 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:5175',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174',
+    'http://127.0.0.1:5175',
+    'http://localhost:3000',
+    'http://localhost:5000'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+}));
 app.use(express.json());
 
 app.use("/api/ai", aiRouter);
 app.use("/api/complaints", complaintRouter);
 app.use("/api/projects", projectRouter);
 app.use("/api/tts", ttsRouter);
+app.use("/api/gis", gisRouter);
 
 app.get("/", (req, res) => {
   res.json({
     status: "success",
     message: "🚀 Kopargaon Smart City Backend Running"
+  });
+});
+
+// Centralized error handler to prevent server crashes
+app.use((err, req, res, next) => {
+  console.error("Unhandled Server Error:", err);
+  res.status(500).json({
+    success: false,
+    error: err.message || "Internal server error"
   });
 });
 

@@ -30,6 +30,7 @@ kopargaon-smart-city/
 - **Civic Complaint Management**: Real-time tracking, priority scoring, automated routing, and resolution workflows.
 - **Document Management System**: Digital archive for city reports, project documents, and spatial data.
 - **Model Context Protocol (MCP)**: Custom MCP server exposing PostGIS spatial analysis tools for AI agent invocation.
+- **Full Multilingual Support**: Seamlessly localized UI across Citizen, Business, and Administrator dashboards, fully supporting English, Marathi, and Hindi via an intuitive React Context-driven architecture without breaking routing constraints or complex layouts.
 
 ---
 

@@ -153,11 +153,27 @@ const MapView = ({
   const [baseTileSource, setBaseTileSource] = useState('osm');
 
   const [activeLayers, setActiveLayers] = useState({
-    wards: true,
+    // LAND USE POLYGONS (BY CATEGORY)
+    landUse_Residential: true,
+    landUse_Commercial: true,
+    landUse_Industrial: true,
+    landUse_Agricultural: true,
+    landUse_Government: true,
+    'landUse_Green Zone': true,
     landUse: true,
+
+    // PROJECTS POINT MARKERS (BY CATEGORY)
+    projects_Road: true,
+    projects_Water: true,
+    projects_TownPlanning: true,
+    projects_Energy: true,
+    projects_Other: true,
+    smartProjects: true,
+
+    // BOUNDARIES & OTHER LAYERS
+    wards: true,
     roads: true,
     buildings: true,
-    smartProjects: true,
     hospitals: true,
     schools: true,
     governmentLand: true,
@@ -356,15 +372,88 @@ const MapView = ({
     });
   };
 
-  // Land Use Zoning Style
+  // Land Use Category Active Check
+  const isLandUseCategoryActive = useCallback((category) => {
+    if (activeLayers.landUse === false) return false;
+    const key = `landUse_${category}`;
+    if (activeLayers[key] !== undefined) return activeLayers[key];
+    return true;
+  }, [activeLayers]);
+
+  // Project Category Active Check
+  const isProjectCategoryActive = useCallback((prj) => {
+    if (activeLayers.smartProjects === false) return false;
+    const cat = (prj.category || prj.department || '').toLowerCase();
+    if (cat.includes('road') || cat.includes('pwd')) {
+      return activeLayers.projects_Road !== false;
+    }
+    if (cat.includes('water') || cat.includes('scada') || cat.includes('sanitation')) {
+      return activeLayers.projects_Water !== false;
+    }
+    if (cat.includes('town') || cat.includes('infrastructure') || cat.includes('logistics') || cat.includes('heritage')) {
+      return activeLayers.projects_TownPlanning !== false;
+    }
+    if (cat.includes('energy') || cat.includes('power') || cat.includes('solar') || cat.includes('electrical')) {
+      return activeLayers.projects_Energy !== false;
+    }
+    return activeLayers.projects_Other !== false;
+  }, [activeLayers]);
+
+  // Land Use Zoning Polygon Style
   const landUseStyle = (feature) => {
+    const p = feature.properties || {};
+    const cat = (p.category || '').toLowerCase();
+
+    let color = p.color || '#10b981';
+    if (cat.includes('residen')) color = '#3b82f6';
+    else if (cat.includes('commer')) color = '#f59e0b';
+    else if (cat.includes('industr')) color = '#ec4899';
+    else if (cat.includes('green') || cat.includes('open')) color = '#10b981';
+    else if (cat.includes('agri')) color = '#84cc16';
+    else if (cat.includes('gov') || cat.includes('institut')) color = '#8b5cf6';
+
+    const isSelected = selectedFeature && selectedFeature.type === 'landUse' && selectedFeature.feat.id === p.id;
+
     return {
-      fillColor: feature.properties.color || '#10b981',
-      weight: 1.5,
-      color: feature.properties.color || '#10b981',
-      fillOpacity: 0.35,
-      dashArray: '2,4'
+      fillColor: color,
+      weight: isSelected ? 3.5 : 2,
+      color: isSelected ? '#ffffff' : color,
+      fillOpacity: isSelected ? 0.65 : 0.45,
+      dashArray: isSelected ? '' : '3,5'
     };
+  };
+
+  const onEachLandUse = (feature, layer) => {
+    const p = feature.properties || {};
+    const popupContent = `
+      <div class="p-1 space-y-1 text-xs min-w-[210px]">
+        <div class="flex items-center justify-between border-b pb-1 border-slate-200">
+          <span class="font-mono font-bold text-emerald-600">${p.id || 'LAND-PARCEL'}</span>
+          <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">${p.category || 'Land Use'}</span>
+        </div>
+        <h4 class="font-bold text-sm text-slate-900 leading-tight mt-1">${p.name || 'Land Parcel Area'}</h4>
+        <div class="text-[11px] text-slate-600 space-y-0.5 pt-1">
+          <p><span class="text-slate-400">Area:</span> <b>${p.areaAcres ? p.areaAcres + ' Acres' : (p.area ? p.area + ' sq.m' : 'N/A')}</b></p>
+          <p><span class="text-slate-400">Ward:</span> <b>${p.ward || 'N/A'}</b></p>
+          <p><span class="text-slate-400">Current Usage:</span> ${p.currentUsage || 'N/A'}</p>
+          <p><span class="text-slate-400">Recommended:</span> <span class="text-blue-600 font-semibold">${p.recommendedUsage || 'N/A'}</span></p>
+        </div>
+      </div>
+    `;
+    layer.bindPopup(popupContent);
+
+    layer.on({
+      mouseover: (e) => {
+        e.target.setStyle({ fillOpacity: 0.7, weight: 3, color: '#ffffff' });
+      },
+      mouseout: (e) => {
+        const isSelected = selectedFeature && selectedFeature.type === 'landUse' && selectedFeature.feat.id === p.id;
+        e.target.setStyle({ fillOpacity: isSelected ? 0.65 : 0.45, weight: isSelected ? 3.5 : 2 });
+      },
+      click: () => {
+        if (onSelectFeature) onSelectFeature(p, 'landUse');
+      }
+    });
   };
 
   const safeCenter = (Array.isArray(center) && center.length === 2 && !isNaN(center[0]) && !isNaN(center[1]))
@@ -477,18 +566,16 @@ const MapView = ({
           />
         )}
 
-        {/* Land Use Zoning GeoJSON */}
-        {activeLayers.landUse && landUseData && showCityLevel && (
+        {/* Land Use Zoning GeoJSON Polygons */}
+        {landUseData && landUseData.features && (
           <GeoJSON
-            data={landUseData}
-            style={landUseStyle}
-            onEachFeature={(feat, layer) => {
-              layer.on({
-                click: () => {
-                  if (onSelectFeature) onSelectFeature(feat.properties, 'landUse');
-                }
-              });
+            key={`land-use-geojson-${JSON.stringify(activeLayers)}`}
+            data={{
+              ...landUseData,
+              features: landUseData.features.filter(f => isLandUseCategoryActive(f.properties?.category))
             }}
+            style={landUseStyle}
+            onEachFeature={onEachLandUse}
           />
         )}
 
@@ -644,8 +731,8 @@ const MapView = ({
           </Rectangle>
         ))}
 
-        {/* Smart City Projects Spatial Markers */}
-        {activeLayers.smartProjects && showRegionLevel && projectsList.map(prj => {
+        {/* Smart City Projects Spatial Point Markers */}
+        {projectsList.filter(isProjectCategoryActive).map(prj => {
           if (!prj.coordinates || !Array.isArray(prj.coordinates) || prj.coordinates.length < 2) return null;
           const isSelected = isProjectSelected(prj.id);
           const riskLevel = (prj.aiRisk || prj.riskAnalysis?.risk || 'UNKNOWN').toUpperCase();
@@ -658,14 +745,14 @@ const MapView = ({
 
           return (
             <CircleMarker
-              key={prj.id}
+              key={`prj-marker-${prj.id}`}
               center={prj.coordinates}
-              radius={isSelected ? 14 : 9}
+              radius={isSelected ? 15 : 10}
               pathOptions={{
                 color: isSelected ? '#ffffff' : riskColor,
                 fillColor: riskColor,
-                fillOpacity: 0.9,
-                weight: isSelected ? 3.5 : 2
+                fillOpacity: 0.95,
+                weight: isSelected ? 4 : 2.5
               }}
               eventHandlers={{
                 click: () => {

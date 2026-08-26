@@ -15,7 +15,7 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json'
   },
-  timeout: 5000
+  timeout: 30000
 });
 
 // Centralized Session Data Store (in-memory sync for single-page session consistency)
@@ -479,9 +479,19 @@ export const documentService = {
 };
 
 export const aiPlannerService = {
-  queryAI: async (prompt, language) => {
+  queryAI: async (prompt, language, role = 'citizen', extraData = {}) => {
     try {
-      const res = await apiClient.post('/ai/urban-planner', { query: prompt, language: language || 'en-IN' });
+      const payload = { 
+        query: prompt, 
+        message: prompt,
+        language: language || extraData.language || 'mr', 
+        role: role || extraData.role || extraData.userType || 'citizen', 
+        userType: role || extraData.userType || extraData.role || 'citizen',
+        userId: extraData.userId || null,
+        location: extraData.location || null,
+        conversation: extraData.conversation || []
+      };
+      const res = await apiClient.post('/ai/urban-planner', payload);
       return res.data;
     } catch (e) {
       console.error('❌ Backend POST /api/ai/urban-planner failed:', {
@@ -507,15 +517,30 @@ export const aiPlannerService = {
 export const ttsService = {
   speak: async (text, language) => {
     try {
+      console.log('[TTS] Provider: ElevenLabs');
+      console.log('[TTS] ElevenLabs request started');
       const response = await apiClient.post(
         '/tts',
         { text, language },
         { responseType: 'blob' }
       );
+      if (response.data && response.data.type === 'application/json') {
+        const textData = await response.data.text();
+        try {
+          const json = JSON.parse(textData);
+          if (json.success === false) {
+            console.log(`[TTS] Backend TTS notice: ${json.error || 'Falling back to browser speech synthesis'}`);
+            return null;
+          }
+        } catch (parseErr) {
+          return null;
+        }
+      }
+      console.log('[TTS] ElevenLabs audio received');
       return URL.createObjectURL(response.data);
     } catch (e) {
-      console.error('Backend POST /api/tts failed:', e);
-      throw e;
+      console.log(`[TTS] ElevenLabs backend unavailable (${e.message}), using browser voice.`);
+      return null;
     }
   }
 };

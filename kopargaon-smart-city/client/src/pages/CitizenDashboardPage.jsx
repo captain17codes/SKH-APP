@@ -9,7 +9,8 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
-import { complaintService } from '../services/api';
+import { complaintService, aiPlannerService } from '../services/api';
+import CitizenAiAssistant from '../components/ai/CitizenAiAssistant';
 import toast from 'react-hot-toast';
 
 const PROBLEM_CATEGORIES = [
@@ -138,6 +139,7 @@ const CitizenDashboardPage = () => {
   const [aiChat, setAiChat] = useState([
     { sender: 'bot', text: 'Namaste! I am your Kopargaon Citizen AI Assistant. How can I assist you today with grievance tracking, municipal building permits, or ward projects?' }
   ]);
+  const [isAiTyping, setIsAiTyping] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -284,48 +286,25 @@ const CitizenDashboardPage = () => {
     toast.success(`Complaint Submitted! Ticket ID: ${newTicket.id}`);
   };
 
-  const handleAiSend = (e) => {
+  const handleAiSend = async (e) => {
     e.preventDefault();
-    if (!aiPrompt.trim()) return;
+    if (!aiPrompt.trim() || isAiTyping) return;
 
     const userMsg = aiPrompt;
     setAiChat(prev => [...prev, { sender: 'user', text: userMsg }]);
     setAiPrompt('');
+    setIsAiTyping(true);
 
-    setTimeout(() => {
-      let reply = "All complaints logged via Kopargaon Citizen Portal carry a guaranteed resolution SLA monitored by the Municipal Commissioner. You can track your uploaded photo proof under 'My Complaints'.";
-      
-      const lower = userMsg.toLowerCase();
-
-      const isMarathi = /[\u0900-\u097F]/.test(userMsg) && (lower.includes('नमस्कार') || lower.includes('पाणी') || lower.includes('रस्ता') || lower.includes('कचरा') || lower.includes('कोपरगाव') || lower.includes('तक्रार'));
-      const isHindi = /[\u0900-\u097F]/.test(userMsg) || lower.includes('नमस्ते') || lower.includes('पानी') || lower.includes('सड़क') || lower.includes('कचरा') || lower.includes('शिकायत');
-
-      if (isMarathi || lower.includes('marathi') || lower.includes('मराठी')) {
-        if (lower.includes('पाणी') || lower.includes('water')) {
-          reply = "कोपरगाव नगर परिषद गोदावरी जलशुद्धीकरण केंद्रातून पाणीपुरवठा करते. पाणी गळती किंवा कमी दाबाची तक्रार 'Report Problem' विभागात दाखल करा. हेल्पलाइन: ०२४२३-२२२१०४.";
-        } else if (lower.includes('रस्ता') || lower.includes('खड्डा') || lower.includes('road')) {
-          reply = "रस्त्यावरील खड्ड्यांच्या तक्रारी २४ ते ४८ तासांत सोडवल्या जातात. फोटो अपलोड करून त्वरित नोंदणी करा.";
-        } else {
-          reply = "नमस्कार! मी आपला कोपरगाव नागरिक AI सहाय्यक आहे. मी आपणास पाणीपुरवठा, रस्ते, स्वच्छता व सार्वजनिक तक्रारी निवारणात मदत करू शकतो.";
-        }
-      } else if (isHindi || lower.includes('hindi') || lower.includes('हिंदी')) {
-        if (lower.includes('पानी') || lower.includes('water')) {
-          reply = "कोपरगांव नगर परिषद गोदावरी जल शोधन संयंत्र से पानी की आपूर्ति करती है। पानी के रिसाव या कम दबाव की शिकायत 'Report Problem' में दर्ज करें। हेल्पलाइन: 02423-222104.";
-        } else if (lower.includes('सड़क') || lower.includes('गड्ढा') || lower.includes('road')) {
-          reply = "सड़क के गड्ढों की शिकायतों का निवारण 24 से 48 घंटों के भीतर किया जाता है। फोटो प्रमाण अपलोड करके शिकायत दर्ज करें।";
-        } else {
-          reply = "नमस्ते! मैं आपका कोपरगांव नागरिक AI सहायक हूँ। मैं नागरिक सुविधाओं, शिकायत ट्रैकिंग और सार्वजनिक सेवाओं में आपकी सहायता कर सकता हूँ।";
-        }
-      } else {
-        if (lower.includes('water')) {
-          reply = "Kopargaon Municipal Corporation supplies water from the Godavari Filtration Plant. For low pressure or leaks, file a ticket under 'Report Problem'. Emergency helpdesk: 02423-222104.";
-        } else if (lower.includes('pothole') || lower.includes('road')) {
-          reply = "Pothole complaints are processed with Priority SLA (24-48 hrs). Be sure to upload photo proof in the 'Report Problem' section!";
-        }
-      }
-
-      setAiChat(prev => [...prev, { sender: 'bot', text: reply }]);
-    }, 500);
+    try {
+      const res = await aiPlannerService.queryAI(userMsg, 'auto', 'citizen');
+      setAiChat(prev => [...prev, { sender: 'bot', text: res.answer || res.text || 'No response provided.' }]);
+    } catch (err) {
+      console.error('Citizen AI Chat Error:', err);
+      toast.error('AI Assistant service encountered an error.');
+      setAiChat(prev => [...prev, { sender: 'bot', text: '⚠️ I am currently experiencing connection difficulties. Please try again later.' }]);
+    } finally {
+      setIsAiTyping(false);
+    }
   };
 
   return (
@@ -862,38 +841,7 @@ const CitizenDashboardPage = () => {
 
           {/* VIEW 8: AI CITIZEN ASSISTANT */}
           {activeView === 'ai-assistant' && (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
-                <Bot className="w-5 h-5 text-cyan-500" />
-                <span>AI Citizen Assistant Chatbot</span>
-              </h3>
-
-              <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 h-[350px] overflow-y-auto space-y-3 text-xs">
-                {aiChat.map((m, i) => (
-                  <div key={i} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-md p-3.5 rounded-2xl ${
-                      m.sender === 'user' ? 'bg-emerald-600 text-white rounded-br-none' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-bl-none'
-                    }`}>
-                      {m.text}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <form onSubmit={handleAiSend} className="flex gap-2 text-xs">
-                <input
-                  type="text"
-                  value={aiPrompt}
-                  onChange={e => setAiPrompt(e.target.value)}
-                  placeholder="Ask e.g. How do I get a new water connection?"
-                  className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white"
-                />
-                <button type="submit" className="px-5 py-2.5 bg-emerald-600 text-white font-bold rounded-xl flex items-center space-x-1">
-                  <span>Send</span>
-                  <Send className="w-3.5 h-3.5" />
-                </button>
-              </form>
-            </div>
+            <CitizenAiAssistant />
           )}
     </div>
   );

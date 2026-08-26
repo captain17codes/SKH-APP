@@ -35,13 +35,12 @@ const Navbar = ({ onMobileMenuOpen }) => {
           </div>
         </div>
 
-        {/* Center: Global Search Trigger */}
         <button
           onClick={() => setIsSearchOpen(true)}
           className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/60 text-xs w-48 sm:w-64 transition-colors"
         >
           <Search className="w-4 h-4 text-slate-400" />
-          <span className="truncate">Search GIS, Projects...</span>
+          <span className="truncate">{t('searchGisPlaceholder')}</span>
           <kbd className="hidden sm:inline-block ml-auto px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded shadow-2xs">
             ⌘K
           </kbd>
@@ -56,7 +55,7 @@ const Navbar = ({ onMobileMenuOpen }) => {
           <button
             onClick={() => setIsNotifOpen(true)}
             className="relative p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            title="Notifications"
+            title={t('notifications')}
           >
             <Bell className="w-5 h-5" />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full ring-2 ring-white dark:ring-slate-900" />
@@ -102,7 +101,7 @@ const Navbar = ({ onMobileMenuOpen }) => {
                 {/* Role Quick Switcher */}
                 <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
-                    Switch Role Demo
+                    {t('switchRoleDemo')}
                   </span>
                   <div className="space-y-1">
                     {roles.map(r => (
@@ -133,7 +132,7 @@ const Navbar = ({ onMobileMenuOpen }) => {
                   className="w-full text-left px-4 py-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors flex items-center space-x-2"
                 >
                   <LogOut className="w-3.5 h-3.5" />
-                  <span>Log out</span>
+                  <span>{t('logout')}</span>
                 </button>
               </div>
             )}

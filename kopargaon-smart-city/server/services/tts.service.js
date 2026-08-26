@@ -1,5 +1,6 @@
 import textToSpeech from '@google-cloud/text-to-speech';
 import fs from 'fs';
+import axios from 'axios';
 
 // Helper function to remove markdown formatting and UI-only symbols
 function stripMarkdownForTTS(text) {
@@ -27,10 +28,71 @@ class TtsService {
     this.client = null;
   }
 
+  async synthesizeElevenLabs(text) {
+    const apiKey = process.env.ELEVENLABS_API_KEY;
+    const voiceId = process.env.ELEVENLABS_VOICE_ID || 'EST9Ui6982FZPSi7gCHi';
+
+    const isApiKeyLoaded = Boolean(apiKey && !apiKey.includes('YOUR_KEY'));
+    const isVoiceIdLoaded = Boolean(voiceId);
+
+    console.log('----------------------------------------');
+    console.log('🔊 [TTS RUNTIME REQUEST]');
+    console.log('TTS PROVIDER: ElevenLabs');
+    console.log(`ELEVENLABS_API_KEY LOADED: ${isApiKeyLoaded ? 'YES (' + apiKey.substring(0, 4) + '***)' : 'NO'}`);
+    console.log(`ELEVENLABS_VOICE_ID LOADED: ${isVoiceIdLoaded ? 'YES (' + voiceId + ')' : 'NO'}`);
+    console.log(`REQUEST ENDPOINT: https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`);
+    console.log('----------------------------------------');
+
+    if (!isApiKeyLoaded) {
+      console.warn(`[TTS Warning] ELEVENLABS_API_KEY is not set or invalid in environment (.env). Skipping ElevenLabs.`);
+      return null;
+    }
+    if (!isVoiceIdLoaded) {
+      console.warn(`[TTS Warning] ELEVENLABS_VOICE_ID is not set in environment (.env). Skipping ElevenLabs.`);
+      return null;
+    }
+    
+    try {
+      const response = await axios.post(
+        `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+        {
+          text: text,
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: {
+            stability: 0.5,
+            similarity_boost: 0.75
+          }
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'xi-api-key': apiKey
+          },
+          responseType: 'arraybuffer',
+          timeout: 15000
+        }
+      );
+      if (response && response.data) {
+        console.log(`[TTS] ✅ ElevenLabs API Request Succeeded! HTTP Status: ${response.status}. Voice ID used: ${voiceId}`);
+        return Buffer.from(response.data);
+      }
+    } catch (e) {
+      const status = e.response ? e.response.status : 'NO_RESPONSE';
+      console.error(`[TTS Error] ElevenLabs API request failed with HTTP Status ${status}:`, e.message);
+      if (e.response && e.response.data) {
+        try {
+          const errBody = Buffer.from(e.response.data).toString('utf-8');
+          console.error(`[TTS Error Detail]:`, errBody);
+        } catch {}
+      }
+    }
+    return null;
+  }
+
   getClient() {
     const credsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
     if (!credsPath || !fs.existsSync(credsPath)) {
-      throw new Error("Google Cloud TTS is not configured.");
+      return null;
     }
     if (!this.client) {
       this.client = new textToSpeech.TextToSpeechClient();
@@ -39,10 +101,21 @@ class TtsService {
   }
 
   async synthesizeSpeech(text, languageCode = 'en-IN') {
-    const client = this.getClient();
     const cleanedText = stripMarkdownForTTS(text);
     if (!cleanedText) {
       throw new Error("Text content is empty after cleaning.");
+    }
+
+    // 1. Try ElevenLabs first with the exact configured Voice ID
+    const elevenLabsAudio = await this.synthesizeElevenLabs(cleanedText);
+    if (elevenLabsAudio) {
+      return elevenLabsAudio;
+    }
+
+    // 2. Try Google Cloud TTS
+    const client = this.getClient();
+    if (!client) {
+      throw new Error("TTS provider (ElevenLabs / Google Cloud TTS) is not configured with active credentials.");
     }
 
     const cleanLang = languageCode.replace('_', '-');
@@ -92,7 +165,7 @@ class TtsService {
       }
     }
 
-    // Final fallback: let Google choose any female voice for the language
+    // Final fallback: generic voice for language
     try {
       console.log(`[TTS] Falling back to generic female voice for language: ${cleanLang}`);
       const [response] = await client.synthesizeSpeech(baseRequest);
@@ -100,16 +173,13 @@ class TtsService {
         return response.audioContent;
       }
     } catch (error) {
-      console.error(`[TTS] Generic fallback failed for language ${cleanLang}:`, error.message);
+      console.error(`[TTS] All voice synthesis attempts failed:`, error.message);
+      throw error;
     }
 
-    throw new Error("Google Cloud TTS is not configured.");
-  }
-
-  // Alias for backward compatibility if needed
-  async synthesize(text, language) {
-    return this.synthesizeSpeech(text, language);
+    throw new Error("Failed to synthesize speech audio.");
   }
 }
 
-export default new TtsService();
+export const ttsService = new TtsService();
+export default ttsService;

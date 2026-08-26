@@ -458,9 +458,18 @@ export const documentService = {
 };
 
 export const aiPlannerService = {
-  queryAI: async (prompt, language) => {
+  queryAI: async (prompt, language, role = 'administrator', extraData = {}) => {
     try {
-      const res = await apiClient.post('/ai/urban-planner', { query: prompt, language: language || 'en-IN' });
+      const payload = { 
+        query: prompt, 
+        language: language || 'en-IN', 
+        role, 
+        userType: role,
+        userId: extraData.userId || null,
+        location: extraData.location || null,
+        conversation: extraData.conversation || []
+      };
+      const res = await apiClient.post('/ai/urban-planner', payload);
       return res.data;
     } catch (e) {
       console.error('❌ Backend POST /api/ai/urban-planner failed:', {
@@ -491,9 +500,20 @@ export const ttsService = {
         { text, language },
         { responseType: 'blob' }
       );
+      if (response.data && response.data.type === 'application/json') {
+        const textData = await response.data.text();
+        try {
+          const json = JSON.parse(textData);
+          if (json.success === false) {
+            throw new Error(json.error || 'TTS audio synthesis unavailable');
+          }
+        } catch {
+          throw new Error('TTS audio synthesis unavailable');
+        }
+      }
       return URL.createObjectURL(response.data);
     } catch (e) {
-      console.error('Backend POST /api/tts failed:', e);
+      console.warn('TTS request fallback to browser voice:', e.message);
       throw e;
     }
   }
