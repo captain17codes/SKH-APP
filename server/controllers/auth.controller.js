@@ -8,6 +8,24 @@ import { OAuth2Client } from 'google-auth-library';
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'dummy-client-id');
 
+// Demo users for fallback mode (no DB required)
+const DEMO_USERS = [
+  {
+    id: 'ADMIN-001',
+    name: 'Admin Officer',
+    email: 'admin@kopargaon.gov',
+    password: 'admin123',
+    role: 'Administrator'
+  },
+  {
+    id: 'BUSINESS-001',
+    name: 'Business User',
+    email: 'business@gmail.com',
+    password: 'business',
+    role: 'Business'
+  }
+];
+
 // @desc    Admin / Officer Login
 // @route   POST /api/auth/admin/login
 export const login = async (req, res, next) => {
@@ -18,7 +36,31 @@ export const login = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Please provide email and password' });
     }
 
-    const user = await getUserByEmail(email);
+    // --- DEMO FALLBACK: check hardcoded demo credentials first ---
+    const demoUser = DEMO_USERS.find(
+      u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+    );
+    if (demoUser) {
+      const token = jwt.sign(
+        { id: demoUser.id, role: demoUser.role, name: demoUser.name },
+        JWT_SECRET,
+        { expiresIn: '1d' }
+      );
+      return res.status(200).json({
+        success: true,
+        token,
+        user: { id: demoUser.id, name: demoUser.name, email: demoUser.email, role: demoUser.role }
+      });
+    }
+    // --- END DEMO FALLBACK ---
+
+    let user;
+    try {
+      user = await getUserByEmail(email);
+    } catch (dbErr) {
+      console.warn('[AUTH] DB unavailable during login, demo credentials did not match.');
+      return res.status(503).json({ success: false, message: 'Database unavailable. Use demo credentials.' });
+    }
 
     if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });

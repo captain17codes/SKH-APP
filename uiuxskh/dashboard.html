@@ -1,0 +1,490 @@
+<!DOCTYPE html><html class="" lang="en"  ><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Dashboard - Kopargaon Smart City</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed": "#002113",
+                      "secondary": "#00687a",
+                      "secondary-fixed-dim": "#4cd7f6",
+                      "surface-container-low": "#eff4ff",
+                      "surface-dim": "#ccdbf4",
+                      "on-surface-variant": "#444651",
+                      "on-primary-fixed": "#00164e",
+                      "on-secondary-fixed-variant": "#004e5c",
+                      "surface-tint": "#4059aa",
+                      "on-secondary": "#ffffff",
+                      "surface-container-highest": "#d5e3fd",
+                      "outline": "#757682",
+                      "on-primary-fixed-variant": "#264191",
+                      "on-tertiary": "#ffffff",
+                      "surface-bright": "#f8f9ff",
+                      "outline-variant": "#c5c5d3",
+                      "primary-container": "#1e3a8a",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "primary": "#00236f",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-container": "#27c38a",
+                      "on-primary-container": "#90a8ff",
+                      "inverse-on-surface": "#ebf1ff",
+                      "on-secondary-container": "#006172",
+                      "tertiary": "#00311f",
+                      "on-error-container": "#93000a",
+                      "secondary-container": "#57dffe",
+                      "secondary-fixed": "#acedff",
+                      "error": "#ba1a1a",
+                      "tertiary-container": "#004a31",
+                      "surface-container": "#e6eeff",
+                      "surface-variant": "#d5e3fd",
+                      "primary-fixed-dim": "#b6c4ff",
+                      "primary-fixed": "#dce1ff",
+                      "tertiary-fixed": "#6ffbbe",
+                      "inverse-primary": "#b6c4ff",
+                      "surface-container-high": "#dde9ff",
+                      "inverse-surface": "#233144",
+                      "background": "#f8f9ff",
+                      "on-background": "#0d1c2f",
+                      "on-secondary-fixed": "#001f26",
+                      "on-primary": "#ffffff",
+                      "surface": "#f8f9ff",
+                      "on-surface": "#0d1c2f",
+                      "on-error": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-gap": "1rem",
+                      "gutter": "1.5rem",
+                      "margin-mobile": "1rem",
+                      "sidebar-width": "260px",
+                      "section-gap": "2.5rem",
+                      "margin-desktop": "2rem",
+                      "container-max-width": "1440px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Public Sans"
+                      ],
+                      "display-md": [
+                              "Public Sans"
+                      ],
+                      "title-lg": [
+                              "Public Sans"
+                      ],
+                      "label-sm": [
+                              "Public Sans"
+                      ],
+                      "body-md": [
+                              "Public Sans"
+                      ],
+                      "display-lg": [
+                              "Public Sans"
+                      ],
+                      "label-md": [
+                              "Public Sans"
+                      ],
+                      "body-lg": [
+                              "Public Sans"
+                      ],
+                      "headline-lg": [
+                              "Public Sans"
+                      ],
+                      "body-sm": [
+                              "Public Sans"
+                      ],
+                      "headline-lg-mobile": [
+                              "Public Sans"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-md": [
+                              "36px",
+                              {
+                                      "lineHeight": "44px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "title-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "60px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "30px",
+                              {
+                                      "lineHeight": "38px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+    </style>
+<link href="css/styles.css" rel="stylesheet"/>
+</head>
+<body>
+<div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div> class="bg-background dark:bg-inverse-surface text-on-surface dark:text-inverse-on-surface antialiased font-body-md text-body-md">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-inverse-surface font-body-md text-body-md docked full-width top-0 z-50 border-b border-outline-variant dark:border-outline shadow-sm flex justify-between items-center px-gutter h-16 w-full ml-[260px] fixed" style="width: calc(100% - 260px);">
+<div class="flex items-center">
+<!-- Left side empty, search bar normally goes here -->
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors text-on-surface-variant dark:text-on-surface-variant" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors text-on-surface-variant dark:text-on-surface-variant" data-icon="translate">translate</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors text-on-surface-variant dark:text-on-surface-variant" data-icon="dark_mode">dark_mode</span>
+<div class="flex items-center gap-2 cursor-pointer active:opacity-80 ml-2">
+<span class="font-label-md text-label-md text-on-surface dark:text-inverse-on-surface">Profile</span>
+<img alt="User avatar" class="w-8 h-8 rounded-full object-cover border border-outline-variant" data-alt="A small, circular avatar image of a professional city official, suitable for a smart city dashboard profile icon. The image should be a close-up portrait with a clean, modern background, lit softly to convey trustworthiness and competence. Modern corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3U6oNdFLttd2kOolIO6LdKb3t_KswIAtmCPNhUgjfqBF_r-L6-aJmf-Z8lTSL2jQwp-bHLJoERqsnM2Uu1fRKHzp1r6YjRkKnrHGRMB59cKRQmfHHF3mvRu1ZsRnaZUpI_TkhslvaPkuqMoAZaDUtY11MMxCIRwBhKJslm3cFCTkxEmg39XvwZ3eoajGX7bg8sn7mahbYLMydG32diU80fsXvVwOS4o30R6WPxT_aiiIaQBDTQ1ORJg">
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside id="sidebar" class="bg-surface dark:bg-inverse-surface font-label-md text-label-md fixed left-0 top-0 h-full w-[260px] border-r border-outline-variant dark:border-outline flat no shadows flex flex-col h-full py-6 px-4 z-50">
+<div class="flex items-center gap-3 mb-8 px-2">
+<img alt="Kopargaon Seal" class="w-10 h-10 object-contain rounded-md" data-alt="The official seal or logo of Kopargaon Smart City. A crisp, modern, vector-style emblem featuring civic elements like buildings, a gear, or leaves, rendered in solid blue and white tones. High contrast, professional, and authoritative." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeJKJKEYB5sGO8Gu7veqqWWmM_I8w9BGoCyCS0yZwWWXlHRbRs6BGa_yztOEhB0H7XZAy0T28yOrafsgHE_SNAi7qOxbO1Byj5_6iYhsvAwKPz5BfjFlu5MGvIAKxJOiEidkYVPOs4-AwpcAQz4Oap2TguGCZRU4d0ray4AYG9uQDiZ1wci6k8G-1TCFxQADjIu2rKNxfcfV4sHOwo5yRHJMqaTdW1-B8XkMW7LzSG54NoSt_PLAzbjg">
+<div>
+<h1 class="font-title-lg text-title-lg font-bold text-primary dark:text-primary-fixed-dim leading-tight">Kopargaon Smart City</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant dark:text-on-surface-variant">Municipal Portal</p>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-1 overflow-y-auto">
+<a class="bg-surface-container-low text-primary border-l-4 border-primary font-bold dark:bg-primary-container dark:text-on-primary-container flex items-center gap-3 px-3 py-2 rounded-r-lg transition-all duration-200 ease-in-out nav-link" href="dashboard.html">
+<span class="material-symbols-outlined nav-link" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest transition-all flex items-center gap-3 px-3 py-2 rounded-r-lg border-l-4 border-transparent duration-200 ease-in-out nav-link" href="gis-map.html">
+<span class="material-symbols-outlined nav-link" data-icon="map">map</span>
+                GIS Map
+            </a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest transition-all flex items-center gap-3 px-3 py-2 rounded-r-lg border-l-4 border-transparent duration-200 ease-in-out nav-link" href="projects.html">
+<span class="material-symbols-outlined nav-link" data-icon="engineering">engineering</span>
+                Projects
+            </a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest transition-all flex items-center gap-3 px-3 py-2 rounded-r-lg border-l-4 border-transparent duration-200 ease-in-out nav-link" href="land-use.html">
+<span class="material-symbols-outlined nav-link" data-icon="layers">layers</span>
+                Land Use
+            </a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest transition-all flex items-center gap-3 px-3 py-2 rounded-r-lg border-l-4 border-transparent duration-200 ease-in-out nav-link" href="complaints.html">
+<span class="material-symbols-outlined nav-link" data-icon="forum">forum</span>
+                Complaints
+            </a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest transition-all flex items-center gap-3 px-3 py-2 rounded-r-lg border-l-4 border-transparent duration-200 ease-in-out nav-link" href="analytics.html">
+<span class="material-symbols-outlined nav-link" data-icon="monitoring">monitoring</span>
+                Analytics
+            </a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest transition-all flex items-center gap-3 px-3 py-2 rounded-r-lg border-l-4 border-transparent duration-200 ease-in-out nav-link" href="ai-planner.html">
+<span class="material-symbols-outlined nav-link" data-icon="psychology">psychology</span>
+                AI Planner
+            </a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest transition-all flex items-center gap-3 px-3 py-2 rounded-r-lg border-l-4 border-transparent duration-200 ease-in-out nav-link" href="documents.html">
+<span class="material-symbols-outlined nav-link" data-icon="description">description</span>
+                Documents
+            </a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest transition-all flex items-center gap-3 px-3 py-2 rounded-r-lg border-l-4 border-transparent duration-200 ease-in-out nav-link" href="settings.html">
+<span class="material-symbols-outlined nav-link" data-icon="settings">settings</span>
+                Settings
+            </a>
+</nav>
+<div class="mt-auto pt-4 border-t border-outline-variant dark:border-outline flex flex-col gap-1">
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest transition-all flex items-center gap-3 px-3 py-2 rounded-lg duration-200 ease-in-out nav-link" href="#">
+<span class="material-symbols-outlined nav-link" data-icon="help">help</span>
+                Help Center
+            </a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest transition-all flex items-center gap-3 px-3 py-2 rounded-lg duration-200 ease-in-out nav-link" href="index.html">
+<span class="material-symbols-outlined nav-link" data-icon="logout">logout</span>
+                Logout
+            </a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-[260px] pt-16 min-h-screen p-margin-desktop bg-slate-50 dark:bg-inverse-surface">
+<div class="max-w-container-max-width mx-auto flex flex-col gap-section-gap">
+<!-- Page Header -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-headline-lg text-headline-lg font-bold text-on-surface dark:text-inverse-on-surface">Dashboard Overview</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Real-time civic data and project tracking for Kopargaon.</p>
+</div>
+<div class="flex gap-3">
+<button class="bg-surface border border-outline-variant text-primary font-label-md text-label-md px-4 py-2 rounded-lg hover:bg-surface-container-low transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span>
+                        Export Report
+                    </button>
+<button class="bg-primary text-on-primary font-label-md text-label-md px-4 py-2 rounded-lg hover:bg-primary-container transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                        New Project
+                    </button>
+</div>
+</div>
+<!-- Stat Cards Row -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-stack-gap">
+<!-- Card 1 -->
+<div class="bg-surface p-5 rounded-xl shadow-sm flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-primary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary" data-icon="foundation">foundation</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Projects</p>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-display-md text-display-md text-on-surface">124</span>
+<span class="font-label-sm text-label-sm text-on-tertiary-container flex items-center"><span class="material-symbols-outlined text-[14px]" data-icon="arrow_upward">arrow_upward</span> 12%</span>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface p-5 rounded-xl shadow-sm flex items-center gap-4 border border-outline-variant">
+<div class="w-12 h-12 rounded-lg bg-secondary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-secondary" data-icon="construction">construction</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Ongoing</p>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-display-md text-display-md text-on-surface">87</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center">Active Sites</span>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface p-5 rounded-xl shadow-sm flex items-center gap-4 border border-error-container relative overflow-hidden">
+<div class="absolute right-0 top-0 w-16 h-16 bg-error-container rounded-bl-full opacity-50"></div>
+<div class="w-12 h-12 rounded-lg bg-error-container flex items-center justify-center shrink-0 z-10">
+<span class="material-symbols-outlined text-error" data-icon="warning">warning</span>
+</div>
+<div class="z-10">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Delayed/Critical</p>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-display-md text-display-md text-error">14</span>
+<span class="font-label-sm text-label-sm text-error flex items-center"><span class="material-symbols-outlined text-[14px]" data-icon="arrow_upward">arrow_upward</span> 2 from last week</span>
+</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface p-5 rounded-xl shadow-sm flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-surface-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="forum">forum</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Complaints</p>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-display-md text-display-md text-on-surface">342</span>
+<span class="font-label-sm text-label-sm text-on-tertiary-container flex items-center"><span class="material-symbols-outlined text-[14px]" data-icon="arrow_downward">arrow_downward</span> 5% Resolved</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Middle Section: Two Columns -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-stack-gap">
+<!-- Left Column: Charts (2/3 width) -->
+<div class="lg:col-span-2 flex flex-col gap-stack-gap">
+<!-- Bar Chart Card -->
+<div class="bg-surface rounded-xl shadow-sm p-6 h-80 flex flex-col">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-title-lg text-title-lg text-on-surface font-semibold">Projects by Ward</h3>
+<button class="text-primary font-label-md text-label-md hover:underline">View Details</button>
+</div>
+<div class="flex-1 relative flex items-end gap-2 pb-6 pt-4 border-b border-outline-variant px-4">
+<!-- Placeholder Bar Chart Visuals using CSS -->
+<div class="w-full h-full flex justify-between items-end gap-2">
+<div class="w-full bg-primary-fixed-dim rounded-t-sm relative h-[40%] group">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">12</div>
+<div class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium text-on-surface-variant">W1</div>
+</div>
+<div class="w-full bg-primary rounded-t-sm relative h-[85%] group">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">24</div>
+<div class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium text-on-surface-variant">W2</div>
+</div>
+<div class="w-full bg-secondary rounded-t-sm relative h-[60%] group">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">18</div>
+<div class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium text-on-surface-variant">W3</div>
+</div>
+<div class="w-full bg-primary-fixed-dim rounded-t-sm relative h-[30%] group">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">9</div>
+<div class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium text-on-surface-variant">W4</div>
+</div>
+<div class="w-full bg-primary rounded-t-sm relative h-[75%] group">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">21</div>
+<div class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium text-on-surface-variant">W5</div>
+</div>
+<div class="w-full bg-secondary-fixed-dim rounded-t-sm relative h-[50%] group">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">15</div>
+<div class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium text-on-surface-variant">W6</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Donut Chart / Budget Card Placeholder -->
+<div class="bg-surface rounded-xl shadow-sm p-6 h-64 flex flex-col">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-title-lg text-title-lg text-on-surface font-semibold">Budget Breakdown (FY 23-24)</h3>
+</div>
+<div class="flex-1 flex items-center justify-center relative">
+<!-- Using a generated placeholder image for complex chart to save DOM bloat, or simple CSS circles -->
+<div class="w-40 h-40 rounded-full border-[16px] border-primary relative flex items-center justify-center">
+<div class="absolute inset-0 rounded-full border-[16px] border-secondary" style="clip-path: polygon(50% 50%, 100% 0, 100% 100%, 50% 100%);"></div>
+<div class="absolute inset-0 rounded-full border-[16px] border-tertiary-fixed-dim" style="clip-path: polygon(50% 50%, 0 100%, 0 50%);"></div>
+<div class="text-center">
+<span class="block font-headline-md text-headline-md font-bold">₹42Cr</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant">Total</span>
+</div>
+</div>
+<div class="ml-8 flex flex-col gap-2">
+<div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-primary"></div><span class="font-body-sm text-body-sm text-on-surface-variant">Infrastructure (45%)</span></div>
+<div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-secondary"></div><span class="font-body-sm text-body-sm text-on-surface-variant">Sanitation (30%)</span></div>
+<div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-tertiary-fixed-dim"></div><span class="font-body-sm text-body-sm text-on-surface-variant">Smart Tech (15%)</span></div>
+<div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-outline-variant"></div><span class="font-body-sm text-body-sm text-on-surface-variant">Other (10%)</span></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: AI-Flagged Risks (1/3 width) -->
+<div class="lg:col-span-1">
+<div class="bg-surface rounded-xl shadow-sm p-6 h-full border border-error-container">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-error" data-icon="psychology">psychology</span>
+<h3 class="font-title-lg text-title-lg text-on-surface font-semibold">AI-Flagged Risks</h3>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Risk Item 1 -->
+<div class="p-4 rounded-lg border border-outline-variant bg-surface-bright flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<h4 class="font-label-md text-label-md font-semibold text-on-surface">Godavari Riverfront Dev.</h4>
+<span class="px-2 py-1 bg-error-container text-on-error-container font-label-sm text-[10px] uppercase rounded-full font-bold tracking-wider">Critical</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Contractor missed 3 consecutive milestones. Weather forecast indicates further delays.</p>
+<button class="text-primary font-label-sm text-label-sm hover:underline self-start mt-1">Review Contract</button>
+</div>
+<!-- Risk Item 2 -->
+<div class="p-4 rounded-lg border border-outline-variant bg-surface-bright flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<h4 class="font-label-md text-label-md font-semibold text-on-surface">Ward 4 Smart Lighting</h4>
+<span class="px-2 py-1 bg-surface-variant text-on-surface-variant font-label-sm text-[10px] uppercase rounded-full font-bold tracking-wider">Delayed</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Supply chain issue with LED components flagged by procurement AI model.</p>
+<button class="text-primary font-label-sm text-label-sm hover:underline self-start mt-1">Check Inventory</button>
+</div>
+<!-- Risk Item 3 -->
+<div class="p-4 rounded-lg border border-outline-variant bg-surface-bright flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<h4 class="font-label-md text-label-md font-semibold text-on-surface">Central Market Drainage</h4>
+<span class="px-2 py-1 bg-error-container text-on-error-container font-label-sm text-[10px] uppercase rounded-full font-bold tracking-wider">High Risk</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Budget overrun probability 85% based on current material cost trends.</p>
+<button class="text-primary font-label-sm text-label-sm hover:underline self-start mt-1">Audit Finances</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Section: Recent Activity Feed -->
+<div class="bg-surface rounded-xl shadow-sm p-6 mb-8">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-title-lg text-title-lg text-on-surface font-semibold">Recent Activity</h3>
+<button class="text-primary font-label-md text-label-md hover:underline">View Full Log</button>
+</div>
+<div class="flex flex-col border-l-2 border-outline-variant ml-4">
+<!-- Activity 1 -->
+<div class="relative pl-6 pb-6">
+<div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-tertiary-fixed-dim border-2 border-surface"></div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-1">10:45 AM • Today</p>
+<p class="font-body-md text-body-md text-on-surface text-on-surface-variant"><strong>Project Approved:</strong> Phase 2 Road Resurfacing in Ward 2 was approved by Chief Engineer.</p>
+</div>
+<!-- Activity 2 -->
+<div class="relative pl-6 pb-6">
+<div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-secondary border-2 border-surface"></div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-1">09:12 AM • Today</p>
+<p class="font-body-md text-body-md text-on-surface text-on-surface-variant"><strong>Complaint Resolved:</strong> Water supply issue at Main St. ticket #4492 closed.</p>
+</div>
+<!-- Activity 3 -->
+<div class="relative pl-6">
+<div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-error border-2 border-surface"></div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-1">Yesterday, 16:30 PM</p>
+<p class="font-body-md text-body-md text-on-surface text-on-surface-variant"><strong>System Alert:</strong> Sensor offline at Solid Waste Management Plant. Maintenance dispatched.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+
+
+<script src="js/app.js"></script>
+</body></html>

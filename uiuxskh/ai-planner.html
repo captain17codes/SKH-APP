@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kopargaon Smart City Admin - AI Planner</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#4059aa",
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#00311f",
+                        "on-background": "#0d1c2f",
+                        "primary-container": "#1e3a8a",
+                        "surface-container-high": "#dde9ff",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#6ffbbe",
+                        "secondary-container": "#57dffe",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f8f9ff",
+                        "secondary": "#00687a",
+                        "inverse-primary": "#b6c4ff",
+                        "secondary-fixed-dim": "#4cd7f6",
+                        "primary-fixed": "#dce1ff",
+                        "primary": "#00236f",
+                        "on-primary-fixed-variant": "#264191",
+                        "surface-container-highest": "#d5e3fd",
+                        "outline-variant": "#c5c5d3",
+                        "outline": "#757682",
+                        "on-surface": "#0d1c2f",
+                        "on-tertiary-container": "#27c38a",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#ebf1ff",
+                        "tertiary-container": "#004a31",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#001f26",
+                        "surface-container-low": "#eff4ff",
+                        "on-primary-fixed": "#00164e",
+                        "background": "#f8f9ff",
+                        "on-primary-container": "#90a8ff",
+                        "primary-fixed-dim": "#b6c4ff",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#233144",
+                        "on-tertiary-fixed": "#002113",
+                        "surface-variant": "#d5e3fd",
+                        "surface-container": "#e6eeff",
+                        "surface-dim": "#ccdbf4",
+                        "on-surface-variant": "#444651",
+                        "error": "#ba1a1a",
+                        "surface": "#f8f9ff",
+                        "on-secondary-fixed-variant": "#004e5c",
+                        "error-container": "#ffdad6",
+                        "on-secondary-container": "#006172",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "secondary-fixed": "#acedff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "1rem",
+                        "section-gap": "2.5rem",
+                        "stack-gap": "1rem",
+                        "sidebar-width": "260px",
+                        "gutter": "1.5rem",
+                        "margin-desktop": "2rem",
+                        "container-max-width": "1440px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Public Sans"],
+                        "headline-lg-mobile": ["Public Sans"],
+                        "headline-lg": ["Public Sans"],
+                        "body-lg": ["Public Sans"],
+                        "label-md": ["Public Sans"],
+                        "title-lg": ["Public Sans"],
+                        "label-sm": ["Public Sans"],
+                        "display-md": ["Public Sans"],
+                        "headline-md": ["Public Sans"],
+                        "body-md": ["Public Sans"],
+                        "body-sm": ["Public Sans"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "60px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["30px", { "lineHeight": "38px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "title-lg": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "display-md": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-outlined[data-weight="fill"] { font-variation-settings: 'FILL' 1; }
+        
+        /* Custom scrollbar for chat area */
+        .chat-scroll::-webkit-scrollbar { width: 6px; }
+        .chat-scroll::-webkit-scrollbar-track { background: transparent; }
+        .chat-scroll::-webkit-scrollbar-thumb { background-color: #c5c5d3; border-radius: 20px; }
+    </style>
+<link href="css/styles.css" rel="stylesheet"/>
+</head>
+<body>
+<div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div> class="bg-background h-full overflow-hidden text-on-surface">
+<!-- JSON Component: SideNavBar -->
+<aside id="sidebar" class="fixed left-0 top-0 h-full w-[260px] bg-surface-container-lowest dark:bg-inverse-surface border-r border-outline-variant dark:border-outline shadow-sm dark:shadow-none flex flex-col py-6 z-50">
+<div class="px-6 mb-8 flex flex-col gap-2">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary" data-weight="fill">location_city</span>
+</div>
+<div>
+<h1 class="text-title-lg font-title-lg font-bold text-primary dark:text-primary-fixed leading-tight">Kopargaon Municipal</h1>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Smart City Admin</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 overflow-y-auto w-full">
+<ul class="flex flex-col gap-1 w-full">
+<li><a class="flex items-center gap-3 text-on-surface-variant dark:text-surface-variant px-6 py-3 opacity-80 hover:bg-surface-container-low transition-colors duration-200 w-full nav-link" href="dashboard.html"><span class="material-symbols-outlined nav-link">dashboard</span><span class="text-label-md font-label-md nav-link">Dashboard</span></a></li>
+<li><a class="flex items-center gap-3 text-on-surface-variant dark:text-surface-variant px-6 py-3 opacity-80 hover:bg-surface-container-low transition-colors duration-200 w-full nav-link" href="gis-map.html"><span class="material-symbols-outlined nav-link">map</span><span class="text-label-md font-label-md nav-link">GIS Map</span></a></li>
+<li><a class="flex items-center gap-3 text-on-surface-variant dark:text-surface-variant px-6 py-3 opacity-80 hover:bg-surface-container-low transition-colors duration-200 w-full nav-link" href="projects.html"><span class="material-symbols-outlined nav-link">assignment</span><span class="text-label-md font-label-md nav-link">Projects</span></a></li>
+<li><a class="flex items-center gap-3 text-on-surface-variant dark:text-surface-variant px-6 py-3 opacity-80 hover:bg-surface-container-low transition-colors duration-200 w-full nav-link" href="land-use.html"><span class="material-symbols-outlined nav-link">foundation</span><span class="text-label-md font-label-md nav-link">Land Use</span></a></li>
+<li><a class="flex items-center gap-3 text-on-surface-variant dark:text-surface-variant px-6 py-3 opacity-80 hover:bg-surface-container-low transition-colors duration-200 w-full nav-link" href="complaints.html"><span class="material-symbols-outlined nav-link">report_problem</span><span class="text-label-md font-label-md nav-link">Complaints</span></a></li>
+<li><a class="flex items-center gap-3 text-on-surface-variant dark:text-surface-variant px-6 py-3 opacity-80 hover:bg-surface-container-low transition-colors duration-200 w-full nav-link" href="analytics.html"><span class="material-symbols-outlined nav-link">analytics</span><span class="text-label-md font-label-md nav-link">Analytics</span></a></li>
+<!-- Active Item -->
+<li><a class="flex items-center gap-3 bg-primary-container/10 dark:bg-primary-container text-primary dark:text-on-primary-container border-l-4 border-primary font-bold px-5 py-3 w-full opacity-90 transition-all duration-150 nav-link" href="ai-planner.html"><span class="material-symbols-outlined nav-link" data-weight="fill">psychology</span><span class="text-label-md font-label-md nav-link">AI Planner</span></a></li>
+<li><a class="flex items-center gap-3 text-on-surface-variant dark:text-surface-variant px-6 py-3 opacity-80 hover:bg-surface-container-low transition-colors duration-200 w-full nav-link" href="documents.html"><span class="material-symbols-outlined nav-link">description</span><span class="text-label-md font-label-md nav-link">Documents</span></a></li>
+<li><a class="flex items-center gap-3 text-on-surface-variant dark:text-surface-variant px-6 py-3 opacity-80 hover:bg-surface-container-low transition-colors duration-200 w-full mt-auto nav-link" href="settings.html"><span class="material-symbols-outlined nav-link">settings</span><span class="text-label-md font-label-md nav-link">Settings</span></a></li>
+</ul>
+</nav>
+</aside>
+<!-- JSON Component: TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-260px)] h-16 bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline shadow-sm dark:shadow-none flex justify-between items-center px-8 z-40">
+<div class="text-headline-md font-headline-md font-extrabold text-primary dark:text-primary-fixed truncate mr-4">
+            Kopargaon Smart City Admin
+        </div>
+<div class="flex items-center gap-6">
+<!-- Language Segmented Control -->
+<div class="flex bg-surface-container-low rounded-lg p-1 border border-outline-variant/30">
+<button class="px-3 py-1 rounded-md bg-white shadow-sm text-label-sm font-label-md text-primary">EN</button>
+<button class="px-3 py-1 rounded-md text-label-sm font-label-md text-on-surface-variant hover:text-secondary cursor-pointer transition-colors">HI</button>
+<button class="px-3 py-1 rounded-md text-label-sm font-label-md text-on-surface-variant hover:text-secondary cursor-pointer transition-colors">MR</button>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed cursor-pointer transition-colors focus:ring-2 ring-secondary ring-opacity-50 rounded-full p-1">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-primary-container overflow-hidden border border-outline-variant cursor-pointer">
+<img alt="Administrator Profile" class="w-full h-full object-cover" data-alt="A professional headshot of an Indian government administrator wearing formal business attire, bright clear lighting, confident expression, isolated on a light blue solid background, high quality portrait photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTsymxLMwJfOyJLUUheMfJ7Pc668LA7Ya4Awm6ssA5xT2JORWWGWCsV0eNNtF-N1y-gmDuhPbiApJYizKokKq6aHctw3OHwEm6xW0bjX1cZ9WmWNzaIR-xSfvqDoaTIIxc9l29T9IaHGyzMCmh6HDmrMhDwsmVG1gSYRntneTdbzNwBDKD_1wjssnZZcbX02ft3SjzKxLiSPk9xZ66kulcMdWrL4PGT7eNVr223BL76nO3-7Sir3vN0A"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Area - Two Panel Layout -->
+<main class="fixed top-16 right-0 w-[calc(100%-260px)] h-[calc(100vh-64px)] flex">
+<!-- Chat History Panel (Left) -->
+<section class="w-72 border-r border-outline-variant bg-surface-bright flex flex-col shrink-0 z-30">
+<div class="p-4 border-b border-outline-variant flex justify-between items-center">
+<h2 class="text-title-lg font-title-lg text-on-surface">Recent Planning</h2>
+<button class="p-2 rounded-full hover:bg-surface-container-low text-primary transition-colors">
+<span class="material-symbols-outlined">edit_square</span>
+</button>
+</div>
+<div class="overflow-y-auto flex-1 p-3 space-y-2">
+<!-- Active Chat Session -->
+<button class="w-full text-left p-3 rounded-lg bg-primary-container/10 border border-primary/20 flex flex-col gap-1 transition-colors">
+<span class="text-label-md font-label-md text-primary">New Hospital Site Analysis</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Today, 10:42 AM</span>
+</button>
+<button class="w-full text-left p-3 rounded-lg hover:bg-surface-container-low border border-transparent flex flex-col gap-1 transition-colors">
+<span class="text-label-md font-label-md text-on-surface">Ward 4 Traffic Flow</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Yesterday, 3:15 PM</span>
+</button>
+<button class="w-full text-left p-3 rounded-lg hover:bg-surface-container-low border border-transparent flex flex-col gap-1 transition-colors">
+<span class="text-label-md font-label-md text-on-surface">Water Pipe Network Upgrade</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Oct 12, 2023</span>
+</button>
+<button class="w-full text-left p-3 rounded-lg hover:bg-surface-container-low border border-transparent flex flex-col gap-1 transition-colors">
+<span class="text-label-md font-label-md text-on-surface">Godavari Riverfront Zoning</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Oct 10, 2023</span>
+</button>
+</div>
+</section>
+<!-- Expansive Chat Interface (Center) -->
+<section class="flex-1 flex flex-col bg-background relative">
+<!-- Thread Area -->
+<div class="flex-1 overflow-y-auto chat-scroll p-8 pb-32">
+<div class="max-w-4xl mx-auto space-y-8">
+<!-- AI Greeting -->
+<div class="flex gap-4 max-w-[85%]">
+<div class="w-10 h-10 rounded-full bg-surface-tint text-white flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+<div class="bg-white p-5 rounded-xl shadow-sm border border-outline-variant/50 rounded-tl-none">
+<p class="text-body-md font-body-md text-on-surface">Hello Administrator. I am ready to assist with urban planning analysis for Kopargaon. How can I help you today?</p>
+</div>
+</div>
+<!-- User Prompt -->
+<div class="flex gap-4 max-w-[85%] ml-auto justify-end">
+<div class="bg-primary text-white p-5 rounded-xl shadow-sm rounded-tr-none">
+<p class="text-body-md font-body-md">Analyze potential locations for a new 100-bed public hospital. Focus on Ward 3 and prioritize accessibility to major roads and minimal land acquisition costs.</p>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden shrink-0 border border-outline-variant">
+<img alt="User" class="w-full h-full object-cover" data-alt="A professional headshot of an Indian government administrator wearing formal business attire, bright clear lighting, confident expression, isolated on a light blue solid background, high quality portrait photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgQH7-Dh858Zj44zNb3kTbZgxgwahxnrTHU5YBFJqjpfB7S_u5UQj0wf0eibVtPY_lUOfp_CwhgydZujIrk6TutbShl9xKtWkYQ_21XfLscNATMtrglY-SAvejNaXRgvKR6P8rvwxQCMMVbdm7n1KwI8Y7kdrFaNh4r-oGhqTTZwLTpKhvcqKh3WLQDp1_9QkrhsA3EQyCbxfk3VuxJ2y5E6ogx8ikwnnMSf5-uzn17AfjOr4COnmT4Q"/>
+</div>
+</div>
+<!-- AI Response -->
+<div class="flex gap-4 max-w-full">
+<div class="w-10 h-10 rounded-full bg-surface-tint text-white flex items-center justify-center shrink-0 shadow-sm mt-1">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+<div class="bg-white p-6 rounded-xl shadow-sm border border-outline-variant/50 rounded-tl-none flex-1 space-y-5">
+<div>
+<p class="text-body-md font-body-md text-on-surface mb-3">Based on current GIS zoning data and traffic patterns in Ward 3, I have identified two primary candidate sites that meet your criteria for a 100-bed facility.</p>
+<ul class="list-disc list-inside text-body-md font-body-md text-on-surface-variant space-y-1 ml-2">
+<li><strong>Site A (Near SH-10):</strong> Excellent arterial road access, currently municipal-owned open land.</li>
+<li><strong>Site B (Market Road North):</strong> Closer to high-density residential zones, requires partial acquisition of adjacent non-agricultural plots.</li>
+</ul>
+</div>
+<!-- Inline Recommendation Cards (Bento style grid) -->
+<div class="grid grid-cols-2 gap-4 mt-4">
+<!-- Card 1 -->
+<div class="border border-outline-variant rounded-xl overflow-hidden bg-surface-bright flex flex-col transition-shadow hover:shadow-md">
+<div class="h-32 bg-surface-container-high relative">
+<div class="w-full h-full bg-cover bg-center opacity-80" data-alt="A highly detailed top-down satellite map view of a city ward, highlighting a specific empty plot of land in green, modern UI mapping interface, clear roads and building footprints, daylight, professional cartography style." data-location="Kopargaon Ward 3 Site A" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDIRxN93aOJRlvVmeFN4ToWwFdpf3k0AdJh862Hk0LxRf9lUAh_RkNOHCTTbcM1AmRp9iONyRG3GvxGAvJ5d7JZcpbJmimGgoarr3pMd1DlbrhqtYHfEtCFMZoSFSiKYHxRn7Eu2cVcMCuR2I0Axd5_OQ4nBmhDWLzLgQaYrhhD26FraX3Fn0LBRuxpx-4lWw0h2dIZoNFYak1VZqhPKLEVC5QdtGAQiqUFjVR-K42ty90Fyn1i6dUcGg')"></div>
+<div class="absolute top-2 right-2 bg-on-tertiary-container text-white px-2 py-1 rounded text-label-sm font-label-sm font-bold flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> 94% Match
+                                        </div>
+</div>
+<div class="p-4 flex-1 flex flex-col">
+<h4 class="text-title-lg font-title-lg text-on-surface mb-1">Site A - SH-10 Open Plot</h4>
+<p class="text-label-sm font-body-sm text-on-surface-variant mb-4">Area: 2.4 Acres • Status: Municipal Owned</p>
+<div class="mt-auto flex justify-between items-center border-t border-outline-variant pt-3">
+<span class="text-label-sm font-label-md text-primary flex items-center gap-1 cursor-pointer hover:underline">
+<span class="material-symbols-outlined text-[16px]">map</span> View on map
+                                            </span>
+<button class="text-label-sm font-label-md bg-primary-container text-primary px-3 py-1.5 rounded-md hover:bg-surface-tint hover:text-white transition-colors">Select</button>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="border border-outline-variant rounded-xl overflow-hidden bg-surface-bright flex flex-col transition-shadow hover:shadow-md">
+<div class="h-32 bg-surface-container-high relative">
+<div class="w-full h-full bg-cover bg-center opacity-80" data-alt="A highly detailed top-down satellite map view of an urban Indian market area, highlighting a proposed hospital site in yellow, dense residential surrounding, modern UI mapping interface, daylight, professional cartography style." data-location="Kopargaon Ward 3 Site B" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDIRxN93aOJRlvVmeFN4ToWwFdpf3k0AdJh862Hk0LxRf9lUAh_RkNOHCTTbcM1AmRp9iONyRG3GvxGAvJ5d7JZcpbJmimGgoarr3pMd1DlbrhqtYHfEtCFMZoSFSiKYHxRn7Eu2cVcMCuR2I0Axd5_OQ4nBmhDWLzLgQaYrhhD26FraX3Fn0LBRuxpx-4lWw0h2dIZoNFYak1VZqhPKLEVC5QdtGAQiqUFjVR-K42ty90Fyn1i6dUcGg')"></div>
+<div class="absolute top-2 right-2 bg-secondary text-white px-2 py-1 rounded text-label-sm font-label-sm font-bold flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[14px]">info</span> 82% Match
+                                        </div>
+</div>
+<div class="p-4 flex-1 flex flex-col">
+<h4 class="text-title-lg font-title-lg text-on-surface mb-1">Site B - Market Rd North</h4>
+<p class="text-label-sm font-body-sm text-on-surface-variant mb-4">Area: 1.8 Acres • Status: Mixed Ownership</p>
+<div class="mt-auto flex justify-between items-center border-t border-outline-variant pt-3">
+<span class="text-label-sm font-label-md text-primary flex items-center gap-1 cursor-pointer hover:underline">
+<span class="material-symbols-outlined text-[16px]">map</span> View on map
+                                            </span>
+<button class="text-label-sm font-label-md border border-outline text-on-surface-variant px-3 py-1.5 rounded-md hover:bg-surface-container-low transition-colors">Select</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Input Area (Bottom Fixed) -->
+<div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-background via-background to-transparent pt-10 pb-6 px-8">
+<div class="max-w-4xl mx-auto flex flex-col gap-3">
+<!-- Prompt Suggestions -->
+<div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+<button class="shrink-0 bg-white border border-outline-variant rounded-full px-4 py-2 text-label-sm font-label-md text-on-surface-variant hover:bg-surface-container-low hover:border-primary/50 transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary">analytics</span> Generate traffic impact report for Site A
+                        </button>
+<button class="shrink-0 bg-white border border-outline-variant rounded-full px-4 py-2 text-label-sm font-label-md text-on-surface-variant hover:bg-surface-container-low hover:border-primary/50 transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary">water_drop</span> Check water supply capacity for Ward 3
+                        </button>
+<button class="shrink-0 bg-white border border-outline-variant rounded-full px-4 py-2 text-label-sm font-label-md text-on-surface-variant hover:bg-surface-container-low hover:border-primary/50 transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary">monetization_on</span> Estimate land acquisition cost for Site B
+                        </button>
+</div>
+<!-- Main Input Bar -->
+<div class="relative bg-white rounded-2xl shadow-md border border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all flex items-end p-2">
+<button class="p-3 text-on-surface-variant hover:text-primary rounded-full hover:bg-surface-container-low transition-colors shrink-0">
+<span class="material-symbols-outlined">attach_file</span>
+</button>
+<textarea class="w-full bg-transparent border-none focus:ring-0 resize-none text-body-md font-body-md p-3 max-h-32 min-h-[52px]" placeholder="Ask AI Planner to analyze data, suggest sites, or generate reports..." rows="1"></textarea>
+<button class="p-3 bg-primary text-white rounded-xl hover:bg-surface-tint transition-colors shrink-0 ml-2 mb-1 shadow-sm flex items-center justify-center">
+<span class="material-symbols-outlined" data-weight="fill">send</span>
+</button>
+</div>
+<p class="text-center text-[10px] text-outline font-label-sm">AI Planner can make mistakes. Always verify critical planning data against official GIS records.</p>
+</div>
+</div>
+</section>
+</main>
+<style>
+        /* Hide scrollbar for prompt suggestions */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<script src="js/app.js"></script>
+</body></html>

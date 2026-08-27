@@ -1,37 +1,24 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import {
-  LayoutDashboard,
-  MapPin,
-  FolderKanban,
-  Layers,
-  MessageSquareWarning,
-  BarChart3,
-  Bot,
-  FileText,
-  Settings,
-  Building2,
-  GitCompare,
-  X
-} from 'lucide-react';
+
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/LanguageContext';
 
 const Sidebar = ({ isOpen, onClose }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { t } = useTranslation();
 
   const navItems = [
-    { path: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
-    { path: '/gis', label: t('gisSmartMap'), icon: MapPin, badge: t('liveGis') },
-    { path: '/projects', label: t('projects'), icon: FolderKanban },
-    { path: '/scenarios', label: 'WHAT-IF Scenarios', icon: GitCompare, badge: 'New' },
-    { path: '/land-use', label: t('landUsePlanning'), icon: Layers },
-    { path: '/complaints', label: t('citizenComplaints'), icon: MessageSquareWarning, badge: `6 ${t('new')}` },
-    { path: '/analytics', label: t('analytics'), icon: BarChart3 },
-    { path: '/ai-planner', label: t('aiUrbanPlanner'), icon: Bot, badge: t('ai20') },
-    { path: '/documents', label: t('documents'), icon: FileText },
-    { path: '/settings', label: t('settings'), icon: Settings },
+    { path: '/dashboard', label: t('dashboard'), icon: 'dashboard' },
+    { path: '/gis', label: t('gisSmartMap'), icon: 'map', badge: t('liveGis') },
+    { path: '/projects', label: t('projects'), icon: 'engineering' },
+    { path: '/scenarios', label: 'WHAT-IF Scenarios', icon: 'difference', badge: 'New' },
+    { path: '/land-use', label: t('landUsePlanning'), icon: 'layers' },
+    { path: '/complaints', label: t('citizenComplaints'), icon: 'forum', badge: `6 ${t('new')}` },
+    { path: '/analytics', label: t('analytics'), icon: 'monitoring' },
+    { path: '/ai-planner', label: t('aiUrbanPlanner'), icon: 'psychology', badge: t('ai20') },
+    { path: '/documents', label: t('documents'), icon: 'description' },
+    { path: '/settings', label: t('settings'), icon: 'settings' },
   ];
 
   return (
@@ -40,76 +27,72 @@ const Sidebar = ({ isOpen, onClose }) => {
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 bg-slate-950/70 z-40 lg:hidden backdrop-blur-xs transition-opacity"
+          className="sidebar-overlay active lg:hidden"
+          style={{ zIndex: 40 }}
         />
       )}
 
       <aside
-        className={`fixed top-0 left-0 bottom-0 z-40 w-64 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-all duration-300 ease-in-out lg:translate-x-0 ${
+        className={`bg-surface dark:bg-inverse-surface font-label-md text-label-md fixed left-0 top-0 h-full w-[260px] border-r border-outline-variant dark:border-outline flex flex-col py-6 px-4 z-50 transition-transform duration-300 ease-in-out lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Brand Header */}
-        <div className="flex items-center justify-between h-16 px-5 border-b border-slate-200 dark:border-slate-800">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-lg bg-gradient-to-tr from-blue-600 to-cyan-500 text-white shadow-md shadow-blue-500/20">
-              <Building2 className="w-5 h-5" />
-            </div>
+        <div className="flex items-center justify-between gap-3 mb-8 px-2">
+          <div className="flex items-center gap-3">
+            <img 
+              alt="Kopargaon Seal" 
+              className="w-10 h-10 object-contain rounded-md" 
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeJKJKEYB5sGO8Gu7veqqWWmM_I8w9BGoCyCS0yZwWWXlHRbRs6BGa_yztOEhB0H7XZAy0T28yOrafsgHE_SNAi7qOxbO1Byj5_6iYhsvAwKPz5BfjFlu5MGvIAKxJOiEidkYVPOs4-AwpcAQz4Oap2TguGCZRU4d0ray4AYG9uQDiZ1wci6k8G-1TCFxQADjIu2rKNxfcfV4sHOwo5yRHJMqaTdW1-B8XkMW7LzSG54NoSt_PLAzbjg"
+            />
             <div>
-              <h1 className="text-sm font-bold text-slate-900 dark:text-white tracking-wide leading-none">{t('brand')}</h1>
-              <span className="text-[10px] font-semibold tracking-wider text-blue-600 dark:text-blue-400 uppercase">{t('smartCityGis')}</span>
+              <h1 className="font-title-lg text-title-lg font-bold text-primary dark:text-primary-fixed-dim leading-tight">
+                Kopargaon Smart City
+              </h1>
+              <p className="font-label-sm text-label-sm text-on-surface-variant dark:text-on-surface-variant">
+                Municipal Portal
+              </p>
             </div>
           </div>
+          {/* Mobile close button */}
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden transition-colors"
+            className="p-1 rounded-lg text-on-surface-variant hover:text-primary lg:hidden transition-colors"
           >
-            <X className="w-5 h-5" />
+            <span className="material-symbols-outlined">close</span>
           </button>
         </div>
 
-        {/* User Quick Info */}
-        <div className="p-4 border-b border-slate-200 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-950/40">
-          <div className="flex items-center space-x-3">
-            <img
-              src={user?.avatar}
-              alt={user?.name}
-              className="w-9 h-9 rounded-full ring-2 ring-blue-500/40 object-cover"
-            />
-            <div className="overflow-hidden">
-              <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{user?.name}</p>
-              <span className="inline-block text-[10px] font-medium px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 mt-0.5">
-                {user?.role}
-              </span>
-            </div>
-          </div>
-        </div>
-
         {/* Nav Links List */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 flex flex-col gap-1 overflow-y-auto">
           {navItems.map((item) => {
-            const Icon = item.icon;
             return (
               <NavLink
                 key={item.path}
                 to={item.path}
                 onClick={onClose}
                 className={({ isActive }) =>
-                  `flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
+                  `flex items-center justify-between px-3 py-2 rounded-r-lg border-l-4 transition-all duration-200 ease-in-out nav-link ${
                     isActive
-                      ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                      ? 'bg-surface-container-low text-primary border-primary font-bold dark:bg-primary-container dark:text-on-primary-container'
+                      : 'border-transparent text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest'
                   }`
                 }
               >
-                <div className="flex items-center space-x-3">
-                  <Icon className="w-4 h-4 flex-shrink-0" />
-                  <span>{item.label}</span>
-                </div>
-                {item.badge && (
-                  <span className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-slate-700">
-                    {item.badge}
-                  </span>
+                {({ isActive }) => (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <span className="material-symbols-outlined nav-link" style={isActive ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                        {item.icon}
+                      </span>
+                      <span>{item.label}</span>
+                    </div>
+                    {item.badge && (
+                      <span className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-surface-container-highest dark:bg-surface-variant text-on-surface-variant dark:text-on-surface border border-outline-variant">
+                        {item.badge}
+                      </span>
+                    )}
+                  </>
                 )}
               </NavLink>
             );
@@ -117,9 +100,21 @@ const Sidebar = ({ isOpen, onClose }) => {
         </nav>
 
         {/* Footer info */}
-        <div className="p-4 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 flex items-center justify-between">
-          <span>{t('municipalGisFooter')}</span>
-          <span className="font-semibold text-emerald-600 dark:text-emerald-400">v2.4 Live</span>
+        <div className="mt-auto pt-4 border-t border-outline-variant dark:border-outline flex flex-col gap-1">
+          <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest transition-all duration-200 ease-in-out">
+            <span className="material-symbols-outlined">help</span>
+            <span>Help Center</span>
+          </button>
+          <button 
+            onClick={() => {
+              logout();
+              onClose();
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:text-error hover:bg-error-container transition-all duration-200 ease-in-out"
+          >
+            <span className="material-symbols-outlined">logout</span>
+            <span>Logout</span>
+          </button>
         </div>
       </aside>
     </>

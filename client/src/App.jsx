@@ -10,6 +10,7 @@ import CitizenDashboardLayout from './layouts/CitizenDashboardLayout';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import CitizenLoginPage from './pages/CitizenLoginPage';
+import CitizenRegisterPage from './pages/CitizenRegisterPage';
 import CitizenDashboardPage from './pages/CitizenDashboardPage';
 import CitizenGisPage from './pages/CitizenGisPage';
 
@@ -52,6 +53,7 @@ function App() {
 
             {/* Citizen Entry & Dashboard Routes (Single Citizen Sidebar Layout) */}
             <Route path="/citizen/login" element={<CitizenLoginPage />} />
+            <Route path="/citizen/register" element={<CitizenRegisterPage />} />
             <Route element={
               <ProtectedRoute allowedRoles={['Citizen']}>
                 <CitizenDashboardLayout />
