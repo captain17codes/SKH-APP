@@ -1,0 +1,159 @@
+- generic [ref=e1]:
+  - generic [ref=e93]:
+    - complementary [ref=e94]:
+      - generic [ref=e102]:
+        - heading "KOPARGAON" [level=1] [ref=e103]
+        - text: Smart City GIS
+      - generic [ref=e105]:
+        - img "System Admin" [ref=e106]
+        - generic [ref=e107]:
+          - paragraph [ref=e108]: System Admin
+          - generic [ref=e109]: Admin
+      - navigation [ref=e110]:
+        - link "Dashboard" [ref=e111] [cursor=pointer]:
+          - /url: /dashboard
+        - link "GIS Smart Map Live GIS" [ref=e119] [cursor=pointer]:
+          - /url: /gis
+          - generic [ref=e120]: GIS Smart Map
+          - generic [ref=e125]: Live GIS
+        - link "Projects" [ref=e126] [cursor=pointer]:
+          - /url: /projects
+        - link "WHAT-IF Scenarios New" [ref=e131] [cursor=pointer]:
+          - /url: /scenarios
+          - generic [ref=e132]: WHAT-IF Scenarios
+          - generic [ref=e139]: New
+        - link "Land Use Planning" [ref=e140] [cursor=pointer]:
+          - /url: /land-use
+        - link "Citizen Complaints 6 New" [ref=e147] [cursor=pointer]:
+          - /url: /complaints
+          - generic [ref=e148]: Citizen Complaints
+          - generic [ref=e152]: 6 New
+        - link "Analytics" [ref=e153] [cursor=pointer]:
+          - /url: /analytics
+        - link "AI Urban Planner AI 2.0" [ref=e158] [cursor=pointer]:
+          - /url: /ai-planner
+          - generic [ref=e159]: AI Urban Planner
+          - generic [ref=e164]: AI 2.0
+        - link "Documents" [ref=e165] [cursor=pointer]:
+          - /url: /documents
+        - link "Settings" [ref=e171] [cursor=pointer]:
+          - /url: /settings
+      - generic [ref=e177]:
+        - generic [ref=e178]: Kopargaon Municipal GIS
+        - generic [ref=e179]: v2.4 Live
+    - generic [ref=e180]:
+      - banner [ref=e181]:
+        - generic [ref=e183]:
+          - heading "Kopargaon Smart Development Portal" [level=2] [ref=e184]
+          - paragraph [ref=e185]: Municipal Council GIS & Digital Infrastructure Platform
+        - button "Search GIS, Projects... ⌘K" [ref=e186]:
+          - generic [ref=e190]: Search GIS, Projects...
+          - generic [ref=e191]: ⌘K
+        - generic [ref=e192]:
+          - generic [ref=e197]:
+            - button "EN" [ref=e198]
+            - button "हिंदी" [ref=e199]
+            - button "मराठी" [ref=e200]
+          - button "Notifications" [ref=e201]
+          - button "Switch to Dark Mode" [ref=e206]
+          - button "System Admin System Admin" [ref=e210]:
+            - img "System Admin" [ref=e211]
+            - generic [ref=e212]: System Admin
+      - main [ref=e215]:
+        - navigation [ref=e216]:
+          - link "Portal Home" [ref=e217] [cursor=pointer]:
+            - /url: /dashboard
+          - generic [ref=e659]: Scenarios
+        - generic [ref=e660]:
+          - generic [ref=e661]:
+            - heading "WHAT-IF Scenario Engine" [level=2] [ref=e662]
+            - paragraph [ref=e667]: Draw development zones on the map to evaluate structural conflicts and generate AI-driven impact assessments.
+          - generic [ref=e668]:
+            - button "New Scenario" [ref=e669]
+            - button "Saved Scenarios" [ref=e670]
+            - button "Compare Scenarios (0/2)" [ref=e671]
+            - button "Flood Twin" [active] [ref=e672]
+          - generic [ref=e674]:
+            - generic [ref=e675]:
+              - paragraph [ref=e679]:
+                - strong [ref=e680]: Preliminary screening model based on Copernicus GLO-30 DEM — not an official flood forecast.
+                - text: This tool simulates potential inundation based on relative river level rise.
+              - generic [ref=e681]:
+                - heading [level=3] [ref=e751]:
+                  - generic [ref=e683]: River Level Rise (+m above current)
+                  - button "Auto-Play" [ref=e752]
+                - generic [ref=e692]:
+                  - button "+0.5m" [ref=e693]
+                  - button "+1m" [ref=e694]
+                  - button "+2m" [ref=e695]
+                  - button "+3m" [ref=e696]
+              - generic [ref=e697]:
+                - generic [ref=e698]:
+                  - heading "Impact Summary" [level=4] [ref=e699]
+                  - generic [ref=e700]:
+                    - generic [ref=e701]:
+                      - generic [ref=e702]: Inundation Area
+                      - generic [ref=e703]: 1.33 km²
+                    - generic [ref=e704]:
+                      - generic [ref=e705]: Buildings Affected
+                      - text: "0"
+                    - generic [ref=e706]:
+                      - generic [ref=e707]: Roads Affected
+                      - generic [ref=e708]:
+                        - text: "3"
+                        - generic [ref=e709]: (457m)
+                    - generic [ref=e710]:
+                      - generic [ref=e711]: Bridges Affected
+                      - text: "3"
+                    - generic [ref=e712]:
+                      - generic [ref=e713]: Power Infrastructure Affected
+                      - text: "1"
+                  - generic [ref=e755]:
+                    - heading "AI Mitigation Plan" [level=5] [ref=e756]
+                    - generic [ref=e759]: UNAVAILABLE
+                - generic [ref=e719]:
+                  - heading "Facilities near flood threshold" [level=4] [ref=e720]
+                  - list [ref=e760]:
+                    - listitem [ref=e761]:
+                      - generic [ref=e762]:
+                        - generic [ref=e763]: MIDC Kopargaon
+                        - text: industrial landuse
+                      - generic [ref=e764]: 498.6m
+                    - listitem [ref=e765]:
+                      - generic [ref=e766]:
+                        - generic [ref=e767]: K.B.P. Vidyalaya Ground
+                        - text: school ground
+                      - generic [ref=e768]: 499.5m
+                    - listitem [ref=e769]:
+                      - generic [ref=e770]:
+                        - generic [ref=e771]: Shree Life Care Hospital
+                        - text: hospital
+                      - generic [ref=e772]: 498.4m
+                    - listitem [ref=e773]:
+                      - generic [ref=e774]:
+                        - generic [ref=e775]: Garden K.J.S. College
+                        - text: garden
+                      - generic [ref=e776]: 498.4m
+                - generic [ref=e724]:
+                  - button "Broadcast Alert" [ref=e725]
+                  - button "Save Scenario" [ref=e729]
+            - generic [ref=e734]:
+              - generic [ref=e735]:
+                - region "Map" [ref=e736]
+                - generic:
+                  - generic:
+                    - generic [ref=e737]:
+                      - button "Zoom in" [ref=e738] [cursor=pointer]
+                      - button "Zoom out" [ref=e740] [cursor=pointer]
+                      - button "Drag to rotate map, click to reset north" [ref=e742]
+                    - group [ref=e744]:
+                      - generic "Toggle attribution" [ref=e745] [cursor=pointer]
+                      - generic [ref=e746]:
+                        - text: © OpenStreetMap contributors |
+                        - link "MapLibre" [ref=e747] [cursor=pointer]:
+                          - /url: https://maplibre.org/
+              - generic: Water height is visually exaggerated (5x) for clarity — not to true vertical scale.
+              - button "Pause Rotation" [ref=e750]
+      - contentinfo [ref=e654]:
+        - paragraph [ref=e655]: © 2026 Kopargaon Municipal Council — Smart Development Planning & Digital GIS Platform
+  - generic [ref=e656]: "0"

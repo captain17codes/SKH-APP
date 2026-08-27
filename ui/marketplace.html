@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Property Marketplace - Kopargaon Smart City</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#444651",
+                        "on-background": "#0d1c2f",
+                        "primary": "#00236f",
+                        "background": "#f8f9ff",
+                        "outline": "#757682",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "surface": "#f8f9ff",
+                        "secondary-container": "#57dffe",
+                        "inverse-on-surface": "#ebf1ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#eff4ff",
+                        "primary-fixed-dim": "#b6c4ff",
+                        "on-tertiary-container": "#27c38a",
+                        "primary-fixed": "#dce1ff",
+                        "on-secondary-container": "#006172",
+                        "tertiary-container": "#004a31",
+                        "on-surface": "#0d1c2f",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-error-container": "#93000a",
+                        "outline-variant": "#c5c5d3",
+                        "on-secondary": "#ffffff",
+                        "surface-container-highest": "#d5e3fd",
+                        "surface-container-high": "#dde9ff",
+                        "on-primary-container": "#90a8ff",
+                        "tertiary": "#00311f",
+                        "tertiary-fixed": "#6ffbbe",
+                        "surface-dim": "#ccdbf4",
+                        "secondary-fixed-dim": "#4cd7f6",
+                        "surface-container": "#e6eeff",
+                        "primary-container": "#1e3a8a",
+                        "error-container": "#ffdad6",
+                        "surface-variant": "#d5e3fd",
+                        "on-primary-fixed": "#00164e",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#b6c4ff",
+                        "secondary": "#00687a",
+                        "on-tertiary-fixed": "#002113",
+                        "inverse-surface": "#233144",
+                        "surface-bright": "#f8f9ff",
+                        "secondary-fixed": "#acedff",
+                        "on-primary-fixed-variant": "#264191",
+                        "surface-tint": "#4059aa",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed-variant": "#004e5c",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed": "#001f26"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "1.5rem",
+                        "sidebar-width": "260px",
+                        "section-gap": "2.5rem",
+                        "stack-gap": "1rem",
+                        "container-max-width": "1440px",
+                        "margin-mobile": "1rem",
+                        "margin-desktop": "2rem"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Public Sans"],
+                        "body-sm": ["Public Sans"],
+                        "title-lg": ["Public Sans"],
+                        "display-md": ["Public Sans"],
+                        "body-md": ["Public Sans"],
+                        "label-md": ["Public Sans"],
+                        "body-lg": ["Public Sans"],
+                        "headline-lg-mobile": ["Public Sans"],
+                        "headline-lg": ["Public Sans"],
+                        "headline-md": ["Public Sans"],
+                        "label-sm": ["Public Sans"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "60px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "title-lg": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "display-md": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["30px", { "lineHeight": "38px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; background-color: theme('colors.background'); color: theme('colors.on-background'); }
+    </style>
+<link href="css/styles.css" rel="stylesheet"/>
+</head>
+<body>
+<div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div> class="flex min-h-screen bg-background">
+<!-- SideNavBar -->
+<aside id="sidebar" class="hidden md:flex flex-col py-6 border-r bg-surface-container-lowest dark:bg-inverse-surface border-r border-outline-variant dark:border-outline fixed left-0 top-0 h-screen w-sidebar-width z-20">
+<div class="px-6 pb-6 flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">assured_workload</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">Citizen Portal</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant">City of Civic Horizon</p>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-1 px-3 mt-4 overflow-y-auto">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all group-hover:translate-x-1 duration-200 nav-link" href="dashboard.html">
+<span class="material-symbols-outlined nav-link" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md nav-link">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all group-hover:translate-x-1 duration-200 nav-link" href="gis-map.html">
+<span class="material-symbols-outlined nav-link" data-icon="map">map</span>
+<span class="font-label-md text-label-md nav-link">GIS View</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-surface-container-high text-primary border-l-4 border-primary transition-all group-hover:translate-x-1 duration-200 nav-link" href="marketplace.html">
+<span class="material-symbols-outlined nav-link" data-icon="storefront">storefront</span>
+<span class="font-label-md text-label-md nav-link">Property Marketplace</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all group-hover:translate-x-1 duration-200 nav-link" href="#">
+<span class="material-symbols-outlined nav-link" data-icon="add_business">add_business</span>
+<span class="font-label-md text-label-md nav-link">Sell Property</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all group-hover:translate-x-1 duration-200 nav-link" href="#">
+<span class="material-symbols-outlined nav-link" data-icon="list_alt">list_alt</span>
+<span class="font-label-md text-label-md nav-link">My Listings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all group-hover:translate-x-1 duration-200 nav-link" href="settings.html">
+<span class="material-symbols-outlined nav-link" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md nav-link">Settings</span>
+</a>
+</nav>
+<div class="px-3 mt-auto pt-6 border-t border-outline-variant dark:border-outline">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all group-hover:translate-x-1 duration-200 nav-link" href="#">
+<span class="material-symbols-outlined nav-link" data-icon="help">help</span>
+<span class="font-label-md text-label-md nav-link">Help Center</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all group-hover:translate-x-1 duration-200 nav-link" href="index.html">
+<span class="material-symbols-outlined nav-link" data-icon="logout">logout</span>
+<span class="font-label-md text-label-md nav-link">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-[260px] flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center h-16 px-margin-mobile md:px-margin-desktop w-full bg-surface-container-lowest dark:bg-inverse-surface border-b border-outline-variant dark:border-outline shadow-sm sticky top-0 z-10">
+<div class="flex items-center md:hidden gap-3">
+<button class="text-on-surface-variant p-2 -ml-2 rounded-full hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<span class="font-title-lg text-title-lg font-bold text-primary dark:text-primary-fixed">Citizen Portal</span>
+</div>
+<div class="hidden md:flex flex-1 max-w-md ml-4">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2 rounded-full border border-outline-variant bg-surface-bright focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-sm text-body-sm outline-none transition-shadow" placeholder="Search properties..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors cursor-pointer active:scale-95">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors cursor-pointer active:scale-95">
+<span class="material-symbols-outlined" data-icon="translate">translate</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors cursor-pointer active:scale-95">
+<span class="material-symbols-outlined" data-icon="dark_mode">dark_mode</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-label-md text-label-md ml-2 cursor-pointer">
+                    JD
+                </div>
+</div>
+</header>
+<div class="flex-1 p-margin-mobile md:p-margin-desktop overflow-y-auto">
+<div class="mb-section-gap">
+<h2 class="font-display-md text-display-md text-on-background mb-2">Property Marketplace</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Discover available agricultural, commercial, and residential properties in Kopargaon.</p>
+</div>
+<!-- Filters -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm mb-section-gap flex flex-wrap gap-4 items-center">
+<div class="flex gap-2 flex-wrap">
+<button class="px-4 py-2 rounded-full bg-primary-container text-on-primary-container font-label-sm text-label-sm flex items-center gap-1 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check</span> All
+                    </button>
+<button class="px-4 py-2 rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container-high font-label-sm text-label-sm cursor-pointer transition-colors border border-outline-variant">
+                        Agricultural
+                    </button>
+<button class="px-4 py-2 rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container-high font-label-sm text-label-sm cursor-pointer transition-colors border border-outline-variant">
+                        Commercial
+                    </button>
+<button class="px-4 py-2 rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container-high font-label-sm text-label-sm cursor-pointer transition-colors border border-outline-variant">
+                        Residential
+                    </button>
+<button class="px-4 py-2 rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container-high font-label-sm text-label-sm cursor-pointer transition-colors border border-outline-variant">
+                        Industrial
+                    </button>
+</div>
+<div class="h-6 w-px bg-outline-variant hidden lg:block"></div>
+<div class="flex gap-4 flex-wrap flex-1 items-center justify-end">
+<select class="px-4 py-2 rounded-lg border border-outline-variant bg-surface-bright font-body-sm text-body-sm outline-none focus:border-primary cursor-pointer text-on-surface">
+<option>Ward (All)</option>
+<option>Ward 1</option>
+<option>Ward 2</option>
+<option>Ward 3</option>
+<option>Ward 4</option>
+</select>
+<select class="px-4 py-2 rounded-lg border border-outline-variant bg-surface-bright font-body-sm text-body-sm outline-none focus:border-primary cursor-pointer text-on-surface">
+<option>Status: Available</option>
+<option>Status: Pending</option>
+<option>Status: Sold</option>
+</select>
+</div>
+</div>
+<!-- Property Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl shadow-md overflow-hidden flex flex-col hover:-translate-y-1 transition-transform duration-300">
+<div class="h-48 relative">
+<img alt="Agricultural Land" class="w-full h-full object-cover" data-alt="A bright, sunlit wide-angle photo of a flat, green agricultural field under a clear blue sky. In the background, subtle silhouettes of a developing smart city skyline blend with rural elements. The aesthetic is clean, professional real estate photography with a high-trust, optimistic civic mood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWsXSqEgKkvPhY0P2ZSvI1DitsvgBxEdv_iana8rQg4k8rCNqBmvJxAwVttZcXYmltT-YSbl2HjxPO9uip7ng7S7ADZVp5NOtu3Lwjr5JsF38_Hb3LrAwjBfcDImqcXFrqmS_rSDe5Q3TSkms6iMt25w4xqzOX7BynBzBV9CLWgUbN8xT0sK4o5aTKpgYCdZ3kT1pVGWa_CDRHZQ9gh-ZswnYdsorXzOXA_HalYZn7UNnkCrBREB-4Jw"/>
+<div class="absolute top-4 left-4 bg-primary text-white px-3 py-1 rounded-full font-label-sm text-label-sm shadow-sm">Available</div>
+<button class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/80 backdrop-blur flex items-center justify-center text-on-surface hover:text-error transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+</button>
+</div>
+<div class="p-5 flex flex-col flex-1">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-title-lg text-title-lg text-on-background line-clamp-1">Prime Agricultural Plot</h3>
+<span class="font-title-lg text-title-lg text-primary whitespace-nowrap ml-2">₹45 Lakhs</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm mb-4">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span>Ward 4, Near Shani Dev Mandir</span>
+</div>
+<div class="grid grid-cols-2 gap-3 mb-6 font-body-sm text-body-sm">
+<div class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-outline">straighten</span>
+                                2,400 sq.ft
+                            </div>
+<div class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-outline">category</span>
+                                Agricultural
+                            </div>
+<div class="flex items-center gap-2 col-span-2">
+<span class="px-2 py-1 bg-surface-container-high text-on-surface rounded font-label-sm text-label-sm">Condition: Excellent</span>
+</div>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant">
+<button class="w-full py-2 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:bg-primary-container transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer">
+                                View Details <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl shadow-md overflow-hidden flex flex-col hover:-translate-y-1 transition-transform duration-300">
+<div class="h-48 relative">
+<img alt="Commercial Shop" class="w-full h-full object-cover" data-alt="A modern, newly constructed commercial shopfront with large glass windows reflecting a bright sunny day. The street is clean and paved, typical of a smart city development. Professional architectural photography style, well-lit, conveying civic trust and commercial opportunity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPkubnFCzYe7JobmtQ8OFphPhq6zo2KtOA16D_Jmv8wwKqeb0QALmzF8ewiqzJnGKsRrUPAZtQv4cMs9xZWodqcBu8iRYzYH1kx93ac6tz_wA6315Aaq7bec2mQvCAOGL_hWtbh9osMwi2BqheRkz2gx2k7yGlqlXHK7wYVgNxEYARzcjy8tngIjuMvUNuK5Ut_X9oawn3zXpiA2s6jmUNzchylU_93QibdZg2UDMz_3xz6YrnUN4RZA"/>
+<div class="absolute top-4 left-4 bg-primary text-white px-3 py-1 rounded-full font-label-sm text-label-sm shadow-sm">Available</div>
+<button class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/80 backdrop-blur flex items-center justify-center text-on-surface hover:text-error transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+</button>
+</div>
+<div class="p-5 flex flex-col flex-1">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-title-lg text-title-lg text-on-background line-clamp-1">Main Road Commercial Hub</h3>
+<span class="font-title-lg text-title-lg text-primary whitespace-nowrap ml-2">₹85 Lakhs</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm mb-4">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span>Ward 2, Market Yard Road</span>
+</div>
+<div class="grid grid-cols-2 gap-3 mb-6 font-body-sm text-body-sm">
+<div class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-outline">straighten</span>
+                                1,200 sq.ft
+                            </div>
+<div class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-outline">category</span>
+                                Commercial
+                            </div>
+<div class="flex items-center gap-2 col-span-2">
+<span class="px-2 py-1 bg-surface-container-high text-on-surface rounded font-label-sm text-label-sm">Condition: Good</span>
+</div>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant">
+<button class="w-full py-2 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:bg-primary-container transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer">
+                                View Details <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest rounded-xl shadow-md overflow-hidden flex flex-col hover:-translate-y-1 transition-transform duration-300">
+<div class="h-48 relative">
+<img alt="Residential Plot" class="w-full h-full object-cover" data-alt="A pristine, empty residential plot in a developing suburban neighborhood. A smoothly paved road runs alongside it with new streetlights visible. The scene is bathed in warm, inviting morning light, suggesting a safe, modern community standard suitable for a smart city." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVQW9JasS62nnlPUtJM_QSu7GvbkEDs0BAFXWZI18jNloByJaAiErCZN-JamcBZ8mdoiFTG6K5MF15TbPcV1INJbZCyZU65x5TIlqygcEDrJMF6SrMrHdT5N0oyC9ouyiRWz0xk-oOEirSs-tyKmaG-vDpQcqs68LLyMhMEZySG5hRZJkxajHlP76VNutO6t97Fw9-xk9_Ica80bP3x2IVEI6tGlWnk8cc1J2WnOUWl2jGJio2vMBuIQ"/>
+<div class="absolute top-4 left-4 bg-primary text-white px-3 py-1 rounded-full font-label-sm text-label-sm shadow-sm">Available</div>
+<button class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/80 backdrop-blur flex items-center justify-center text-on-surface hover:text-error transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+</button>
+</div>
+<div class="p-5 flex flex-col flex-1">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-title-lg text-title-lg text-on-background line-clamp-1">Green View Residential</h3>
+<span class="font-title-lg text-title-lg text-primary whitespace-nowrap ml-2">₹32 Lakhs</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm mb-4">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span>Ward 1, Godavari River Front</span>
+</div>
+<div class="grid grid-cols-2 gap-3 mb-6 font-body-sm text-body-sm">
+<div class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-outline">straighten</span>
+                                1,800 sq.ft
+                            </div>
+<div class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-outline">category</span>
+                                Residential
+                            </div>
+<div class="flex items-center gap-2 col-span-2">
+<span class="px-2 py-1 bg-surface-container-high text-on-surface rounded font-label-sm text-label-sm">Condition: Excellent</span>
+</div>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant">
+<button class="w-full py-2 border border-primary text-primary bg-transparent rounded-lg font-label-md text-label-md hover:bg-surface-container-low transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer">
+                                View Details <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-section-gap flex justify-center">
+<button class="px-6 py-2 border border-outline text-on-surface font-label-md text-label-md rounded-lg hover:bg-surface-container-low transition-colors cursor-pointer">
+                     Load More Properties
+                 </button>
+</div>
+</div>
+</main>
+<script src="js/app.js"></script>
+</body></html>
