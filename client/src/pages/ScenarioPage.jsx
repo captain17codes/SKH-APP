@@ -123,6 +123,7 @@ const ScenarioPage = () => {
   const [waterFeatures, setWaterFeatures] = useState(null);
   const [buildingsData, setBuildingsData] = useState(null);
   const [isFloodMapReady, setIsFloodMapReady] = useState(false);
+  const [isFloodLoading, setIsFloodLoading] = useState(true);
 
   const mapRef = useRef(null);
   const floodMapRef = useRef(null);
@@ -137,6 +138,7 @@ const ScenarioPage = () => {
   }, []);
 
   async function fetchFloodData() {
+    setIsFloodLoading(true);
     try {
       const [scenariosRes, summaryRes, facilitiesRes, waterRes, buildingsRes] = await Promise.all([
         api.get('/flood/scenarios'),
@@ -152,6 +154,9 @@ const ScenarioPage = () => {
       setBuildingsData(buildingsRes.data);
     } catch (error) {
       console.error('[FLOOD 3D] Failed to load flood data:', error);
+      toast.error('Failed to load 3D flood data. Backend may still be deploying.');
+    } finally {
+      setIsFloodLoading(false);
     }
   }
 
@@ -762,6 +767,16 @@ const ScenarioPage = () => {
                 )}
               </Map>
               
+              {/* Loading Overlay */}
+              {isFloodLoading && (
+                <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm flex flex-col items-center justify-center z-50">
+                  <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                  <div className="text-white font-bold bg-slate-900/80 px-4 py-2 rounded-full shadow-lg">
+                    Downloading 3D Twin Data...
+                  </div>
+                </div>
+              )}
+
               {/* Camera Controls */}
               <div className="absolute bottom-6 left-4 flex gap-2">
                 <button
