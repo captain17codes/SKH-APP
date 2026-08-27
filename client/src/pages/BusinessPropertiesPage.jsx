@@ -540,103 +540,74 @@ const BusinessPropertiesPage = () => {
         </div>
 
         {loading ? (
-          <div className="p-12 text-center text-slate-500 animate-pulse text-xs font-bold">
-            Loading Kopargaon land and property data...
-          </div>
+          <div className="col-span-full py-12 text-center text-on-surface-variant">Loading properties...</div>
         ) : filteredProperties.length === 0 ? (
-          <div className="p-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-center space-y-2">
-            <AlertCircle className="w-12 h-12 text-slate-400 mx-auto" />
-            <p className="text-sm font-bold text-slate-800 dark:text-slate-200">No Matching Properties Found</p>
-            <p className="text-xs text-slate-500">Try adjusting your filters or search query.</p>
-          </div>
+          <div className="col-span-full py-12 text-center text-on-surface-variant">No matching properties found.</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProperties.map(p => {
               const priceVal = p.price || p.expectedPrice;
               const priceStr = priceVal ? formatPrice(priceVal) : 'Price not available';
               const statusText = p.status || 'Available';
+              const pType = p.type || p.propertyType || 'Plot';
+              const defaultImage = pType.toLowerCase().includes('agri') 
+                ? 'https://lh3.googleusercontent.com/aida-public/AB6AXuAWsXSqEgKkvPhY0P2ZSvI1DitsvgBxEdv_iana8rQg4k8rCNqBmvJxAwVttZcXYmltT-YSbl2HjxPO9uip7ng7S7ADZVp5NOtu3Lwjr5JsF38_Hb3LrAwjBfcDImqcXFrqmS_rSDe5Q3TSkms6iMt25w4xqzOX7BynBzBV9CLWgUbN8xT0sK4o5aTKpgYCdZ3kT1pVGWa_CDRHZQ9gh-ZswnYdsorXzOXA_HalYZn7UNnkCrBREB-4Jw'
+                : pType.toLowerCase().includes('commer') 
+                ? 'https://lh3.googleusercontent.com/aida-public/AB6AXuAPkubnFCzYe7JobmtQ8OFphPhq6zo2KtOA16D_Jmv8wwKqeb0QALmzF8ewiqzJnGKsRrUPAZtQv4cMs9xZWodqcBu8iRYzYH1kx93ac6tz_wA6315Aaq7bec2mQvCAOGL_hWtbh9osMwi2BqheRkz2gx2k7yGlqlXHK7wYVgNxEYARzcjy8tngIjuMvUNuK5Ut_X9oawn3zXpiA2s6jmUNzchylU_93QibdZg2UDMz_3xz6YrnUN4RZA'
+                : 'https://lh3.googleusercontent.com/aida-public/AB6AXuCVQW9JasS62nnlPUtJM_QSu7GvbkEDs0BAFXWZI18jNloByJaAiErCZN-JamcBZ8mdoiFTG6K5MF15TbPcV1INJbZCyZU65x5TIlqygcEDrJMF6SrMrHdT5N0oyC9ouyiRWz0xk-oOEirSs-tyKmaG-vDpQcqs68LLyMhMEZySG5hRZJkxajHlP76VNutO6t97Fw9-xk9_Ica80bP3x2IVEI6tGlWnk8cc1J2WnOUWl2jGJio2vMBuIQ';
 
               return (
-                <div
-                  key={p.id}
-                  className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col justify-between group"
-                >
-                  <div>
-                    {/* Image & Badges */}
-                    <div className="h-44 w-full relative bg-slate-950 overflow-hidden">
-                      <img
-                        src={p.images?.[0] || 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&auto=format&fit=crop&q=80'}
-                        alt={p.name || p.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-slate-950/80 text-white font-bold text-[10px] uppercase">
-                        🏢 {p.type || p.propertyType || 'Plot'}
-                      </span>
-                      <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-emerald-600 text-white font-bold text-[10px]">
-                        {statusText}
-                      </span>
-                    </div>
-
-                    {/* Content Details */}
-                    <div className="p-5 space-y-3 text-xs">
-                      <div>
-                        <span className="text-[10px] font-mono font-bold text-cyan-500">ID: {p.id}</span>
-                        <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-cyan-500 transition-colors line-clamp-1 mt-0.5">
-                          {p.name || p.title}
-                        </h4>
-                        <p className="text-[11px] text-slate-500">📍 {p.locality}, {p.ward}</p>
+                <div key={p.id} className="bg-surface-container-lowest rounded-xl shadow-md overflow-hidden flex flex-col hover:-translate-y-1 transition-transform duration-300">
+                  <div className="h-48 relative">
+                    <img 
+                      src={p.images?.[0] || defaultImage} 
+                      alt={p.name || p.title} 
+                      className="w-full h-full object-cover"
+                    />
+                    {statusText === 'Available' && (
+                      <div className="absolute top-4 left-4 bg-primary text-on-primary px-3 py-1 rounded-full font-label-sm text-label-sm shadow-sm">
+                        Available
                       </div>
-
-                      <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-[11px]">
-                        <div>
-                          <span className="text-slate-400 block text-[9px] uppercase font-bold">Price</span>
-                          <span className="font-extrabold text-emerald-500">{priceStr}</span>
-                        </div>
-                        <div>
-                          <span className="text-slate-400 block text-[9px] uppercase font-bold">Area</span>
-                          <span className="font-bold text-slate-800 dark:text-slate-200">{p.area?.toLocaleString()} {p.areaUnit || 'sq.ft'}</span>
-                        </div>
-                        <div>
-                          <span className="text-slate-400 block text-[9px] uppercase font-bold">Land Use</span>
-                          <span className="font-bold text-slate-800 dark:text-slate-200">{p.landUse || 'Commercial'}</span>
-                        </div>
-                        <div>
-                          <span className="text-slate-400 block text-[9px] uppercase font-bold">Road Access</span>
-                          <span className="font-bold text-blue-500 truncate block">{p.roadAccess || 'Good'}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center space-x-3 text-[10px] text-slate-500">
-                        <span>💧 Water: {p.waterAvailable ? 'Available' : 'N/A'}</span>
-                        <span>⚡ Power: {p.electricityAvailable ? 'Available' : 'N/A'}</span>
-                        <span>🚰 Drainage: {p.drainageAvailable ? 'Available' : 'N/A'}</span>
-                      </div>
-                    </div>
+                    )}
+                    <button className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/80 backdrop-blur flex items-center justify-center text-on-surface hover:text-error transition-colors shadow-sm cursor-pointer">
+                      <span className="material-symbols-outlined text-[20px]">favorite</span>
+                    </button>
                   </div>
-
-                  {/* Card Buttons */}
-                  <div className="p-5 pt-0 flex items-center gap-2">
-                    <button
-                      onClick={() => setActiveDetailsProperty(p)}
-                      className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs shadow-sm"
-                    >
-                      View Details
-                    </button>
-                    <button
-                      onClick={() => handleFlyToMap(p)}
-                      className="px-3 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold text-xs flex items-center space-x-1"
-                      title="View on Map"
-                    >
-                      <MapPin className="w-3.5 h-3.5" />
-                      <span>View on Map</span>
-                    </button>
-                    <button
-                      onClick={() => setActiveAnalysisProperty(p)}
-                      className="px-3 py-2.5 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs rounded-xl"
-                      title="Analyze Area"
-                    >
-                      Analyze
-                    </button>
+                  <div className="p-5 flex flex-col flex-1">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-title-lg text-title-lg text-on-background line-clamp-1 flex-1 pr-2">{p.name || p.title}</h3>
+                      <span className="font-title-lg text-title-lg text-primary whitespace-nowrap">{priceStr}</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm mb-4">
+                      <span className="material-symbols-outlined text-[16px]">location_on</span>
+                      <span>{p.ward}, {p.locality}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 mb-6 font-body-sm text-body-sm">
+                      <div className="flex items-center gap-2 text-on-surface">
+                        <span className="material-symbols-outlined text-outline">straighten</span> {p.area?.toLocaleString()} {p.areaUnit || 'sq.ft'}
+                      </div>
+                      <div className="flex items-center gap-2 text-on-surface">
+                        <span className="material-symbols-outlined text-outline">category</span> {pType}
+                      </div>
+                      <div className="flex items-center gap-2 col-span-2">
+                        <span className="px-2 py-1 bg-surface-container-high text-on-surface rounded font-label-sm text-label-sm">Condition: Good</span>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-auto pt-4 border-t border-outline-variant grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => setActiveDetailsProperty(p)}
+                        className="col-span-1 py-2 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-sm cursor-pointer"
+                      >
+                        Details
+                      </button>
+                      <button
+                        onClick={() => handleFlyToMap(p)}
+                        className="col-span-1 py-2 bg-surface-container-high text-on-surface rounded-lg font-label-md text-label-md hover:bg-surface-container-highest transition-colors shadow-sm cursor-pointer"
+                      >
+                        Map
+                      </button>
+                    </div>
                   </div>
                 </div>
               );

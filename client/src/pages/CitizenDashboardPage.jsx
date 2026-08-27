@@ -311,117 +311,160 @@ const CitizenDashboardPage = () => {
     <div className="space-y-6">
       {/* VIEW 1: DASHBOARD OVERVIEW */}
       {activeView === 'dashboard' && (
-        <div className="space-y-6">
-          {/* Executive Banner */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-emerald-950 via-slate-900 to-cyan-950 border border-emerald-500/20 p-6 rounded-2xl text-white shadow-xl">
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">{t('citizenPortal')}</span>
-                  <h2 className="text-xl sm:text-2xl font-black tracking-tight">{t('civicDashboard')}</h2>
-                  <p className="text-xs text-slate-300 mt-1">{t('civicDashboardDesc')}</p>
-                </div>
+        <div className="max-w-container-max-width mx-auto space-y-section-gap font-body-md">
+          {/* Welcome Section */}
+          <section>
+            <h2 className="font-display-md text-display-md text-on-surface mb-2">Welcome back, {user?.name?.split(' ')[0] || 'Rajesh'} 👋</h2>
+            <p className="font-body-lg text-body-lg text-on-surface-variant">Here is a quick overview of your civic services and recent reports.</p>
+          </section>
 
-                <div className="flex items-center space-x-2.5">
-                  <button
-                    onClick={() => {
-                      setLastSubmittedComplaint(null);
-                      setActiveView('report-problem');
-                    }}
-                    className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/30 transition-all flex items-center space-x-1.5"
+          {/* Report Issue & Quick Stats Bento */}
+          <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Report Issue Card */}
+            <div className="lg:col-span-2 bg-surface-container-lowest rounded-xl shadow-md p-6 border border-outline-variant flex flex-col justify-between">
+              <div>
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h3 className="font-title-lg text-title-lg text-on-surface">Report a New Issue</h3>
+                    <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Select a category to quickly file a complaint.</p>
+                  </div>
+                  <button 
+                    onClick={() => setActiveView('report-problem')}
+                    className="bg-primary text-on-primary font-label-md text-label-md px-6 py-2.5 rounded-lg hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
                   >
-                    <Plus className="w-4 h-4" />
-                    <span>{t('reportProblem')}</span>
+                    <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add</span>
+                    New Report
                   </button>
                 </div>
-              </div>
 
-              {/* Citizen Stats */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1">
-                  <span className="text-xs text-slate-500 dark:text-slate-400">{t('activeGrievances')}</span>
-                  <p className="text-2xl font-bold text-amber-500">{myComplaints.filter(c => c.status !== 'Resolved').length} Tickets</p>
-                  <span className="text-[10px] text-emerald-500 font-semibold">Under 48h SLA</span>
-                </div>
-
-                <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1">
-                  <span className="text-xs text-slate-500 dark:text-slate-400">{t('resolvedTickets')}</span>
-                  <p className="text-2xl font-bold text-emerald-500">12 Total</p>
-                  <span className="text-[10px] text-slate-400">98% Satisfactory</span>
-                </div>
-
-                <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1">
-                  <span className="text-xs text-slate-500 dark:text-slate-400">{t('wardInfrastructure')}</span>
-                  <p className="text-2xl font-bold text-blue-500">4 Works</p>
-                  <span className="text-[10px] text-blue-400">Active in Ward 3</span>
-                </div>
-
-                <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1">
-                  <span className="text-xs text-slate-500 dark:text-slate-400">{t('publicGisLayers')}</span>
-                  <p className="text-2xl font-bold text-purple-500">11 Vector</p>
-                  <span className="text-[10px] text-purple-400">GeoJSON Active</span>
-                </div>
-              </div>
-
-              {/* Quick Actions Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4">
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center justify-between">
-                    <span>{t('myComplaints')} & Photo Proof</span>
-                    <button onClick={() => setActiveView('my-complaints')} className="text-xs font-semibold text-emerald-500 hover:underline">{t('viewAllArrow')}</button>
-                  </h3>
-
-                  <div className="space-y-3">
-                    {myComplaints.map(c => (
-                      <div key={c.id} className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
-                        <div className="flex items-center space-x-3 overflow-hidden">
-                          {c.photos && c.photos[0] && (
-                            <img src={c.photos[0]} alt="Proof" className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-slate-200 dark:border-slate-700" />
-                          )}
-                          <div className="overflow-hidden">
-                            <div className="flex items-center space-x-2">
-                              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{c.id}</span>
-                              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{c.category}</span>
-                            </div>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{c.ward} • Assigned: {c.officer}</p>
-                          </div>
-                        </div>
-
-                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold shrink-0 ${
-                          c.status === 'Resolved' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
-                        }`}>
-                          {c.status}
-                        </span>
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
+                  {[
+                    { icon: 'water_drop', label: 'Drainage', category: 'Drainage' },
+                    { icon: 'bolt', label: 'Electricity', category: 'Electricity' },
+                    { icon: 'delete', label: 'Garbage', category: 'Garbage' },
+                    { icon: 'add_road', label: 'Roads', category: 'Road / Pothole' },
+                    { icon: 'lightbulb', label: 'Lighting', category: 'Street Light' },
+                    { icon: 'traffic', label: 'Traffic', category: 'Other' }
+                  ].map(cat => (
+                    <button 
+                      key={cat.label}
+                      onClick={() => {
+                        setComplaintForm(prev => ({ ...prev, category: cat.category }));
+                        setActiveView('report-problem');
+                      }}
+                      className="flex flex-col items-center gap-2 p-3 rounded-lg border border-outline-variant hover:bg-surface-container hover:border-primary transition-all group cursor-pointer"
+                    >
+                      <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-primary-fixed group-hover:text-primary transition-colors text-on-surface-variant">
+                        <span className="material-symbols-outlined">{cat.icon}</span>
                       </div>
-                    ))}
+                      <span className="font-label-sm text-label-sm text-center">{cat.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Stat Card */}
+            <div className="bg-surface-container-lowest rounded-xl shadow-md p-6 border border-outline-variant">
+              <h3 className="font-title-lg text-title-lg text-on-surface mb-6">Service Overview</h3>
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-blue-50 text-primary flex items-center justify-center">
+                    <span className="material-symbols-outlined">receipt_long</span>
+                  </div>
+                  <div>
+                    <p className="font-label-sm text-label-sm text-on-surface-variant">Active Complaints</p>
+                    <p className="font-headline-md text-headline-md text-on-surface">{myComplaints.filter(c => c.status !== 'Resolved').length}</p>
                   </div>
                 </div>
-
-                <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4">
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Ward Infrastructure Updates</h3>
-                  <div className="space-y-3 text-xs">
-                    <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2">
-                      <div className="flex justify-between">
-                        <span className="font-bold text-slate-800 dark:text-slate-200">Station Road Asphalt Surfacing</span>
-                        <span className="text-emerald-500 font-bold">90% Done</span>
-                      </div>
-                      <div className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                        <div className="h-full bg-emerald-500 rounded-full" style={{ width: '90%' }} />
-                      </div>
-                    </div>
-
-                    <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2">
-                      <div className="flex justify-between">
-                        <span className="font-bold text-slate-800 dark:text-slate-200">Godavari Riverfront Promenade</span>
-                        <span className="text-blue-500 font-bold">82% Done</span>
-                      </div>
-                      <div className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                        <div className="h-full bg-blue-500 rounded-full" style={{ width: '82%' }} />
-                      </div>
-                    </div>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-green-50 text-green-700 flex items-center justify-center">
+                    <span className="material-symbols-outlined">check_circle</span>
+                  </div>
+                  <div>
+                    <p className="font-label-sm text-label-sm text-on-surface-variant">Resolved (Year)</p>
+                    <p className="font-headline-md text-headline-md text-on-surface">12</p>
                   </div>
                 </div>
               </div>
             </div>
-          )}
+          </section>
+
+          {/* Recent Complaints Section */}
+          <section>
+            <div className="flex justify-between items-end mb-6">
+              <h3 className="font-headline-lg md:font-headline-lg text-headline-lg text-on-surface">My Recent Complaints</h3>
+              <button onClick={() => setActiveView('my-complaints')} className="font-label-md text-label-md text-primary hover:underline cursor-pointer">View All</button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {myComplaints.slice(0, 2).map(c => (
+                <div key={c.id} className="bg-surface-container-lowest rounded-xl shadow-md border border-outline-variant p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <p className="font-label-sm text-label-sm text-on-surface-variant mb-1">#{c.id} • {new Date(c.createdAt || Date.now()).toLocaleDateString()}</p>
+                      <h4 className="font-title-lg text-title-lg text-on-surface">{c.category}</h4>
+                      <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-1">
+                        <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>location_on</span> {c.location}
+                      </p>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full font-label-sm text-label-sm ${
+                      c.status === 'Resolved' ? 'bg-surface-container-high text-on-surface-variant border border-outline-variant' :
+                      c.status === 'In Progress' ? 'bg-blue-50 text-primary border border-blue-200' :
+                      'bg-surface-container-high text-on-surface-variant border border-outline-variant'
+                    }`}>
+                      {c.status}
+                    </span>
+                  </div>
+
+                  {/* Timeline Stepper */}
+                  <div className="mt-6 pt-6 border-t border-outline-variant">
+                    <div className="flex items-center justify-between relative">
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-outline-variant -z-10 rounded-full"></div>
+                      {c.status === 'In Progress' && (
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[50%] h-1 bg-primary -z-10 rounded-full"></div>
+                      )}
+                      {c.status === 'Resolved' && (
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-primary -z-10 rounded-full"></div>
+                      )}
+
+                      <div className="flex flex-col items-center gap-2">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                          c.status === 'Submitted' ? 'bg-primary text-on-primary ring-4 ring-primary-fixed' : 'bg-primary text-on-primary'
+                        }`}>
+                          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>{c.status === 'Submitted' ? 'upload_file' : 'check'}</span>
+                        </div>
+                        <span className={`font-label-sm text-label-sm ${c.status === 'Submitted' ? 'text-primary font-bold' : 'text-on-surface'}`}>Submitted</span>
+                      </div>
+
+                      <div className="flex flex-col items-center gap-2">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                          c.status === 'In Progress' ? 'bg-primary text-on-primary ring-4 ring-primary-fixed' : 
+                          c.status === 'Resolved' ? 'bg-primary text-on-primary' :
+                          'bg-surface-container border-2 border-outline-variant text-outline-variant'
+                        }`}>
+                          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>engineering</span>
+                        </div>
+                        <span className={`font-label-sm text-label-sm ${c.status === 'In Progress' ? 'text-primary font-bold' : 'text-on-surface-variant'}`}>Assigned</span>
+                      </div>
+
+                      <div className="flex flex-col items-center gap-2">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                          c.status === 'Resolved' ? 'bg-primary text-on-primary ring-4 ring-primary-fixed' :
+                          'bg-surface-container border-2 border-outline-variant text-outline-variant'
+                        }`}>
+                          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>done_all</span>
+                        </div>
+                        <span className={`font-label-sm text-label-sm ${c.status === 'Resolved' ? 'text-primary font-bold' : 'text-on-surface-variant'}`}>Resolved</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
 
           {/* VIEW 2: REPORT PROBLEM WITH FULL PHOTO UPLOAD & GPS */}
           {activeView === 'report-problem' && (

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Citizen Dashboard - Smart City Services</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#f8f9ff",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed": "#6ffbbe",
+                        "on-secondary-fixed-variant": "#004e5c",
+                        "on-surface": "#0d1c2f",
+                        "primary-fixed": "#dce1ff",
+                        "on-tertiary-container": "#27c38a",
+                        "surface": "#f8f9ff",
+                        "on-secondary-fixed": "#001f26",
+                        "surface-container-high": "#dde9ff",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#4cd7f6",
+                        "tertiary": "#00311f",
+                        "inverse-surface": "#233144",
+                        "inverse-on-surface": "#ebf1ff",
+                        "on-primary-container": "#90a8ff",
+                        "surface-tint": "#4059aa",
+                        "primary": "#00236f",
+                        "on-primary-fixed": "#00164e",
+                        "outline": "#757682",
+                        "outline-variant": "#c5c5d3",
+                        "on-secondary": "#ffffff",
+                        "surface-container-low": "#eff4ff",
+                        "inverse-primary": "#b6c4ff",
+                        "on-surface-variant": "#444651",
+                        "surface-variant": "#d5e3fd",
+                        "surface-container": "#e6eeff",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#acedff",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "background": "#f8f9ff",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed": "#002113",
+                        "on-background": "#0d1c2f",
+                        "surface-dim": "#ccdbf4",
+                        "on-error": "#ffffff",
+                        "primary-container": "#1e3a8a",
+                        "surface-container-highest": "#d5e3fd",
+                        "secondary-container": "#57dffe",
+                        "primary-fixed-dim": "#b6c4ff",
+                        "tertiary-container": "#004a31",
+                        "on-secondary-container": "#006172",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-primary-fixed-variant": "#264191",
+                        "secondary": "#00687a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-gap": "2.5rem",
+                        "margin-desktop": "2rem",
+                        "stack-gap": "1rem",
+                        "margin-mobile": "1rem",
+                        "sidebar-width": "260px",
+                        "container-max-width": "1440px",
+                        "gutter": "1.5rem"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Public Sans"],
+                        "body-md": ["Public Sans"],
+                        "title-lg": ["Public Sans"],
+                        "headline-lg-mobile": ["Public Sans"],
+                        "body-lg": ["Public Sans"],
+                        "display-lg": ["Public Sans"],
+                        "headline-md": ["Public Sans"],
+                        "label-sm": ["Public Sans"],
+                        "headline-lg": ["Public Sans"],
+                        "display-md": ["Public Sans"],
+                        "body-sm": ["Public Sans"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "title-lg": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "60px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-lg": ["30px", { "lineHeight": "38px", "fontWeight": "600" }],
+                        "display-md": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+    </style>
+<link href="css/styles.css" rel="stylesheet"/>
+</head>
+<body>
+<div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div> class="bg-background text-on-background min-h-screen flex">
+<!-- SideNavBar (Shared Component) -->
+<nav class="fixed left-0 top-0 h-screen w-[260px] flex flex-col py-6 bg-surface-container-lowest dark:bg-on-surface shadow-md border-r border-outline-variant dark:border-outline z-40 hidden md:flex">
+<div class="px-6 mb-8 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">Citizen Portal</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Smart City Services</p>
+</div>
+</div>
+<ul class="flex-1 flex flex-col gap-1 w-full font-label-md text-label-md">
+<li class="w-full">
+<a class="flex items-center gap-3 bg-primary-container dark:bg-primary-fixed-variant text-on-primary-container dark:text-on-primary-fixed-variant border-l-4 border-primary dark:border-primary-fixed px-4 py-3 rounded-r-lg opacity-90 transition-all duration-200 nav-link" href="dashboard.html">
+<span class="material-symbols-outlined nav-link" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+</li>
+<li class="w-full">
+<a class="flex items-center gap-3 text-on-surface-variant dark:text-surface-variant px-4 py-3 hover:bg-surface-container dark:hover:bg-surface-container-high transition-colors nav-link" href="gis-map.html">
+<span class="material-symbols-outlined nav-link" data-icon="map">map</span>
+<span>GIS View</span>
+</a>
+</li>
+<li class="w-full">
+<a class="flex items-center gap-3 text-on-surface-variant dark:text-surface-variant px-4 py-3 hover:bg-surface-container dark:hover:bg-surface-container-high transition-colors nav-link" href="marketplace.html">
+<span class="material-symbols-outlined nav-link" data-icon="store">store</span>
+<span>Property Marketplace</span>
+</a>
+</li>
+<li class="w-full">
+<a class="flex items-center gap-3 text-on-surface-variant dark:text-surface-variant px-4 py-3 hover:bg-surface-container dark:hover:bg-surface-container-high transition-colors nav-link" href="#">
+<span class="material-symbols-outlined nav-link" data-icon="add_business">add_business</span>
+<span>Sell Property</span>
+</a>
+</li>
+<li class="w-full">
+<a class="flex items-center gap-3 text-on-surface-variant dark:text-surface-variant px-4 py-3 hover:bg-surface-container dark:hover:bg-surface-container-high transition-colors nav-link" href="#">
+<span class="material-symbols-outlined nav-link" data-icon="list_alt">list_alt</span>
+<span>My Listings</span>
+</a>
+</li>
+<li class="w-full">
+<a class="flex items-center gap-3 text-on-surface-variant dark:text-surface-variant px-4 py-3 hover:bg-surface-container dark:hover:bg-surface-container-high transition-colors nav-link" href="settings.html">
+<span class="material-symbols-outlined nav-link" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</li>
+</ul>
+<div class="px-6 mt-auto">
+<div class="flex items-center gap-3 pt-4 border-t border-outline-variant">
+<img alt="Citizen Profile Avatar" class="w-10 h-10 rounded-full object-cover" data-alt="A small circular avatar profile picture of an Indian man in his 30s smiling gently. High quality, professional lighting, clean white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC88EA_67EUCmdk9L70Sl8XdwetPNnAyMrIFmw_OxraFJRi9I_DoFCFn392pYNI4AE9hg5ZR-cPvHP-LZMoYTYbpWVNE3Dsh20X8yzU3v8cTj8EjWuK646d_464DRQ1TlqnVUe2r4lMrPtXHyWuIgISwE_s2bvsWAw0bxaR_182CBBfGVEpIMMW19oEaxCJYNEQO4kWP4Qu7cmRqoQeh0jBhlwSLxdFhdyEhxoBC_xZAV5Mmjw4WTWEVQ"/>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Rajesh Kumar</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">ID: 9876-5432</p>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col md:ml-[260px] min-h-screen">
+<!-- TopNavBar (Shared Component) -->
+<header class="flex justify-between items-center w-full px-8 py-4 sticky top-0 z-50 bg-surface-bright dark:bg-surface-dim border-b border-outline-variant dark:border-outline shadow-sm">
+<div class="md:hidden flex items-center gap-4">
+<span class="material-symbols-outlined text-primary cursor-pointer">menu</span>
+<h1 class="font-headline-md text-headline-md font-extrabold text-primary dark:text-primary-fixed">Citizen Portal</h1>
+</div>
+<div class="hidden md:block">
+<!-- Search could go here -->
+</div>
+<div class="flex items-center gap-6">
+<button class="font-label-md text-label-md px-3 py-1 rounded-full border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors">
+                    EN/HI/MR
+                </button>
+<div class="flex gap-4 text-on-surface-variant">
+<button class="hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-95">
+<span class="material-symbols-outlined" data-icon="translate">translate</span>
+</button>
+<button class="relative hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-95">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+</button>
+</div>
+<img alt="User Profile" class="w-8 h-8 rounded-full object-cover hidden md:block" data-alt="A small circular avatar profile picture of an Indian man in his 30s smiling gently. High quality, professional lighting, clean white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnD6u2sSeh3Dp4aW89VdLyMJ9DzL7e7k7hb9hjUMniNvrAfRyrwW44cTlnEeT4O1prebfIULeZ4rUxm3tQAor5S5ntqFC1goVhP4BXIL7Wu-WJElYONDJ5HUaQtzfp6Ox0i1N9T8RZX0fG1lWoT6JEhBZLnvjV8VdspSXy1VSxSx-N55lv-DUdALzxTf17wlzSneo8NbSXB5lfZq4nXuTUnnMvJUAgkmpq06bvvncK1HAfE7egKFXI3Q"/>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 p-margin-mobile md:p-margin-desktop bg-surface-bright">
+<div class="max-w-container-max-width mx-auto space-y-section-gap">
+<!-- Welcome Section -->
+<section>
+<h2 class="font-display-md text-display-md text-on-surface mb-2">Welcome back, Rajesh 👋</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Here is a quick overview of your civic services and recent reports.</p>
+</section>
+<!-- Report Issue & Quick Stats Bento -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Report Issue Card -->
+<div class="lg:col-span-2 bg-surface-container-lowest rounded-xl shadow-md p-6 border border-outline-variant flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-6">
+<div>
+<h3 class="font-title-lg text-title-lg text-on-surface">Report a New Issue</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Select a category to quickly file a complaint.</p>
+</div>
+<button class="bg-primary text-on-primary font-label-md text-label-md px-6 py-2.5 rounded-lg hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-size: 20px;">add</span>
+                                    New Report
+                                </button>
+</div>
+<div class="grid grid-cols-3 sm:grid-cols-6 gap-4">
+<button class="flex flex-col items-center gap-2 p-3 rounded-lg border border-outline-variant hover:bg-surface-container hover:border-primary transition-all group">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-primary-fixed group-hover:text-primary transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">water_drop</span>
+</div>
+<span class="font-label-sm text-label-sm text-center">Drainage</span>
+</button>
+<button class="flex flex-col items-center gap-2 p-3 rounded-lg border border-outline-variant hover:bg-surface-container hover:border-primary transition-all group">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-primary-fixed group-hover:text-primary transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+<span class="font-label-sm text-label-sm text-center">Electricity</span>
+</button>
+<button class="flex flex-col items-center gap-2 p-3 rounded-lg border border-outline-variant hover:bg-surface-container hover:border-primary transition-all group">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-primary-fixed group-hover:text-primary transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">delete</span>
+</div>
+<span class="font-label-sm text-label-sm text-center">Garbage</span>
+</button>
+<button class="flex flex-col items-center gap-2 p-3 rounded-lg border border-outline-variant hover:bg-surface-container hover:border-primary transition-all group">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-primary-fixed group-hover:text-primary transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">add_road</span>
+</div>
+<span class="font-label-sm text-label-sm text-center">Roads</span>
+</button>
+<button class="flex flex-col items-center gap-2 p-3 rounded-lg border border-outline-variant hover:bg-surface-container hover:border-primary transition-all group">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-primary-fixed group-hover:text-primary transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">lightbulb</span>
+</div>
+<span class="font-label-sm text-label-sm text-center">Lighting</span>
+</button>
+<button class="flex flex-col items-center gap-2 p-3 rounded-lg border border-outline-variant hover:bg-surface-container hover:border-primary transition-all group">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-primary-fixed group-hover:text-primary transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">traffic</span>
+</div>
+<span class="font-label-sm text-label-sm text-center">Traffic</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Stat Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-md p-6 border border-outline-variant">
+<h3 class="font-title-lg text-title-lg text-on-surface mb-6">Service Overview</h3>
+<div class="space-y-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-blue-50 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined">receipt_long</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Active Complaints</p>
+<p class="font-headline-md text-headline-md text-on-surface">3</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-green-50 text-green-700 flex items-center justify-center">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Resolved (Year)</p>
+<p class="font-headline-md text-headline-md text-on-surface">12</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Recent Complaints Section -->
+<section>
+<div class="flex justify-between items-end mb-6">
+<h3 class="font-headline-lg md:font-headline-lg text-headline-lg text-on-surface">My Recent Complaints</h3>
+<a class="font-label-md text-label-md text-primary hover:underline nav-link" href="#">View All</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Complaint Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl shadow-md border border-outline-variant p-6">
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-1">#CMP-2024-001 • Oct 12, 2024</p>
+<h4 class="font-title-lg text-title-lg text-on-surface">Pothole on Main Road</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined" style="font-size: 16px;">location_on</span> MG Road, Sector 14
+                                    </p>
+</div>
+<span class="px-3 py-1 rounded-full font-label-sm text-label-sm bg-blue-50 text-primary border border-blue-200">
+                                    In Progress
+                                </span>
+</div>
+<!-- Timeline Stepper -->
+<div class="mt-6 pt-6 border-t border-outline-variant">
+<div class="flex items-center justify-between relative">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-outline-variant -z-10 rounded-full"></div>
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-[50%] h-1 bg-primary -z-10 rounded-full"></div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-size: 14px;">check</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface">Submitted</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center ring-4 ring-primary-fixed">
+<span class="material-symbols-outlined" style="font-size: 14px;">engineering</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary font-bold">Assigned</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-container border-2 border-outline-variant text-outline-variant flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-size: 14px;">done_all</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Resolved</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Complaint Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl shadow-md border border-outline-variant p-6">
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-1">#CMP-2024-045 • Oct 10, 2024</p>
+<h4 class="font-title-lg text-title-lg text-on-surface">Streetlight not working</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined" style="font-size: 16px;">location_on</span> Park Avenue, Lane 3
+                                    </p>
+</div>
+<span class="px-3 py-1 rounded-full font-label-sm text-label-sm bg-surface-container-high text-on-surface-variant border border-outline-variant">
+                                    Pending
+                                </span>
+</div>
+<!-- Timeline Stepper -->
+<div class="mt-6 pt-6 border-t border-outline-variant">
+<div class="flex items-center justify-between relative">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-outline-variant -z-10 rounded-full"></div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center ring-4 ring-primary-fixed">
+<span class="material-symbols-outlined" style="font-size: 14px;">upload_file</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary font-bold">Submitted</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-container border-2 border-outline-variant text-outline-variant flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-size: 14px;">engineering</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Assigned</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-container border-2 border-outline-variant text-outline-variant flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-size: 14px;">done_all</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Resolved</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+<!-- AI Assistant FAB -->
+<button class="fixed bottom-6 right-6 w-14 h-14 bg-primary text-on-primary rounded-full shadow-[0_8px_20px_rgba(0,0,0,0.15)] flex items-center justify-center hover:scale-105 transition-transform z-50 group">
+<span class="material-symbols-outlined text-2xl group-hover:hidden">smart_toy</span>
+<span class="material-symbols-outlined text-2xl hidden group-hover:block">chat</span>
+<!-- Tooltip -->
+<div class="absolute -top-12 right-0 bg-inverse-surface text-inverse-on-surface font-label-sm px-3 py-1.5 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-md">
+            Need help? Ask AI
+        </div>
+</button>
+<script src="js/app.js"></script>
+</body></html>

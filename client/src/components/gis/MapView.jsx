@@ -313,50 +313,61 @@ const MapView = ({
   const displayHospitals = (osmData?.hospitals && osmData.hospitals.length > 0) ? osmData.hospitals : (infraData?.hospitals || []);
   const displaySchools = (osmData?.schools && osmData.schools.length > 0) ? osmData.schools : (infraData?.schools || []);
 
+  const handleZoomIn = () => {
+    if (mapRef.current) mapRef.current.zoomIn();
+  };
+  const handleZoomOut = () => {
+    if (mapRef.current) mapRef.current.zoomOut();
+  };
+  const toggleSatellite = () => {
+    setBaseTileSource(prev => prev === 'osm' ? 'satellite' : 'osm');
+  };
+
   return (
-    <div ref={containerRef} className={`relative w-full ${height} ${isFullscreen ? 'fixed inset-0 z-50 h-screen rounded-none' : 'rounded-xl overflow-hidden shadow-xl border border-slate-200 dark:border-slate-800'}`} style={{ minHeight: '500px' }}>
+    <div ref={containerRef} className={`flex flex-col md:flex-row w-full bg-surface ${height} ${isFullscreen ? 'fixed inset-0 z-50 h-screen rounded-none' : ''}`} style={{ minHeight: '500px' }}>
       
       {showAllControls && (
-        <>
+        <div className="w-full md:w-72 flex-shrink-0 flex flex-col border-r border-outline-variant bg-surface overflow-hidden">
+          {/* Top horizontal tools (Zoom + Satellite) */}
           <MapTools
-            baseTileSource={baseTileSource}
-            onChangeBaseTile={setBaseTileSource}
-            onResetView={() => mapRef.current?.flyTo({ center: [center[1], center[0]], zoom: zoom, pitch: 0, bearing: 0 })}
-            isFullscreen={isFullscreen}
-            onToggleFullscreen={handleToggleFullscreen}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+            onToggleSatellite={toggleSatellite}
+            isSatellite={baseTileSource === 'satellite'}
           />
-          <MapLayerControl
-            activeLayers={activeLayers}
-            onToggleLayer={toggleLayer}
-            isOpen={isLayerMenuOpen}
-            onToggleOpen={() => setIsLayerMenuOpen(!isLayerMenuOpen)}
-            overlayMode={overlayMode}
-            onSelectOverlayMode={setOverlayMode}
-          />
-          <MapLegend
-            isOpen={isLegendOpen}
-            onToggleOpen={() => setIsLegendOpen(!isLegendOpen)}
-            overlayMode={overlayMode}
-          />
-        </>
+          
+          {/* Scrollable middle area for Layers */}
+          <div className="flex-1 overflow-y-auto">
+            <MapLayerControl
+              activeLayers={activeLayers}
+              onToggleLayer={toggleLayer}
+            />
+          </div>
+
+          {/* Bottom fixed area for Legend */}
+          <div className="border-t border-outline-variant flex-shrink-0">
+            <MapLegend />
+          </div>
+        </div>
       )}
 
-      <Map
-        ref={mapRef}
-        {...viewState}
-        onMove={evt => {
-          setViewState(evt.viewState);
-          if (onZoomChange) onZoomChange(evt.viewState.zoom);
-          if (onCenterChange) onCenterChange([evt.viewState.latitude, evt.viewState.longitude]);
-        }}
-        onClick={handleMapClick}
-        onMouseMove={handleMapHover}
-        interactiveLayerIds={['wards-fill', 'cadastral-fill']}
-        mapStyle={mapStyleUrl}
-        style={{ width: '100%', height: '100%' }}
-      >
-        <NavigationControl position="top-right" />
-        <FullscreenControl position="top-right" />
+      {/* Actual Map Container */}
+      <div className="flex-1 relative w-full h-full min-h-[400px]">
+        <Map
+          ref={mapRef}
+          {...viewState}
+          onMove={evt => {
+            setViewState(evt.viewState);
+            if (onZoomChange) onZoomChange(evt.viewState.zoom);
+            if (onCenterChange) onCenterChange([evt.viewState.latitude, evt.viewState.longitude]);
+          }}
+          onClick={handleMapClick}
+          onMouseMove={handleMapHover}
+          interactiveLayerIds={['wards-fill', 'cadastral-fill']}
+          mapStyle={mapStyleUrl}
+          style={{ width: '100%', height: '100%' }}
+        >
+          <FullscreenControl position="top-right" />
 
         {/* Wards Source & Layer (3D Extrusion) */}
         {activeLayers.wards && wardsData && (
@@ -553,6 +564,7 @@ const MapView = ({
           </Popup>
         )}
       </Map>
+      </div>
     </div>
   );
 };
