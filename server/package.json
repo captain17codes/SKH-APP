@@ -5,7 +5,10 @@
   "main": "app.js",
   "scripts": {
     "dev": "nodemon app.js",
-    "start": "node app.js"
+    "start": "node app.js",
+    "migrate": "node apply_migrations.js",
+    "validate:master-dataset": "node scripts/import_master_dataset.js --dry-run",
+    "import:master-dataset": "node scripts/import_master_dataset.js"
   },
   "keywords": [],
   "author": "",

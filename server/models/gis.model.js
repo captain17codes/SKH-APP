@@ -25,30 +25,50 @@ export const getWardById = async (id) => {
 export const getAllInfrastructure = async (wardId = null) => {
   let sql = `
     SELECT 
-      i.*,
+      i.id,
+      i.name,
+      i.category as type,
+      i.layer_name as status,
+      i.properties,
       ST_AsGeoJSON(i.geometry)::json AS geojson,
       w.name as ward_name
-    FROM infrastructure i
-    LEFT JOIN wards w ON i.ward_id = w.id
-    WHERE 1=1
+    FROM master_gis_features i
+    LEFT JOIN wards w ON ST_Intersects(i.geometry, w.geometry)
+    WHERE i.layer_name IN ('facilities', 'civic_logistics', 'power_infrastructure')
   `;
   const values = [];
   
   if (wardId) {
     values.push(wardId);
-    sql += ` AND i.ward_id = $1`;
+    sql += ` AND (w.id = $1 OR w.ward_number::text = $1)`;
   }
   
   const result = await query(sql, values);
-  return result.rows;
+  return result.rows.map(row => ({
+    ...row.properties,
+    id: row.id,
+    name: row.name,
+    type: row.type || row.properties.type || row.layer_name,
+    ward_name: row.ward_name,
+    geojson: row.geojson
+  }));
 };
 
 export const getAllRoads = async () => {
   const result = await query(`
     SELECT 
-      r.*,
+      r.id,
+      r.name,
+      r.properties,
       ST_AsGeoJSON(r.geometry)::json AS geojson
-    FROM roads r
+    FROM master_gis_features r
+    WHERE r.layer_name = 'roads'
   `);
-  return result.rows;
+  return result.rows.map(row => ({
+    ...row.properties,
+    id: row.id,
+    name: row.name,
+    type: row.properties.highway || 'road',
+    geojson: row.geojson
+  }));
 };

@@ -32,6 +32,7 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import AiPlannerPage from './pages/AiPlannerPage';
 import DocumentsPage from './pages/DocumentsPage';
 import SettingsPage from './pages/SettingsPage';
+import ScenarioPage from './pages/ScenarioPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 import ProtectedRoute from './components/common/ProtectedRoute';
@@ -90,6 +91,7 @@ function App() {
               <Route path="/gis" element={<GisPage />} />
               <Route path="/projects" element={<ProjectsPage />} />
               <Route path="/projects/:id" element={<ProjectDetailsPage />} />
+              <Route path="/scenarios" element={<ScenarioPage />} />
               <Route path="/land-use" element={<LandUsePage />} />
               <Route path="/complaints" element={<ComplaintsPage />} />
               <Route path="/analytics" element={<AnalyticsPage />} />

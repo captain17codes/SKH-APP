@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/LanguageContext';
 
@@ -11,6 +12,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { path: '/dashboard', label: t('dashboard'), icon: 'dashboard' },
     { path: '/gis', label: t('gisSmartMap'), icon: 'map', badge: t('liveGis') },
     { path: '/projects', label: t('projects'), icon: 'engineering' },
+    { path: '/scenarios', label: 'WHAT-IF Scenarios', icon: 'difference', badge: 'New' },
     { path: '/land-use', label: t('landUsePlanning'), icon: 'layers' },
     { path: '/complaints', label: t('citizenComplaints'), icon: 'forum', badge: `6 ${t('new')}` },
     { path: '/analytics', label: t('analytics'), icon: 'monitoring' },

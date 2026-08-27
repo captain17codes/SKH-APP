@@ -1,0 +1,34 @@
+services:
+  # 1. MCP Server
+  - type: web
+    name: kopargaon-mcp-server
+    env: node
+    rootDir: mcp-server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: "7000"
+      - key: DATABASE_URL
+        sync: false # Set this in Render dashboard
+      - key: GROQ_API_KEY
+        sync: false # Set this in Render dashboard
+      - key: ALLOWED_ORIGIN
+        value: "*"
+        
+  # 2. Main Backend
+  - type: web
+    name: kopargaon-backend
+    env: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: "5000"
+      - key: DATABASE_URL
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: MCP_SERVER_URL
+        value: "https://kopargaon-mcp-server.onrender.com" # Update this to the actual MCP URL
