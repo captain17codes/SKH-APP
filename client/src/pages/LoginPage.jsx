@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Building2, Shield, UserCheck, Briefcase, Lock, ArrowRight, ArrowLeft, Phone, Mail, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/api';
 import { useTranslation } from '../context/LanguageContext';
@@ -114,120 +113,120 @@ const LoginPage = ({ defaultRole }) => {
     }
   };
 
-  const getRoleIcon = () => {
-    if (role === 'Business') return <Briefcase className="w-8 h-8 text-cyan-400" />;
-    if (role === 'Citizen') return <UserCheck className="w-8 h-8 text-emerald-400" />;
-    return <Shield className="w-8 h-8 text-blue-400" />;
-  };
-
-  const getRoleTheme = () => {
-    if (role === 'Business') {
-      return {
-        badgeBg: 'bg-cyan-500/10 border-cyan-500/20',
-        btnBg: 'bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 shadow-blue-600/30',
-        focusRing: 'focus:ring-cyan-500'
-      };
-    }
-    if (role === 'Citizen') {
-      return {
-        badgeBg: 'bg-emerald-500/10 border-emerald-500/20',
-        btnBg: 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/30',
-        focusRing: 'focus:ring-emerald-500'
-      };
-    }
-    return {
-      badgeBg: 'bg-blue-500/10 border-blue-500/20',
-      btnBg: 'bg-blue-600 hover:bg-blue-500 shadow-blue-600/30',
-      focusRing: 'focus:ring-blue-500'
-    };
-  };
-
-  const theme = getRoleTheme();
-
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 sm:p-6 selection:bg-blue-600 relative">
-      <div className="absolute top-4 right-4">
+    <div className="min-h-screen h-full font-body-md text-on-surface bg-background flex items-center justify-center relative overflow-hidden">
+      <div className="absolute top-4 right-4 z-50">
         <LanguageSwitcher />
       </div>
 
-      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden p-6 sm:p-8 space-y-6">
-        {/* Role Header */}
-        <div className="text-center space-y-3">
-          <div className={`p-4 rounded-2xl border w-fit mx-auto ${theme.badgeBg}`}>
-            {getRoleIcon()}
+      {/* Background Map */}
+      <div className="absolute inset-0 z-0 bg-cover bg-center opacity-40 grayscale" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBvla6YJRY3I2WTBArEuMoEZupGAGbyWAEoDMW84kFApUyor0D_66joxJFtAr6WyaWIiE3vTVE_X2mONMVROTZoP2tVcCHlixUvsQUfkirSwnX8d7KzPKb6mA1YNsDau17rGKF4EtJK1prjRDic85uvnxHjTqTvu1EFIpfC9JZ_Wwxt5KqVe2IiOzaeiW90OZiw-3juCe8RNWi8chSCgS7a43OL27aQfVUazVR0wWcbHPbuFa6uRdE3-w')" }}></div>
+      <div className="absolute inset-0 z-0 bg-surface/60 backdrop-blur-[2px]"></div>
+      
+      {/* Decorative Pin */}
+      <div className="absolute z-0 flex flex-col items-center justify-center opacity-30 transform -translate-y-12">
+        <span className="material-symbols-outlined text-[120px] text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>location_on</span>
+      </div>
+
+      {/* Center Card */}
+      <div className="relative z-10 w-full max-w-md mx-auto p-8 bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant/30 flex flex-col gap-6">
+        {/* Header */}
+        <div className="flex flex-col items-center text-center gap-2">
+          <div className="w-16 h-16 rounded-full bg-primary-container flex items-center justify-center mb-2">
+            <span className="material-symbols-outlined text-[32px] text-on-primary-container" style={{ fontVariationSettings: "'FILL' 1" }}>
+              {role === 'Business' ? 'domain' : role === 'Citizen' ? 'person' : 'admin_panel_settings'}
+            </span>
           </div>
-          <div className="space-y-1">
-            <h2 className="text-2xl font-bold text-white tracking-tight">{role} {t('login')}</h2>
-            <p className="text-xs text-slate-400">{t('brand')} Smart City Platform</p>
-          </div>
+          <h1 className="font-headline-md text-headline-md text-primary">{t('brand')} Smart City</h1>
+          <p className="font-body-sm text-body-sm text-on-surface-variant">{role} Console</p>
+        </div>
+
+        {/* Role Switcher */}
+        <div className="flex bg-surface-container-highest rounded-lg p-1 gap-1">
+          <button 
+            onClick={() => navigate('/citizen/login')}
+            className={`flex-1 py-2 px-2 sm:px-4 rounded-md font-label-sm text-label-sm transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset ${role === 'Citizen' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'}`}>
+            Citizen
+          </button>
+          <button 
+            onClick={() => navigate('/business/login')}
+            className={`flex-1 py-2 px-2 sm:px-4 rounded-md font-label-sm text-label-sm transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset ${role === 'Business' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'}`}>
+            Business
+          </button>
+          <button 
+            onClick={() => navigate('/login')}
+            className={`flex-1 py-2 px-2 sm:px-4 rounded-md font-label-sm text-label-sm transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset ${role === 'Administrator' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'}`}>
+            Admin
+          </button>
         </div>
 
         {/* ADMIN / BUSINESS LOGIN */}
         {['Administrator', 'Business'].includes(role) && (
-          <form onSubmit={handleAdminLogin} className="space-y-4 text-xs">
-            <div>
-              <label className="block font-semibold text-slate-300 mb-1.5">Email Address</label>
-              <div className="relative flex items-center">
-                <Mail className="absolute left-3.5 w-4 h-4 text-slate-500" />
-                <input
-                  type="email"
+          <form onSubmit={handleAdminLogin} className="flex flex-col gap-5">
+            <div className="flex flex-col gap-1.5">
+              <label className="font-label-sm text-label-sm text-on-surface" htmlFor="email">Email Address</label>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">mail</span>
+                <input 
+                  id="email" 
+                  type="email" 
                   required
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  placeholder="admin@kopargaon.gov.in"
-                  className={`w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 ${theme.focusRing}`}
+                  placeholder="admin@kopargaon.gov" 
+                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:border-secondary-container focus:ring-2 focus:ring-secondary-container/50 outline-none transition-all font-body-md text-body-md placeholder:text-outline text-on-surface"
                 />
               </div>
             </div>
-
-            <div>
-              <label className="block font-semibold text-slate-300 mb-1.5">Password</label>
-              <div className="relative flex items-center">
-                <Lock className="absolute left-3.5 w-4 h-4 text-slate-500" />
-                <input
-                  type="password"
+            
+            <div className="flex flex-col gap-1.5">
+              <label className="font-label-sm text-label-sm text-on-surface" htmlFor="password">Password</label>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">lock</span>
+                <input 
+                  id="password" 
+                  type="password" 
                   required
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className={`w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 ${theme.focusRing}`}
+                  placeholder="••••••••" 
+                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:border-secondary-container focus:ring-2 focus:ring-secondary-container/50 outline-none transition-all font-body-md text-body-md placeholder:text-outline text-on-surface"
                 />
               </div>
             </div>
+            
+            {role === 'Business' && (
+              <div className="mt-2 text-center text-xs text-on-surface-variant">
+                Or sign in with Google Workspace:
+                <div className="flex justify-center w-full mt-2">
+                  <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+                    <GoogleLogin
+                      onSuccess={(res) => handleGoogleSuccess(res, 'Business')}
+                      onError={() => toast.error('Google Login Failed')}
+                      theme="outline"
+                      size="large"
+                      text="continue_with"
+                      width="100%"
+                    />
+                  </GoogleOAuthProvider>
+                </div>
+              </div>
+            )}
 
-            <button
-              type="submit"
+            <button 
+              type="submit" 
               disabled={loading}
-              className={`w-full py-3.5 rounded-xl text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center space-x-2 ${theme.btnBg} ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`w-full py-3.5 bg-primary-container text-on-primary-container rounded-lg font-label-md text-label-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-sm mt-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
-              <span>{loading ? 'Authenticating...' : 'Secure Login'}</span>
-              {!loading && <ArrowRight className="w-4 h-4" />}
+              {loading ? 'Authenticating...' : 'Sign In'}
+              {!loading && <span className="material-symbols-outlined text-[20px]">login</span>}
             </button>
           </form>
         )}
 
-        {/* BUSINESS LOGIN */}
-        {role === 'Business' && (
-          <div className="space-y-4">
-            <p className="text-xs text-center text-slate-400 mb-4">Business Investors must authenticate via Google Workspace.</p>
-            <div className="flex justify-center w-full">
-              <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-                <GoogleLogin
-                  onSuccess={(res) => handleGoogleSuccess(res, 'Business')}
-                  onError={() => toast.error('Google Login Failed')}
-                  theme="outline"
-                  size="large"
-                  text="continue_with"
-                  width="100%"
-                />
-              </GoogleOAuthProvider>
-            </div>
-          </div>
-        )}
-
         {/* CITIZEN LOGIN */}
         {role === 'Citizen' && (
-          <div className="space-y-6">
+          <div className="flex flex-col gap-5">
             <div className="flex justify-center w-full">
               <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
                 <GoogleLogin
@@ -243,47 +242,47 @@ const LoginPage = ({ defaultRole }) => {
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-800"></div>
+                <div className="w-full border-t border-outline-variant/30"></div>
               </div>
               <div className="relative flex justify-center text-[10px]">
-                <span className="bg-slate-900 px-2 text-slate-500 uppercase tracking-wider font-bold">Or use mobile OTP</span>
+                <span className="bg-surface-container-lowest px-2 text-outline uppercase tracking-wider font-bold">Or use mobile OTP</span>
               </div>
             </div>
 
             {!otpSent ? (
-              <form onSubmit={handleSendOtp} className="space-y-4 text-xs">
-                <div>
-                  <label className="block font-semibold text-slate-300 mb-1.5">Mobile Number</label>
-                  <div className="relative flex items-center">
-                    <Phone className="absolute left-3.5 w-4 h-4 text-slate-500" />
+              <form onSubmit={handleSendOtp} className="flex flex-col gap-5">
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-label-sm text-label-sm text-on-surface">Mobile Number</label>
+                  <div className="relative">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">phone_iphone</span>
                     <input
                       type="tel"
                       required
                       value={phone}
                       onChange={e => setPhone(e.target.value)}
                       placeholder="+91 98765 43210"
-                      className={`w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 ${theme.focusRing}`}
+                      className="w-full pl-10 pr-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:border-secondary-container focus:ring-2 focus:ring-secondary-container/50 outline-none transition-all font-body-md text-body-md placeholder:text-outline text-on-surface"
                     />
                   </div>
                 </div>
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full py-3.5 rounded-xl text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center space-x-2 ${theme.btnBg} ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  className={`w-full py-3.5 bg-primary-container text-on-primary-container rounded-lg font-label-md text-label-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-sm mt-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
-                  <span>{loading ? 'Sending...' : 'Send OTP'}</span>
-                  {!loading && <ArrowRight className="w-4 h-4" />}
+                  {loading ? 'Sending...' : 'Send OTP'}
+                  {!loading && <span className="material-symbols-outlined text-[20px]">arrow_forward</span>}
                 </button>
               </form>
             ) : (
-              <form onSubmit={handleVerifyOtp} className="space-y-4 text-xs">
-                <div>
-                  <div className="flex justify-between items-center mb-1.5">
-                    <label className="font-semibold text-slate-300">Enter OTP</label>
-                    <button type="button" onClick={() => setOtpSent(false)} className="text-[10px] text-emerald-400 hover:underline">Change Number</button>
+              <form onSubmit={handleVerifyOtp} className="flex flex-col gap-5">
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex justify-between items-center">
+                    <label className="font-label-sm text-label-sm text-on-surface">Enter OTP</label>
+                    <button type="button" onClick={() => setOtpSent(false)} className="text-[10px] text-primary hover:underline">Change Number</button>
                   </div>
-                  <div className="relative flex items-center">
-                    <CheckCircle2 className="absolute left-3.5 w-4 h-4 text-emerald-500" />
+                  <div className="relative">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">password</span>
                     <input
                       type="text"
                       required
@@ -291,31 +290,28 @@ const LoginPage = ({ defaultRole }) => {
                       value={otp}
                       onChange={e => setOtp(e.target.value)}
                       placeholder="123456"
-                      className={`w-full pl-10 pr-4 py-3 bg-slate-950 border border-emerald-500/30 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500`}
+                      className="w-full pl-10 pr-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:border-secondary-container focus:ring-2 focus:ring-secondary-container/50 outline-none transition-all font-body-md text-body-md placeholder:text-outline text-on-surface"
                     />
                   </div>
                 </div>
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full py-3.5 rounded-xl text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center space-x-2 ${theme.btnBg} ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  className={`w-full py-3.5 bg-primary-container text-on-primary-container rounded-lg font-label-md text-label-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-sm mt-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
-                  <span>{loading ? 'Verifying...' : 'Verify & Login'}</span>
-                  {!loading && <ArrowRight className="w-4 h-4" />}
+                  {loading ? 'Verifying...' : 'Verify & Login'}
+                  {!loading && <span className="material-symbols-outlined text-[20px]">login</span>}
                 </button>
               </form>
             )}
           </div>
         )}
 
-        {/* Back Link */}
-        <div className="text-center pt-4 border-t border-slate-800">
-          <Link 
-            to="/" 
-            className="inline-flex items-center space-x-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Landing Page</span>
+        {/* Footer Links */}
+        <div className="flex flex-col gap-4 mt-2 pt-6 border-t border-outline-variant/50 text-center">
+          <Link to="/" className="font-body-sm text-body-sm text-primary hover:underline underline-offset-4 decoration-primary/50 transition-all flex items-center justify-center gap-1">
+            <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+            Back to Landing Page
           </Link>
         </div>
       </div>

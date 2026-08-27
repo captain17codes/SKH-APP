@@ -1,27 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import {
-  FolderKanban,
-  MapPin,
-  Calendar,
-  User,
-  Building,
-  FileText,
-  Camera,
-  ArrowLeft,
-  CheckCircle2,
-  Clock,
-  Edit,
-  Trash2,
-  AlertCircle,
-  Compass,
-  Activity,
-  Home,
-  ShieldAlert,
-  AlertTriangle,
-  FileSpreadsheet,
-  MessageSquareWarning
-} from 'lucide-react';
 import MapView from '../components/gis/MapView';
 import ProjectTimeline from '../components/projects/ProjectTimeline';
 import ProjectModal from '../components/projects/ProjectModal';
@@ -139,22 +117,22 @@ const ProjectDetailsPage = () => {
   if (error || !project) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center text-center p-6 space-y-4">
-        <div className="p-4 rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/20">
-          <AlertCircle className="w-10 h-10" />
+        <div className="p-4 rounded-full bg-error-container text-on-error-container border border-error/20">
+          <span className="material-symbols-outlined text-4xl">error</span>
         </div>
         <div className="space-y-1">
-          <span className="text-xs font-bold uppercase tracking-wider text-rose-500">Project Not Found</span>
-          <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100">Requested Record Unavailable</h2>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-            The project matching ID <span className="font-mono font-bold text-slate-700 dark:text-slate-200">'{id}'</span> could not be found.
+          <span className="text-xs font-bold uppercase tracking-wider text-error">Project Not Found</span>
+          <h2 className="text-2xl font-black text-on-surface">Requested Record Unavailable</h2>
+          <p className="font-body-sm text-on-surface-variant max-w-md mx-auto">
+            The project matching ID <span className="font-mono font-bold text-on-surface">'{id}'</span> could not be found.
           </p>
         </div>
         <div className="flex items-center space-x-3 pt-2">
           <button
             onClick={() => navigate('/projects')}
-            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md transition-colors flex items-center space-x-1.5 cursor-pointer"
+            className="px-4 py-2 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md transition-colors flex items-center space-x-1.5 cursor-pointer"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <span className="material-symbols-outlined text-sm">arrow_back</span>
             <span>Back to Projects</span>
           </button>
         </div>
@@ -181,211 +159,182 @@ const ProjectDetailsPage = () => {
     : `/gis?project=${project.id}`;
 
   return (
-    <div className="space-y-6">
-      {/* Top Navigation */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <button
-          onClick={() => navigate('/projects')}
-          className="inline-flex items-center text-xs font-semibold text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4 mr-1" />
-          Back to Projects Directory
-        </button>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <Link
-            to={mapUrl}
-            className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-xs transition-colors flex items-center space-x-1.5"
-          >
-            <Compass className="w-3.5 h-3.5" />
-            <span>View on GIS Map</span>
-          </Link>
-
-          <button
-            onClick={() => setIsEditModalOpen(true)}
-            className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-xs transition-colors flex items-center space-x-1 cursor-pointer"
-          >
-            <Edit className="w-3.5 h-3.5" />
-            <span>Admin Update</span>
-          </button>
-
-          <button
-            onClick={handleDelete}
-            className="px-3 py-1.5 rounded-lg bg-rose-600/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs font-semibold transition-colors flex items-center space-x-1 cursor-pointer"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>Delete</span>
-          </button>
+    <div className="flex flex-col">
+      {/* Page Header Section */}
+      <div className="mb-section-gap">
+        <div className="flex items-center gap-2 mb-2 text-on-surface-variant font-label-sm text-label-sm">
+          <button onClick={() => navigate('/projects')} className="hover:text-primary transition-colors cursor-pointer">Projects</button>
+          <span className="material-symbols-outlined text-sm">chevron_right</span>
+          <span className="text-on-surface font-medium">{project.id}</span>
         </div>
-      </div>
-
-      {/* Header Banner */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded border border-blue-500/20 font-mono">
-              {project.id}
-            </span>
-            <DepartmentBadge department={project.department || 'Infrastructure'} />
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">
-              {project.category || 'General'}
-            </span>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <StatusBadge status={project.status || 'PLANNED'} />
-            <RiskBadge risk={riskAnalysis.risk} score={riskAnalysis.score} />
-          </div>
-        </div>
-
-        <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">{project.name}</h1>
-
-        {/* Location & Dates row */}
-        <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
-          <span className="flex items-center font-medium"><MapPin className="w-3.5 h-3.5 mr-1 text-slate-400" /> {project.ward}</span>
-          <span className="flex items-center"><Calendar className="w-3.5 h-3.5 mr-1 text-slate-400" /> Start: {startFormatted}</span>
-          <span className="flex items-center"><Calendar className="w-3.5 h-3.5 mr-1 text-slate-400" /> Target Completion: {completionFormatted}</span>
-        </div>
-      </div>
-
-      {/* AI Risk Engine Summary Alert Banner */}
-      <div className={`p-4 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-4 ${
-        riskAnalysis.risk === 'CRITICAL' ? 'bg-purple-500/10 border-purple-500/30 text-purple-900 dark:text-purple-200' :
-        riskAnalysis.risk === 'HIGH' ? 'bg-rose-500/10 border-rose-500/30 text-rose-900 dark:text-rose-200' :
-        riskAnalysis.risk === 'MEDIUM' ? 'bg-amber-500/10 border-amber-500/30 text-amber-900 dark:text-amber-200' :
-        'bg-emerald-500/10 border-emerald-500/30 text-emerald-900 dark:text-emerald-200'
-      }`}>
-        <div className="flex items-start space-x-3">
-          <ShieldAlert className="w-6 h-6 flex-shrink-0 mt-0.5" />
+        
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center space-x-2">
-              <span className="font-extrabold text-sm uppercase">AI Risk Engine Assessment: {riskAnalysis.risk}</span>
-              <span className="text-xs px-2 py-0.5 rounded font-bold bg-white/60 dark:bg-slate-900/60">
-                Score: {riskAnalysis.score}/100
-              </span>
+            <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold text-on-background dark:text-inverse-on-surface mb-1">{project.name}</h2>
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="font-body-sm text-body-sm text-on-surface-variant">ID: {project.id}</span>
+              <StatusBadge status={project.status || 'PLANNED'} />
+              <DepartmentBadge department={project.department || 'Infrastructure'} />
             </div>
-            <p className="text-xs mt-1 leading-relaxed opacity-90">
-              {riskAnalysis.reasons[0] || 'Project risk evaluated based on schedule variance, budget expenditure, and spatial grievances.'}
-            </p>
+          </div>
+          <div className="flex gap-3">
+            <button 
+              onClick={() => setIsEditModalOpen(true)}
+              className="px-4 py-2 border border-outline-variant dark:border-outline rounded-lg text-on-surface-variant dark:text-on-surface hover:bg-surface-container-low transition-colors font-label-md text-label-md cursor-pointer"
+            >
+              Edit Project
+            </button>
+            <button 
+              onClick={handleDelete}
+              className="px-4 py-2 border border-error text-error rounded-lg font-label-md text-label-md hover:bg-error-container hover:text-on-error-container transition-colors shadow-sm cursor-pointer"
+            >
+              Delete Project
+            </button>
           </div>
         </div>
-
-        <button
-          onClick={() => setActiveTab('risk')}
-          className="px-3.5 py-2 rounded-lg bg-white dark:bg-slate-900 text-xs font-bold shadow-xs hover:bg-slate-50 transition-colors whitespace-nowrap cursor-pointer"
-        >
-          View Full AI Analysis →
-        </button>
       </div>
 
-      {/* Stats Cards Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs">
-          <span className="text-slate-400 block text-[10px] uppercase font-bold">Total Budget</span>
-          <span className="text-lg font-black text-slate-900 dark:text-slate-100">{budgetFormatted}</span>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs">
-          <span className="text-slate-400 block text-[10px] uppercase font-bold">Spent to Date</span>
-          <span className="text-lg font-black text-blue-600 dark:text-blue-400">{spentFormatted}</span>
-          <span className="text-[10px] text-slate-400 block mt-0.5">Utilization: {metrics.budgetUtilization || 0}%</span>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs">
-          <span className="text-slate-400 block text-[10px] uppercase font-bold">Physical Progress</span>
-          <span className="text-lg font-black text-slate-900 dark:text-slate-100">{project.progress}%</span>
-          <span className={`text-[10px] font-bold block mt-0.5 ${metrics.progressGap < 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
-            Expected: {metrics.expectedProgress || 0}% (Gap: {metrics.progressGap || 0}%)
-          </span>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs">
-          <span className="text-slate-400 block text-[10px] uppercase font-bold">Nearby Grievances</span>
-          <span className="text-lg font-black text-amber-600 dark:text-amber-400">{nearbyComplaints.length}</span>
-          <span className="text-[10px] text-slate-400 block mt-0.5">PostGIS 1km Buffer</span>
-        </div>
+      {/* Tabs */}
+      <div className="border-b border-outline-variant dark:border-outline mb-6">
+        <nav aria-label="Tabs" className="-mb-px flex space-x-8 overflow-x-auto">
+          {[
+            { key: 'overview', label: 'Overview' },
+            { key: 'risk', label: 'Risk Analysis' },
+            { key: 'timeline', label: 'Timeline' },
+            { key: 'complaints', label: `Complaints Nearby (${nearbyComplaints.length})` },
+            { key: 'photos', label: 'Photos' },
+            { key: 'documents', label: 'Documents' }
+          ].map(t => (
+            <button
+              key={t.key}
+              onClick={() => setActiveTab(t.key)}
+              className={`whitespace-nowrap border-b-2 py-4 px-1 font-label-md text-label-md cursor-pointer transition-colors ${
+                activeTab === t.key
+                  ? 'border-primary text-primary dark:text-primary-fixed'
+                  : 'border-transparent text-on-surface-variant hover:border-outline hover:text-on-surface dark:hover:text-inverse-on-surface'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </nav>
       </div>
 
-      {/* Tabs Navigation */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 space-x-6 text-xs font-bold overflow-x-auto">
-        {[
-          { key: 'overview', label: 'Overview' },
-          { key: 'risk', label: 'AI Risk Engine Analysis' },
-          { key: 'timeline', label: 'Timeline & Milestones' },
-          { key: 'complaints', label: `Nearby Complaints (${nearbyComplaints.length})` },
-          { key: 'photos', label: 'Photos' },
-          { key: 'documents', label: 'Documents' }
-        ].map(t => (
-          <button
-            key={t.key}
-            onClick={() => setActiveTab(t.key)}
-            className={`pb-3 uppercase tracking-wider transition-colors border-b-2 whitespace-nowrap cursor-pointer ${
-              activeTab === t.key
-                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {/* TAB CONTENTS */}
-
-      {/* 1. OVERVIEW TAB */}
+      {/* Bento Grid Content */}
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Description Column */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-3 text-xs shadow-xs">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Project Description & Scope</h3>
-              <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+            <div className="bg-surface dark:bg-inverse-surface rounded-xl shadow-ambient-lvl1 p-6 border border-outline-variant dark:border-outline">
+              <h3 className="font-title-lg text-title-lg text-on-surface dark:text-inverse-on-surface mb-4">Project Overview</h3>
+              <p className="font-body-md text-body-md text-on-surface-variant mb-4 leading-relaxed">
                 {project.description || 'No detailed scope description provided.'}
               </p>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-outline-variant dark:border-outline">
+                <div>
+                  <span className="block font-label-sm text-label-sm text-on-surface-variant mb-1">Category</span>
+                  <span className="block font-body-sm text-body-sm font-medium text-on-surface dark:text-inverse-on-surface">{project.category || 'General'}</span>
+                </div>
+                <div>
+                  <span className="block font-label-sm text-label-sm text-on-surface-variant mb-1">Start Date</span>
+                  <span className="block font-body-sm text-body-sm font-medium text-on-surface dark:text-inverse-on-surface">{startFormatted}</span>
+                </div>
+                <div>
+                  <span className="block font-label-sm text-label-sm text-on-surface-variant mb-1">Est. Completion</span>
+                  <span className="block font-body-sm text-body-sm font-medium text-on-surface dark:text-inverse-on-surface">{completionFormatted}</span>
+                </div>
+                <div>
+                  <span className="block font-label-sm text-label-sm text-on-surface-variant mb-1">Nodal Officer</span>
+                  <span className="block font-body-sm text-body-sm font-medium text-on-surface dark:text-inverse-on-surface">{project.officer || 'Unassigned'}</span>
+                </div>
+              </div>
             </div>
 
-            {/* Progress vs Timeline Analysis Bar */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4 text-xs shadow-xs">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Execution Progress vs. Expected Timeline</h3>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between font-bold">
-                  <span className="text-slate-700 dark:text-slate-300">Reported Physical Progress</span>
-                  <span className="text-blue-600 dark:text-blue-400">{project.progress}%</span>
+            {/* Budget Card */}
+            <div className="bg-surface dark:bg-inverse-surface rounded-xl shadow-ambient-lvl1 p-6 border border-outline-variant dark:border-outline">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="font-title-lg text-title-lg text-on-surface dark:text-inverse-on-surface">Financial Progress</h3>
+                <button className="text-primary font-label-md text-label-md hover:underline cursor-pointer">View Detailed Ledger</button>
+              </div>
+              <div className="flex flex-col md:flex-row gap-8 items-center">
+                <div className="flex-1 w-full">
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="font-label-md text-on-surface-variant">Spent: {spentFormatted}</span>
+                    <span className="font-label-md font-medium text-on-surface dark:text-inverse-on-surface">Budget: {budgetFormatted}</span>
+                  </div>
+                  <div className="w-full bg-surface-variant rounded-full h-3 mb-2 overflow-hidden">
+                    <div className="bg-secondary h-3 rounded-full" style={{ width: `${Math.min(100, Math.max(0, (project.spent / project.budget) * 100))}%` }}></div>
+                  </div>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant text-right">
+                    {project.budget > 0 ? ((project.spent / project.budget) * 100).toFixed(0) : 0}% Utilized
+                  </p>
                 </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
-                  <div className="bg-blue-600 h-3 rounded-full" style={{ width: `${project.progress}%` }} />
+                
+                <div className="grid grid-cols-2 gap-4 w-full md:w-auto min-w-[200px]">
+                  <div className="p-3 bg-surface-container-low dark:bg-surface-container-highest rounded-lg">
+                    <span className="block font-label-sm text-label-sm text-secondary mb-1">Physical Progress</span>
+                    <span className="block font-headline-md text-headline-md text-on-surface dark:text-inverse-on-surface">{project.progress || 0}%</span>
+                  </div>
+                  <div className="p-3 bg-surface-bright dark:bg-surface-variant border border-outline-variant dark:border-outline rounded-lg">
+                    <span className="block font-label-sm text-label-sm text-on-surface-variant mb-1">Expected Progress</span>
+                    <span className="block font-title-lg text-title-lg text-on-surface dark:text-inverse-on-surface">{metrics.expectedProgress || 0}%</span>
+                  </div>
                 </div>
               </div>
-
-              <div className="space-y-2 pt-2">
-                <div className="flex justify-between font-bold">
-                  <span className="text-slate-700 dark:text-slate-300">Expected Timeline Progress (Elapsed)</span>
-                  <span className="text-amber-600 dark:text-amber-400">{metrics.expectedProgress || 0}%</span>
-                </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
-                  <div className="bg-amber-500 h-3 rounded-full" style={{ width: `${metrics.expectedProgress || 0}%` }} />
-                </div>
-              </div>
-
-              {metrics.progressGap !== undefined && (
-                <p className={`text-xs font-semibold p-2.5 rounded-lg ${metrics.progressGap < 0 ? 'bg-rose-500/10 text-rose-600' : 'bg-emerald-500/10 text-emerald-600'}`}>
-                  {metrics.progressGap < 0
-                    ? `⚠️ Progress is currently ${Math.abs(metrics.progressGap)}% behind expected schedule target.`
-                    : `✓ Progress is operating on schedule (Variance: +${metrics.progressGap}%).`}
-                </p>
-              )}
             </div>
           </div>
 
-          {/* Right GIS Map Preview */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">GIS Location</h3>
-              <Link to={mapUrl} className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline">
-                Open Smart Map →
-              </Link>
+          {/* Right Sidebar Column */}
+          <div className="space-y-6">
+            {/* Location Thumbnail */}
+            <div className="bg-surface dark:bg-inverse-surface rounded-xl shadow-ambient-lvl1 border border-outline-variant dark:border-outline overflow-hidden">
+              <div className="h-48 w-full relative bg-surface-variant">
+                <MapView center={project.coordinates || [19.8917, 74.4789]} zoom={15} showAllControls={false} height="h-full" />
+                <div className="absolute top-2 right-2">
+                  <Link to={mapUrl} className="p-2 bg-surface rounded-full shadow-md flex items-center justify-center text-on-surface hover:bg-surface-container-lowest transition-colors cursor-pointer">
+                    <span className="material-symbols-outlined text-sm">open_in_new</span>
+                  </Link>
+                </div>
+              </div>
+              <div className="p-4 flex items-start gap-3">
+                <span className="material-symbols-outlined text-secondary mt-0.5" data-icon="location_on" data-weight="fill">location_on</span>
+                <div>
+                  <h4 className="font-label-md text-label-md text-on-surface dark:text-inverse-on-surface">{project.ward}</h4>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant">Kopargaon Municipality</p>
+                </div>
+              </div>
             </div>
-            <MapView center={project.coordinates || [19.8917, 74.4789]} zoom={15} showAllControls={false} height="h-72" />
+
+            {/* Quick Risk Summary */}
+            <div className="bg-surface dark:bg-inverse-surface rounded-xl shadow-ambient-lvl1 p-5 border border-outline-variant dark:border-outline">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-title-lg text-title-lg text-on-surface dark:text-inverse-on-surface flex items-center gap-2">
+                  <span className="material-symbols-outlined text-error" data-icon="warning">warning</span>
+                  Risk Score
+                </h3>
+              </div>
+              <div className="flex items-end gap-4 mb-4">
+                <div className={`text-4xl font-display-md ${riskAnalysis.risk === 'HIGH' || riskAnalysis.risk === 'CRITICAL' ? 'text-error' : riskAnalysis.risk === 'MEDIUM' ? 'text-amber-500' : 'text-emerald-500'}`}>
+                  {riskAnalysis.score || 0}
+                </div>
+                <div className="pb-1">
+                  <div className="mb-1">
+                    <RiskBadge risk={riskAnalysis.risk} />
+                  </div>
+                  <span className="block font-body-sm text-body-sm text-on-surface-variant">/ 100 max</span>
+                </div>
+              </div>
+              <p className={`font-body-sm text-body-sm text-on-surface-variant mb-4 border-l-2 pl-3 ${riskAnalysis.risk === 'HIGH' || riskAnalysis.risk === 'CRITICAL' ? 'border-error' : riskAnalysis.risk === 'MEDIUM' ? 'border-amber-500' : 'border-emerald-500'}`}>
+                {riskAnalysis.reasons[0] || 'Project risk evaluated based on schedule variance and budget expenditure.'}
+              </p>
+              <button 
+                onClick={() => setActiveTab('risk')}
+                className="w-full py-2 border border-outline-variant dark:border-outline rounded-lg text-on-surface-variant dark:text-inverse-on-surface font-label-md text-label-md hover:bg-surface-container-low transition-colors cursor-pointer"
+              >
+                View Full Analysis
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -394,24 +343,24 @@ const ProjectDetailsPage = () => {
       {activeTab === 'risk' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs space-y-3 text-center">
-              <span className="text-xs font-bold text-slate-400 uppercase">Computed AI Risk Score</span>
-              <div className="text-4xl font-black text-slate-900 dark:text-slate-100">{riskAnalysis.score}/100</div>
+            <div className="bg-surface dark:bg-inverse-surface border border-outline-variant dark:border-outline rounded-xl p-5 shadow-ambient-lvl1 space-y-3 text-center">
+              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Computed AI Risk Score</span>
+              <div className="text-4xl font-display-md text-on-surface dark:text-inverse-on-surface">{riskAnalysis.score}/100</div>
               <div className="flex justify-center">
-                <RiskBadge risk={riskAnalysis.risk} score={riskAnalysis.score} />
+                <RiskBadge risk={riskAnalysis.risk} />
               </div>
-              <p className="text-[11px] text-slate-500 pt-2">
+              <p className="font-body-sm text-body-sm text-on-surface-variant pt-2">
                 Deterministic calculation based on timeline elapsed %, budget spent ratio, PostGIS complaint proximity, and ward infrastructure load.
               </p>
             </div>
 
-            <div className="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs space-y-3">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Key Risk Factors Identified</h3>
-              <ul className="space-y-2 text-xs">
+            <div className="md:col-span-2 bg-surface dark:bg-inverse-surface border border-outline-variant dark:border-outline rounded-xl p-5 shadow-ambient-lvl1 space-y-3">
+              <h3 className="font-title-lg text-title-lg text-on-surface dark:text-inverse-on-surface">Key Risk Factors Identified</h3>
+              <ul className="space-y-2">
                 {riskAnalysis.reasons.map((r, i) => (
-                  <li key={i} className="flex items-start space-x-2 p-2 bg-slate-50 dark:bg-slate-800/60 rounded-lg">
-                    <span className="text-rose-500 font-bold">•</span>
-                    <span className="text-slate-800 dark:text-slate-200 font-medium">{r}</span>
+                  <li key={i} className="flex items-start space-x-2 p-3 bg-surface-container-low dark:bg-surface-container-highest rounded-lg">
+                    <span className="material-symbols-outlined text-error text-sm mt-0.5">error</span>
+                    <span className="font-body-md text-on-surface dark:text-inverse-on-surface">{r}</span>
                   </li>
                 ))}
               </ul>
@@ -419,19 +368,19 @@ const ProjectDetailsPage = () => {
           </div>
 
           {/* AI Recommended Actions */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs space-y-3">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500 mr-2" />
+          <div className="bg-surface dark:bg-inverse-surface border border-outline-variant dark:border-outline rounded-xl p-5 shadow-ambient-lvl1 space-y-4">
+            <h3 className="font-title-lg text-title-lg text-on-surface dark:text-inverse-on-surface flex items-center">
+              <span className="material-symbols-outlined text-emerald-500 mr-2">check_circle</span>
               Recommended Municipal Actions (Decision Support)
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {riskAnalysis.recommendations.map((rec, idx) => (
-                <div key={idx} className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-900 dark:text-blue-200 font-semibold">
-                  ✓ {rec}
+                <div key={idx} className="p-4 bg-primary-container/10 border border-primary-container/30 rounded-lg text-on-primary-container dark:text-primary-fixed font-body-md font-medium">
+                  {rec}
                 </div>
               ))}
             </div>
-            <p className="text-[11px] text-slate-400 italic pt-1">
+            <p className="font-body-sm text-body-sm text-on-surface-variant italic pt-2">
               * Recommendations are decision-support guidelines for municipal leaders and do not automatically modify project records.
             </p>
           </div>
@@ -441,8 +390,8 @@ const ProjectDetailsPage = () => {
       {/* 3. TIMELINE TAB */}
       {activeTab === 'timeline' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-xs">
-            <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-4 text-sm">Project Milestones</h3>
+          <div className="bg-surface dark:bg-inverse-surface border border-outline-variant dark:border-outline rounded-xl p-6 shadow-ambient-lvl1">
+            <h3 className="font-title-md text-title-md text-on-surface dark:text-inverse-on-surface mb-4">Project Milestones</h3>
             {milestones.length > 0 ? (
               <ProjectTimeline timeline={milestones.map(m => ({
                 title: m.name,
@@ -450,35 +399,35 @@ const ProjectDetailsPage = () => {
                 status: m.status === 'COMPLETED' ? 'completed' : m.status === 'IN_PROGRESS' ? 'in-progress' : 'pending'
               }))} />
             ) : (
-              <div className="text-slate-500 text-xs italic">No milestones defined yet. Add one to track progress.</div>
+              <div className="text-on-surface-variant font-body-sm text-body-sm italic">No milestones defined yet. Add one to track progress.</div>
             )}
           </div>
           
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-xs h-fit space-y-4">
-            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">Add New Milestone</h3>
+          <div className="bg-surface dark:bg-inverse-surface border border-outline-variant dark:border-outline rounded-xl p-6 shadow-ambient-lvl1 h-fit space-y-4">
+            <h3 className="font-title-md text-title-md text-on-surface dark:text-inverse-on-surface">Add New Milestone</h3>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Milestone Name</label>
+                <label className="block font-label-sm text-label-sm text-on-surface-variant mb-1">Milestone Name</label>
                 <input 
                   type="text" 
                   value={newMilestone.name}
                   onChange={(e) => setNewMilestone({...newMilestone, name: e.target.value})}
-                  className="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-sm" 
+                  className="w-full p-2 border rounded-lg bg-surface-container-lowest dark:bg-surface-variant border-outline-variant dark:border-outline text-on-surface font-body-sm" 
                   placeholder="e.g., Land Acquisition Complete"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Target Date</label>
+                <label className="block font-label-sm text-label-sm text-on-surface-variant mb-1">Target Date</label>
                 <input 
                   type="date" 
                   value={newMilestone.target_date}
                   onChange={(e) => setNewMilestone({...newMilestone, target_date: e.target.value})}
-                  className="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-sm" 
+                  className="w-full p-2 border rounded-lg bg-surface-container-lowest dark:bg-surface-variant border-outline-variant dark:border-outline text-on-surface font-body-sm" 
                 />
               </div>
               <button
                 onClick={handleAddMilestone}
-                className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow transition-colors text-xs"
+                className="w-full py-2 bg-primary hover:bg-primary-container text-on-primary rounded-lg font-label-md text-label-md transition-colors cursor-pointer"
               >
                 Save Milestone
               </button>
@@ -486,44 +435,44 @@ const ProjectDetailsPage = () => {
           </div>
 
           {/* Budget Tracking Breakdown */}
-          <div className="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-xs space-y-4">
-            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">Budget Tracking Breakdown</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-              <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-700">
-                <span className="block text-[10px] uppercase font-bold text-slate-400">Sanctioned Budget</span>
-                <span className="text-lg font-black text-slate-900 dark:text-slate-100">{budgetFormatted}</span>
+          <div className="md:col-span-2 bg-surface dark:bg-inverse-surface border border-outline-variant dark:border-outline rounded-xl p-6 shadow-ambient-lvl1 space-y-4">
+            <h3 className="font-title-md text-title-md text-on-surface dark:text-inverse-on-surface">Budget Tracking Breakdown</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="p-3 bg-surface-container-lowest dark:bg-surface-variant rounded-lg border border-outline-variant dark:border-outline">
+                <span className="block font-label-sm text-[10px] uppercase text-on-surface-variant">Sanctioned Budget</span>
+                <span className="text-lg font-display-sm text-on-surface dark:text-inverse-on-surface">{budgetFormatted}</span>
               </div>
-              <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-700">
-                <span className="block text-[10px] uppercase font-bold text-slate-400">Spent to Date</span>
-                <span className="text-lg font-black text-blue-600 dark:text-blue-400">{spentFormatted}</span>
+              <div className="p-3 bg-surface-container-lowest dark:bg-surface-variant rounded-lg border border-outline-variant dark:border-outline">
+                <span className="block font-label-sm text-[10px] uppercase text-on-surface-variant">Spent to Date</span>
+                <span className="text-lg font-display-sm text-secondary">{spentFormatted}</span>
               </div>
-              <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-700">
-                <span className="block text-[10px] uppercase font-bold text-slate-400">Remaining</span>
-                <span className={`text-lg font-black ${(Number(project.budget) - Number(project.spent)) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+              <div className="p-3 bg-surface-container-lowest dark:bg-surface-variant rounded-lg border border-outline-variant dark:border-outline">
+                <span className="block font-label-sm text-[10px] uppercase text-on-surface-variant">Remaining</span>
+                <span className={`text-lg font-display-sm ${(Number(project.budget) - Number(project.spent)) >= 0 ? 'text-emerald-600' : 'text-error'}`}>
                   {formatMoney(Number(project.budget) - Number(project.spent))}
                 </span>
               </div>
-              <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-700">
-                <span className="block text-[10px] uppercase font-bold text-slate-400">Burn Rate</span>
-                <span className="text-lg font-black text-amber-600 dark:text-amber-400">
+              <div className="p-3 bg-surface-container-lowest dark:bg-surface-variant rounded-lg border border-outline-variant dark:border-outline">
+                <span className="block font-label-sm text-[10px] uppercase text-on-surface-variant">Burn Rate</span>
+                <span className="text-lg font-display-sm text-amber-600">
                   {project.progress > 0 ? `${((Number(project.spent) / Number(project.budget)) * 100 / project.progress * 100).toFixed(0)}%` : 'N/A'}
                 </span>
-                <span className="block text-[10px] text-slate-400 mt-0.5">per % progress</span>
+                <span className="block text-[10px] text-on-surface-variant mt-0.5">per % progress</span>
               </div>
             </div>
 
             {/* Budget vs Progress bar */}
             <div className="space-y-2 pt-2">
-              <div className="flex justify-between text-xs font-bold">
-                <span className="text-slate-600 dark:text-slate-300">Budget Utilization</span>
-                <span className="text-blue-600">{metrics.budgetUtilization || 0}%</span>
+              <div className="flex justify-between font-label-sm text-label-sm">
+                <span className="text-on-surface-variant">Budget Utilization</span>
+                <span className="text-secondary">{metrics.budgetUtilization || 0}%</span>
               </div>
-              <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
-                <div className={`h-3 rounded-full ${(metrics.budgetUtilization || 0) > 90 ? 'bg-rose-500' : (metrics.budgetUtilization || 0) > 70 ? 'bg-amber-500' : 'bg-blue-600'}`} style={{ width: `${Math.min(metrics.budgetUtilization || 0, 100)}%` }} />
+              <div className="w-full bg-surface-variant rounded-full h-3 overflow-hidden">
+                <div className={`h-3 rounded-full ${(metrics.budgetUtilization || 0) > 90 ? 'bg-error' : (metrics.budgetUtilization || 0) > 70 ? 'bg-amber-500' : 'bg-secondary'}`} style={{ width: `${Math.min(metrics.budgetUtilization || 0, 100)}%` }} />
               </div>
-              <p className={`text-[11px] font-semibold p-2 rounded-lg ${
+              <p className={`font-body-sm text-body-sm p-2 rounded-lg ${
                 (metrics.budgetUtilization || 0) > (project.progress || 0)
-                  ? 'bg-rose-500/10 text-rose-600'
+                  ? 'bg-error-container/30 text-error'
                   : 'bg-emerald-500/10 text-emerald-600'
               }`}>
                 {(metrics.budgetUtilization || 0) > (project.progress || 0)
@@ -537,29 +486,27 @@ const ProjectDetailsPage = () => {
 
       {/* 4. NEARBY COMPLAINTS TAB */}
       {activeTab === 'complaints' && (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4 shadow-xs text-xs">
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">
-              Citizen Grievances Near Project Corridor (PostGIS Match)
+        <div className="bg-surface dark:bg-inverse-surface border border-outline-variant dark:border-outline rounded-xl p-5 space-y-4 shadow-ambient-lvl1">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-title-lg text-title-lg text-on-surface dark:text-inverse-on-surface">
+              Citizen Grievances Near Project Corridor
             </h3>
-            <span className="px-2.5 py-1 bg-amber-500/10 text-amber-600 rounded-full font-bold">
+            <span className="px-3 py-1 bg-surface-container-high rounded-full font-label-sm text-label-sm text-on-surface">
               {nearbyComplaints.length} Total Nearby
             </span>
           </div>
 
           {nearbyComplaints.length === 0 ? (
-            <p className="text-slate-500 py-4 text-center">No active citizen grievances reported near this project location.</p>
+            <p className="text-on-surface-variant py-4 text-center font-body-md">No active citizen grievances reported near this project location.</p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {nearbyComplaints.map(c => (
-                <div key={c.id} className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div key={c.id} className="p-4 bg-surface-container-lowest dark:bg-surface-variant rounded-lg border border-outline-variant dark:border-outline flex items-center justify-between">
                   <div>
-                    <span className="font-bold text-slate-900 dark:text-slate-100 block">{c.title}</span>
-                    <span className="text-[11px] text-slate-500">ID: {c.id} · Category: {c.category} · Priority: {c.priority}</span>
+                    <span className="font-label-md text-label-md text-on-surface dark:text-inverse-on-surface block mb-1">{c.title}</span>
+                    <span className="font-body-sm text-body-sm text-on-surface-variant">ID: {c.id} • Category: {c.category}</span>
                   </div>
-                  <span className="px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-[10px] font-bold">
-                    {c.status}
-                  </span>
+                  <StatusBadge status={c.status} />
                 </div>
               ))}
             </div>
@@ -571,14 +518,14 @@ const ProjectDetailsPage = () => {
       {activeTab === 'photos' && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(idx => (
-            <div key={idx} className="bg-slate-800 rounded-xl h-44 overflow-hidden relative group border border-slate-700">
+            <div key={idx} className="bg-surface-variant rounded-xl h-48 overflow-hidden relative group border border-outline-variant dark:border-outline">
               <img
                 src={`https://images.unsplash.com/photo-1541888946425-d0fbb186a5b7?w=400&auto=format&fit=crop&q=80`}
                 alt="Site progress inspection"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
-              <div className="absolute inset-0 bg-slate-950/40 p-3 flex items-end">
-                <span className="text-[10px] font-bold text-white">Site Inspection Photo #{idx}</span>
+              <div className="absolute inset-0 bg-black/40 p-3 flex items-end">
+                <span className="font-label-sm text-label-sm text-white">Site Inspection #{idx}</span>
               </div>
             </div>
           ))}
@@ -587,16 +534,16 @@ const ProjectDetailsPage = () => {
 
       {/* 6. DOCUMENTS TAB */}
       {activeTab === 'documents' && (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-3 text-xs shadow-xs">
-          <h3 className="font-bold text-slate-900 dark:text-slate-100">Attached Engineering & DPR Files</h3>
-          <div className="space-y-2">
+        <div className="bg-surface dark:bg-inverse-surface border border-outline-variant dark:border-outline rounded-xl p-5 space-y-4 shadow-ambient-lvl1">
+          <h3 className="font-title-lg text-title-lg text-on-surface dark:text-inverse-on-surface">Attached Engineering & DPR Files</h3>
+          <div className="space-y-3">
             {['Detailed_Project_Report_DPR.pdf', 'Environmental_Clearance_Certificate.pdf', 'Structural_Load_Calculations.dwg'].map((doc, i) => (
-              <div key={i} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-800">
+              <div key={i} className="flex items-center justify-between p-4 bg-surface-container-lowest dark:bg-surface-variant rounded-lg border border-outline-variant dark:border-outline">
                 <div className="flex items-center space-x-3">
-                  <FileText className="w-4 h-4 text-blue-500" />
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">{doc}</span>
+                  <span className="material-symbols-outlined text-secondary">description</span>
+                  <span className="font-label-md text-label-md text-on-surface dark:text-inverse-on-surface">{doc}</span>
                 </div>
-                <button onClick={() => toast.success(`Downloading ${doc}...`)} className="text-blue-600 dark:text-blue-400 font-semibold hover:underline cursor-pointer">Download</button>
+                <button onClick={() => toast.success(`Downloading ${doc}...`)} className="text-primary font-label-md text-label-md hover:underline cursor-pointer">Download</button>
               </div>
             ))}
           </div>

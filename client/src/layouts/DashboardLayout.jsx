@@ -11,12 +11,12 @@ const DashboardLayout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-background dark:bg-inverse-surface text-on-surface dark:text-inverse-on-surface font-body-md text-body-md flex flex-col antialiased">
       {/* Toast Notifications */}
       <Toaster
         position="top-right"
         toastOptions={{
-          className: 'dark:bg-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-800 text-xs font-medium',
+          className: 'dark:bg-inverse-surface dark:text-inverse-on-surface border border-outline-variant text-sm font-medium shadow-ambient-lvl2',
           duration: 3500
         }}
       />
@@ -25,18 +25,18 @@ const DashboardLayout = () => {
       <Sidebar isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
       {/* Main Content Area */}
-      <div className="lg:pl-64 flex-1 flex flex-col min-w-0">
+      <div className="lg:ml-[260px] flex-1 flex flex-col min-w-0 min-h-screen transition-all duration-300">
         {/* Top Navbar */}
         <Navbar onMobileMenuOpen={() => setMobileMenuOpen(true)} />
 
         {/* Dynamic Page Container */}
-        <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-4 md:p-8 max-w-[1440px] w-full mx-auto flex flex-col gap-6">
           <Breadcrumbs />
           <Outlet />
         </main>
 
         {/* Global Footer */}
-        <footer className="border-t border-slate-200 dark:border-slate-800/80 py-4 px-6 text-center text-xs text-slate-500 dark:text-slate-400">
+        <footer className="border-t border-outline-variant dark:border-outline py-4 px-6 text-center text-xs text-on-surface-variant dark:text-on-surface-variant">
           <p>{t('footerCopyright')}</p>
         </footer>
       </div>

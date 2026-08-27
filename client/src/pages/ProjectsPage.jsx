@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { FolderKanban, Plus, LayoutGrid, ListFilter, ShieldAlert, CheckCircle2, Clock, AlertTriangle, Activity } from 'lucide-react';
 import ProjectCard from '../components/projects/ProjectCard';
 import ProjectTable from '../components/projects/ProjectTable';
 import ProjectModal from '../components/projects/ProjectModal';
 import SearchBar from '../components/common/SearchBar';
-import FilterPanel from '../components/common/FilterPanel';
 import EmptyState from '../components/common/EmptyState';
 import { projectService } from '../services/api';
 import toast from 'react-hot-toast';
@@ -25,7 +23,7 @@ const ProjectsPage = () => {
     criticalRisk: 0
   });
 
-  const [viewMode, setViewMode] = useState('grid');
+  const [viewMode, setViewMode] = useState('table');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilters, setSelectedFilters] = useState({});
   const [selectedRiskFilter, setSelectedRiskFilter] = useState('All');
@@ -75,29 +73,6 @@ const ProjectsPage = () => {
     }
   }, [searchParams]);
 
-  const filterConfigs = [
-    {
-      key: 'status',
-      label: 'Status',
-      options: ['PLANNED', 'APPROVED', 'IN_PROGRESS', 'DELAYED', 'COMPLETED', 'CANCELLED']
-    },
-    {
-      key: 'department',
-      label: 'Department',
-      options: [
-        'Public Works Department (PWD)',
-        'Water Supply & Sanitation',
-        'Urban Development & Irrigation',
-        'Renewable Energy & Power',
-        'Town Planning & Industry'
-      ]
-    }
-  ];
-
-  const handleFilterChange = (key, value) => {
-    setSelectedFilters(prev => ({ ...prev, [key]: value }));
-  };
-
   const handleCreate = async (newProject) => {
     await projectService.create(newProject);
     fetchProjects();
@@ -135,164 +110,126 @@ const ProjectsPage = () => {
     return matchesSearch && matchesStatus && matchesDept && matchesRisk;
   });
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-xs">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center">
-            <FolderKanban className="w-5 h-5 text-blue-500 mr-2" />
-            {t('aiProjectMonitoring')}
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            {t('projectTrackingDesc')}
-          </p>
-        </div>
+  const statuses = ['All Statuses', 'Planned', 'Approved', 'Ongoing', 'Completed', 'Delayed', 'Cancelled'];
+  const categories = ['All Categories', 'Infrastructure', 'Healthcare', 'Renewable Energy', 'Town Planning'];
 
-        <div className="flex items-center space-x-2">
+  return (
+    <div className="flex flex-col gap-10">
+      {/* Header Section */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+          <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface dark:text-inverse-on-surface">Projects Directory</h2>
+          <p className="font-body-md text-body-md text-on-surface-variant dark:text-on-surface-variant mt-1">Manage and track all active and planned municipal initiatives.</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => navigate('/gis?layer=smartProjects')}
-            className="px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-colors flex items-center space-x-1.5 cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 border border-outline-variant dark:border-outline rounded-lg text-on-surface dark:text-inverse-on-surface hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors font-label-md text-label-md"
           >
-            <Activity className="w-4 h-4 text-emerald-500" />
-            <span>{t('gisRiskLayer')}</span>
+            <span className="material-symbols-outlined text-[18px]">map</span>
+            GIS Risk Layer
           </button>
-          <button
+          <button className="flex items-center gap-2 px-4 py-2 border border-outline-variant dark:border-outline rounded-lg text-on-surface dark:text-inverse-on-surface hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors font-label-md text-label-md">
+            <span className="material-symbols-outlined text-[18px]">download</span>
+            Export CSV
+          </button>
+          <button 
             onClick={() => {
               setEditingProject(null);
               setIsModalOpen(true);
             }}
-            className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md transition-colors flex items-center space-x-1.5 cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-lg hover:bg-primary-container transition-colors shadow-sm font-label-md text-label-md"
           >
-            <Plus className="w-4 h-4" />
-            <span>{t('registerProject')}</span>
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            New Project
           </button>
         </div>
       </div>
 
-      {/* AI City Overview Dashboard Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-xl shadow-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{t('projects')}</span>
-          <div className="text-xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">{overview.totalProjects}</div>
-          <span className="text-[10px] text-slate-500">{t('totalRegistered')}</span>
+      {/* Filters Section */}
+      <div className="bg-surface dark:bg-inverse-surface p-4 rounded-xl shadow-ambient-lvl1 border border-outline-variant dark:border-outline flex flex-col gap-4">
+        {/* Status Filter */}
+        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+          <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider w-20 shrink-0">Status</span>
+          <div className="flex flex-wrap gap-2">
+            {statuses.map(s => {
+              const mappedStatus = s === 'All Statuses' ? '' : (s === 'Ongoing' ? 'IN_PROGRESS' : s.toUpperCase());
+              const isActive = (selectedFilters.status || '') === mappedStatus;
+              return (
+                <button
+                  key={s}
+                  onClick={() => handleFilterChange('status', mappedStatus)}
+                  className={`px-3 py-1.5 rounded-full border font-label-sm text-label-sm transition-colors cursor-pointer ${
+                    isActive 
+                      ? 'border-primary bg-primary-fixed text-on-primary-container' 
+                      : 'border-outline-variant dark:border-outline text-on-surface-variant hover:border-primary hover:text-primary dark:hover:text-primary-fixed-dim'
+                  }`}
+                >
+                  {s}
+                </button>
+              );
+            })}
+          </div>
         </div>
-
-        <div className="bg-white dark:bg-slate-900 border border-blue-500/20 p-3.5 rounded-xl shadow-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-500 flex items-center">
-            <Clock className="w-3 h-3 mr-1" /> {t('ongoing')}
-          </span>
-          <div className="text-xl font-extrabold text-blue-600 dark:text-blue-400 mt-1">{overview.ongoing}</div>
-          <span className="text-[10px] text-slate-500">{t('inExecution')}</span>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 border border-emerald-500/20 p-3.5 rounded-xl shadow-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500 flex items-center">
-            <CheckCircle2 className="w-3 h-3 mr-1" /> {t('completed')}
-          </span>
-          <div className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">{overview.completed}</div>
-          <span className="text-[10px] text-slate-500">{t('handedOver')}</span>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 border border-amber-500/20 p-3.5 rounded-xl shadow-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500 flex items-center">
-            <AlertTriangle className="w-3 h-3 mr-1" /> {t('delayed')}
-          </span>
-          <div className="text-xl font-extrabold text-amber-600 dark:text-amber-400 mt-1">{overview.delayed}</div>
-          <span className="text-[10px] text-slate-500">{t('behindSchedule')}</span>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 border border-rose-500/20 p-3.5 rounded-xl shadow-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-rose-500 flex items-center">
-            <ShieldAlert className="w-3 h-3 mr-1" /> {t('highRisk')}
-          </span>
-          <div className="text-xl font-extrabold text-rose-600 dark:text-rose-400 mt-1">{overview.highRisk}</div>
-          <span className="text-[10px] text-rose-500/80 font-medium">🔴 {t('aiHighRisk')}</span>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 border border-purple-500/20 p-3.5 rounded-xl shadow-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-purple-500 flex items-center">
-            <ShieldAlert className="w-3 h-3 mr-1" /> {t('criticalRisk')}
-          </span>
-          <div className="text-xl font-extrabold text-purple-600 dark:text-purple-400 mt-1">{overview.criticalRisk}</div>
-          <span className="text-[10px] text-purple-500/80 font-medium">🟣 {t('immediateActionReq')}</span>
-        </div>
-      </div>
-
-      {/* Project Risk Filter Bar */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xs">
-        <div className="flex items-center space-x-2 overflow-x-auto pb-1 md:pb-0">
-          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex-shrink-0 mr-1">{t('projectRiskLabel')}</span>
-          {['All', 'Critical', 'High', 'Medium', 'Low', 'Unknown'].map((r) => {
-            const isSelected = selectedRiskFilter.toLowerCase() === r.toLowerCase();
-            let colorBadge = 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300';
-            if (isSelected) {
-              if (r === 'Critical') colorBadge = 'bg-purple-600 text-white shadow-sm';
-              else if (r === 'High') colorBadge = 'bg-rose-600 text-white shadow-sm';
-              else if (r === 'Medium') colorBadge = 'bg-amber-600 text-white shadow-sm';
-              else if (r === 'Low') colorBadge = 'bg-emerald-600 text-white shadow-sm';
-              else colorBadge = 'bg-blue-600 text-white shadow-sm';
-            }
-
-            return (
+        
+        <hr className="border-outline-variant dark:border-outline"/>
+        
+        {/* Risk / AI Priority Filter (Mapping to Category spot in mockup) */}
+        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+          <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider w-20 shrink-0">Risk Level</span>
+          <div className="flex flex-wrap gap-2">
+            {['All', 'Critical', 'High', 'Medium', 'Low', 'Unknown'].map(r => {
+              const isActive = selectedRiskFilter === r;
+              let activeClasses = 'border-primary bg-primary-fixed text-on-primary-container';
+              if (isActive && r === 'Critical') activeClasses = 'border-error bg-error-container text-on-error-container';
+              else if (isActive && r === 'High') activeClasses = 'border-error bg-error-container text-on-error-container';
+              
+              return (
+                <button
+                  key={r}
+                  onClick={() => setSelectedRiskFilter(r)}
+                  className={`px-3 py-1.5 rounded-full border font-label-sm text-label-sm transition-colors cursor-pointer ${
+                    isActive 
+                      ? activeClasses 
+                      : 'border-outline-variant dark:border-outline text-on-surface-variant hover:border-primary hover:text-primary'
+                  }`}
+                >
+                  {r === 'Critical' && '🟣 '}
+                  {r === 'High' && '🔴 '}
+                  {r}
+                </button>
+              );
+            })}
+          </div>
+          
+          <div className="ml-auto mt-2 md:mt-0 flex items-center gap-4">
+            <SearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={t('searchProjectsPlaceholder')}
+              className="w-48 sm:w-64"
+            />
+            <div className="flex items-center bg-surface-container-lowest dark:bg-surface-variant p-1 rounded-lg border border-outline-variant dark:border-outline">
               <button
-                key={r}
-                onClick={() => setSelectedRiskFilter(r)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer flex-shrink-0 ${colorBadge}`}
+                onClick={() => setViewMode('grid')}
+                className={`p-1.5 rounded-md flex items-center transition-colors ${
+                  viewMode === 'grid' ? 'bg-primary text-on-primary' : 'text-on-surface-variant hover:text-primary'
+                }`}
+                title="Grid View"
               >
-                {r === 'Critical' && '🟣 '}
-                {r === 'High' && '🔴 '}
-                {r === 'Medium' && '🟠 '}
-                {r === 'Low' && '🟢 '}
-                {r === 'Unknown' && '⚪ '}
-                {t(r)}
+                <span className="material-symbols-outlined text-sm">grid_view</span>
               </button>
-            );
-          })}
-        </div>
-
-        {/* View Switcher */}
-        <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg self-end md:self-auto">
-          <button
-            onClick={() => setViewMode('grid')}
-            className={`p-1.5 rounded-md text-xs font-semibold flex items-center space-x-1 transition-colors ${
-              viewMode === 'grid' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-100'
-            }`}
-          >
-            <LayoutGrid className="w-4 h-4" />
-            <span>Grid</span>
-          </button>
-          <button
-            onClick={() => setViewMode('table')}
-            className={`p-1.5 rounded-md text-xs font-semibold flex items-center space-x-1 transition-colors ${
-              viewMode === 'table' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-100'
-            }`}
-          >
-            <ListFilter className="w-4 h-4" />
-            <span>Table</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Controls Bar: Search & Category Filters */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-        <div className="flex-1 flex flex-col sm:flex-row gap-3">
-          <SearchBar
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder={t('searchProjectsPlaceholder')}
-            className="w-full sm:w-72"
-          />
-
-          <FilterPanel
-            filters={filterConfigs}
-            selectedFilters={selectedFilters}
-            onFilterChange={handleFilterChange}
-            onReset={() => {
-              setSelectedFilters({});
-              setSelectedRiskFilter('All');
-            }}
-          />
+              <button
+                onClick={() => setViewMode('table')}
+                className={`p-1.5 rounded-md flex items-center transition-colors ${
+                  viewMode === 'table' ? 'bg-primary text-on-primary' : 'text-on-surface-variant hover:text-primary'
+                }`}
+                title="Table View"
+              >
+                <span className="material-symbols-outlined text-sm">table_rows</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -308,7 +245,7 @@ const ProjectsPage = () => {
                 setSelectedFilters({});
                 setSelectedRiskFilter('All');
               }}
-              className="px-4 py-2 text-xs font-semibold bg-blue-600 text-white rounded-lg cursor-pointer"
+              className="px-4 py-2 font-label-md text-label-md bg-primary text-on-primary rounded-lg cursor-pointer hover:bg-primary-container transition-colors"
             >
               Clear All Filters
             </button>
@@ -326,11 +263,13 @@ const ProjectsPage = () => {
           ))}
         </div>
       ) : (
-        <ProjectTable
-          projects={filteredProjects}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+        <div className="bg-surface dark:bg-inverse-surface rounded-xl shadow-ambient-lvl1 border border-outline-variant dark:border-outline overflow-hidden">
+          <ProjectTable
+            projects={filteredProjects}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        </div>
       )}
 
       {/* Project Form Modal (Create or Edit) */}

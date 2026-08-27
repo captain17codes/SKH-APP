@@ -13,18 +13,20 @@ import toast from 'react-hot-toast';
 const CitizenDashboardLayout = () => {
   const { t } = useTranslation();
   const auth = useAuth() || {};
-  const user = auth.user || { name: 'Aniket Sharma', id: 'USR-CITIZEN-01' };
+  const user = auth.user || { name: 'Rajesh Kumar', id: '9876-5432' };
   const logout = auth.logout || (() => {});
 
   const citizenNavItems = [
-    { id: 'dashboard', label: t('dashboard'), icon: LayoutDashboard, path: '/citizen/dashboard' },
-    { id: 'report-problem', label: t('reportProblem'), icon: MessageSquareWarning, badge: t('new'), path: '/citizen/dashboard?view=report-problem' },
-    { id: 'my-complaints', label: t('myComplaints'), icon: Clock, badge: `3 ${t('active')}`, path: '/citizen/dashboard?view=my-complaints' },
-    { id: 'citizen-gis', label: t('citizenGis'), icon: MapPin, badge: t('liveGis'), path: '/citizen/gis' },
-    { id: 'projects-near-me', label: t('projectsNearMe'), icon: FolderKanban, path: '/citizen/dashboard?view=projects-near-me' },
-    { id: 'city-alerts', label: t('cityAlerts'), icon: AlertTriangle, badge: `2 ${t('notices')}`, path: '/citizen/dashboard?view=city-alerts' },
-    { id: 'ai-assistant', label: t('aiCitizenAssistant'), icon: Bot, badge: t('ai20'), path: '/citizen/dashboard?view=ai-assistant' }
-
+    { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', path: '/citizen/dashboard' },
+    { id: 'report-problem', label: 'Report Problem', icon: 'warning', path: '/citizen/dashboard?view=report-problem' },
+    { id: 'my-complaints', label: 'My Complaints', icon: 'schedule', path: '/citizen/dashboard?view=my-complaints' },
+    { id: 'citizen-gis', label: 'GIS View', icon: 'map', path: '/citizen/gis' },
+    { id: 'marketplace', label: 'Property Marketplace', icon: 'store', path: '/citizen/properties' },
+    { id: 'sell-property', label: 'Sell Property', icon: 'add_business', path: '/citizen/properties/sell' },
+    { id: 'my-listings', label: 'My Listings', icon: 'list_alt', path: '/citizen/properties/my-listings' },
+    { id: 'projects-near-me', label: 'Projects Near Me', icon: 'account_tree', path: '/citizen/dashboard?view=projects-near-me' },
+    { id: 'ai-assistant', label: 'AI Citizen Assistant', icon: 'smart_toy', path: '/citizen/dashboard?view=ai-assistant' },
+    { id: 'settings', label: 'Settings', icon: 'settings', path: '/citizen/settings' }
   ];
 
   const themeCtx = useTheme() || {};
@@ -44,172 +46,131 @@ const CitizenDashboardLayout = () => {
   };
 
   const isNavActive = (item) => {
-    if (item.id === 'citizen-gis') {
-      return location.pathname.startsWith('/citizen/gis');
-    }
-    if (item.id === 'dashboard') {
-      return location.pathname === '/citizen/dashboard' && !location.search;
-    }
-    if (item.path.includes('view=')) {
-      const viewParam = item.path.split('view=')[1];
-      return location.pathname === '/citizen/dashboard' && location.search.includes(viewParam);
-    }
+    if (item.path === location.pathname + location.search) return true;
+    if (item.id === 'dashboard' && location.pathname === '/citizen/dashboard' && !location.search) return true;
+    if (item.id === 'citizen-gis' && location.pathname.startsWith('/citizen/gis')) return true;
+    if (item.id === 'marketplace' && location.pathname === '/citizen/properties') return true;
+    if (item.id === 'settings' && location.pathname.startsWith('/citizen/settings')) return true;
     return false;
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans">
+    <div className="bg-background text-on-background min-h-screen flex font-body-md">
       {/* MOBILE BACKDROP */}
       {mobileMenuOpen && (
         <div
           onClick={() => setMobileMenuOpen(false)}
-          className="fixed inset-0 bg-slate-950/70 z-40 lg:hidden backdrop-blur-xs"
+          className="fixed inset-0 bg-on-background/70 z-40 md:hidden backdrop-blur-sm"
         />
       )}
 
-      {/* SINGLE CITIZEN DASHBOARD SIDEBAR */}
-      <aside
-        className={`fixed top-0 left-0 bottom-0 z-40 w-64 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-all duration-300 ease-in-out lg:translate-x-0 ${
+      {/* SIDEBAR */}
+      <nav
+        className={`fixed left-0 top-0 h-screen w-[260px] flex flex-col py-6 bg-surface-container-lowest dark:bg-on-surface shadow-md border-r border-outline-variant dark:border-outline z-50 transition-transform duration-300 md:translate-x-0 ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        {/* Brand Header */}
-        <div className="flex items-center justify-between h-16 px-5 border-b border-slate-200 dark:border-slate-800">
-          <Link to="/citizen/dashboard" className="flex items-center space-x-3">
-            <div className="p-2 rounded-lg bg-gradient-to-tr from-emerald-600 to-cyan-500 text-white shadow-md shadow-emerald-500/20">
-              <Building2 className="w-5 h-5" />
-            </div>
+        <div className="px-6 mb-8 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-primary text-3xl" style={{fontVariationSettings: "'FILL' 1"}}>account_balance</span>
             <div>
-              <h1 className="text-sm font-bold text-slate-900 dark:text-white tracking-wide leading-none">{t('brand')}</h1>
-              <span className="text-[10px] font-semibold tracking-wider text-emerald-600 dark:text-emerald-400 uppercase">{t('citizenPortal')}</span>
+              <h1 className="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">Citizen Portal</h1>
+              <p className="font-label-sm text-label-sm text-on-surface-variant">Smart City Services</p>
             </div>
-          </Link>
+          </div>
           <button
             onClick={() => setMobileMenuOpen(false)}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white lg:hidden"
+            className="md:hidden text-on-surface-variant p-1"
           >
-            <X className="w-5 h-5" />
+            <span className="material-symbols-outlined">close</span>
           </button>
         </div>
 
-        {/* User Quick Info Card */}
-        <div className="p-4 border-b border-slate-200 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-950/40">
-          <div className="flex items-center space-x-3">
-            <img
-              src={user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80'}
-              alt={user?.name}
-              className="w-9 h-9 rounded-full ring-2 ring-emerald-500/40 object-cover"
-            />
-            <div className="overflow-hidden">
-              <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{user?.name || 'Aniket Sharma'}</p>
-              <span className="inline-block text-[10px] font-medium px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 mt-0.5">
-                {t('residentPersona')}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Nav Links List (Exact 8 Standard Citizen Links) */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <ul className="flex-1 flex flex-col gap-1 w-full font-label-md text-label-md overflow-y-auto pr-4">
           {citizenNavItems.map((item) => {
-            const Icon = item.icon;
             const active = isNavActive(item);
             return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  navigate(item.path);
-                  setMobileMenuOpen(false);
-                }}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
-                  active
-                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20 font-bold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60'
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <Icon className="w-4 h-4 flex-shrink-0" />
+              <li key={item.id} className="w-full">
+                <Link
+                  to={item.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 transition-all duration-200 rounded-r-lg ${
+                    active
+                      ? 'bg-primary-container dark:bg-primary-fixed-variant text-on-primary-container dark:text-on-primary-fixed-variant border-l-4 border-primary dark:border-primary-fixed opacity-90'
+                      : 'text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-surface-container-high border-l-4 border-transparent'
+                  }`}
+                >
+                  <span className="material-symbols-outlined">{item.icon}</span>
                   <span>{item.label}</span>
-                </div>
-                {item.badge && (
-                  <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded ${
-                    active ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 border border-slate-200 dark:border-slate-700'
-                  }`}>
-                    {item.badge}
-                  </span>
-                )}
-              </button>
+                </Link>
+              </li>
             );
           })}
-        </nav>
+        </ul>
 
-        {/* Footer Info */}
-        <div className="p-4 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 flex items-center justify-between">
-          <span>{t('citizenCare')}</span>
-          <span className="font-semibold text-emerald-600 dark:text-emerald-400">v2.4 Live</span>
-        </div>
-      </aside>
-
-      {/* MAIN CONTENT AREA */}
-      <div className="lg:pl-64 flex-1 flex flex-col min-w-0">
-        {/* TOP NAVBAR */}
-        <header className="sticky top-0 z-30 h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-
+        <div className="px-6 mt-auto">
+          <div className="flex items-center gap-3 pt-4 border-t border-outline-variant">
+            <img
+              src={user?.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuC88EA_67EUCmdk9L70Sl8XdwetPNnAyMrIFmw_OxraFJRi9I_DoFCFn392pYNI4AE9hg5ZR-cPvHP-LZMoYTYbpWVNE3Dsh20X8yzU3v8cTj8EjWuK646d_464DRQ1TlqnVUe2r4lMrPtXHyWuIgISwE_s2bvsWAw0bxaR_182CBBfGVEpIMMW19oEaxCJYNEQO4kWP4Qu7cmRqoQeh0jBhlwSLxdFhdyEhxoBC_xZAV5Mmjw4WTWEVQ'}
+              alt={user?.name}
+              className="w-10 h-10 rounded-full object-cover"
+            />
             <div>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">{t('citizenGovernancePortal')}</h2>
-              <p className="text-[10px] text-slate-500 dark:text-slate-400">{t('citizenGovernanceDesc')}</p>
+              <p className="font-label-md text-label-md text-on-surface">{user?.name || 'Rajesh Kumar'}</p>
+              <p className="font-label-sm text-label-sm text-on-surface-variant">ID: {user?.id || '9876-5432'}</p>
             </div>
           </div>
+        </div>
+      </nav>
 
-          <div className="flex items-center space-x-3">
-            {/* Global Language Switcher */}
+      {/* MAIN CONTENT AREA */}
+      <div className="flex-1 flex flex-col md:ml-[260px] min-h-screen">
+        {/* TOP NAVBAR */}
+        <header className="flex justify-between items-center w-full px-8 py-4 sticky top-0 z-40 bg-surface-bright dark:bg-surface-dim border-b border-outline-variant dark:border-outline shadow-sm">
+          <div className="md:hidden flex items-center gap-4">
+            <span className="material-symbols-outlined text-primary cursor-pointer" onClick={() => setMobileMenuOpen(true)}>menu</span>
+            <h1 className="font-headline-md text-headline-md font-extrabold text-primary dark:text-primary-fixed">Citizen Portal</h1>
+          </div>
+          <div className="hidden md:block">
+            {/* Optional Breadcrumb or search could go here */}
+          </div>
+          <div className="flex items-center gap-4 md:gap-6">
             <LanguageSwitcher />
 
-            {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800"
-              title="Toggle Theme"
-            >
-              {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-slate-600" />}
-            </button>
+            <div className="flex gap-4 text-on-surface-variant">
+              <button onClick={toggleTheme} className="hover:text-primary dark:hover:text-primary-fixed transition-colors">
+                <span className="material-symbols-outlined">{theme === 'dark' ? 'light_mode' : 'dark_mode'}</span>
+              </button>
+              <button className="relative hover:text-primary dark:hover:text-primary-fixed transition-colors">
+                <span className="material-symbols-outlined">notifications</span>
+                <span className="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+              </button>
+            </div>
 
-            {/* Profile Dropdown */}
-            <div className="relative">
+            <div className="relative hidden md:block">
               <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="flex items-center space-x-2 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="flex items-center gap-2 outline-none"
               >
                 <img
-                  src={user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80'}
-                  alt="User"
-                  className="w-8 h-8 rounded-full object-cover ring-2 ring-emerald-500/30"
+                  src={user?.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuC88EA_67EUCmdk9L70Sl8XdwetPNnAyMrIFmw_OxraFJRi9I_DoFCFn392pYNI4AE9hg5ZR-cPvHP-LZMoYTYbpWVNE3Dsh20X8yzU3v8cTj8EjWuK646d_464DRQ1TlqnVUe2r4lMrPtXHyWuIgISwE_s2bvsWAw0bxaR_182CBBfGVEpIMMW19oEaxCJYNEQO4kWP4Qu7cmRqoQeh0jBhlwSLxdFhdyEhxoBC_xZAV5Mmjw4WTWEVQ'}
+                  alt="User Profile"
+                  className="w-8 h-8 rounded-full object-cover cursor-pointer"
                 />
-                <span className="hidden sm:inline-block text-xs font-semibold text-slate-800 dark:text-slate-200">
-                  {user?.name || 'Aniket Sharma'}
-                </span>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
               </button>
-
+              
               {isProfileOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-2 z-50">
-                  <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
-                    <p className="text-xs font-bold text-slate-900 dark:text-slate-100">{user?.name || 'Aniket Sharma'}</p>
-                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">{t('citizenPersona')}</span>
+                <div className="absolute right-0 mt-2 w-48 bg-surface-container-lowest dark:bg-surface border border-outline-variant rounded-xl shadow-xl py-2 z-50">
+                  <div className="px-4 py-2 border-b border-outline-variant/50">
+                    <p className="text-xs font-bold text-on-surface">{user?.name || 'Rajesh Kumar'}</p>
+                    <span className="text-[10px] text-primary font-semibold">Citizen</span>
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 flex items-center space-x-2"
+                    className="w-full text-left px-4 py-2 text-xs font-medium text-error hover:bg-error-container/20 flex items-center space-x-2"
                   >
-                    <LogOut className="w-3.5 h-3.5" />
-                    <span>{t('logout')}</span>
+                    <span className="material-symbols-outlined" style={{fontSize: '16px'}}>logout</span>
+                    <span>Logout</span>
                   </button>
                 </div>
               )}
@@ -218,13 +179,9 @@ const CitizenDashboardLayout = () => {
         </header>
 
         {/* Dynamic Page Outlet */}
-        <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-[1600px] w-full mx-auto space-y-6 box-border">
+        <main className="flex-1 p-[1rem] md:p-[2rem] bg-surface-bright">
           <Outlet />
         </main>
-
-        <footer className="border-t border-slate-200 dark:border-slate-800 py-4 px-6 text-center text-xs text-slate-500">
-          <p>{t('citizenFooter')}</p>
-        </footer>
       </div>
     </div>
   );

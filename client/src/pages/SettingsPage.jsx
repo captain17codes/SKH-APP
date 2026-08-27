@@ -1,18 +1,26 @@
 import React, { useState } from 'react';
-import { Settings as SettingsIcon, User, Shield, Bell, Map, Moon, Sun, Save } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import toast from 'react-hot-toast';
 
-const SETTINGS_TABS = ['Profile', 'Users & Roles', 'Notifications', 'Map Settings', 'Theme & UI'];
+const SETTINGS_TABS = [
+  { id: 'Profile', icon: 'person' },
+  { id: 'Users & Roles', icon: 'group' },
+  { id: 'Notifications', icon: 'notifications_active' },
+  { id: 'Map Settings', icon: 'map' },
+  { id: 'Theme & UI', icon: 'palette' }
+];
 
 const SettingsPage = () => {
   const { user, switchRole } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
   const [activeTab, setActiveTab] = useState('Profile');
-  const [profileName, setProfileName] = useState(user?.name || 'Er. Rajan Patel');
-  const [email, setEmail] = useState(user?.email || 'rajan.patel@kopargaon.gov.in');
+  const [profileName, setProfileName] = useState(user?.name || 'Rajesh Kumar');
+  const [email, setEmail] = useState(user?.email || 'rajesh.admin@kopargaon.gov.in');
+  const [department, setDepartment] = useState('Central Administration');
+  const [phone, setPhone] = useState('+91 98765 43210');
+  
   const [defaultZoom, setDefaultZoom] = useState('14');
   const [emailAlerts, setEmailAlerts] = useState(true);
 
@@ -22,204 +30,303 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-xs">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center">
-            <SettingsIcon className="w-5 h-5 text-slate-500 mr-2" />
-            Platform & Governance Settings
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Configure system preferences, role-based access matrix, spatial GIS defaults, and notifications.
-          </p>
+    <div className="w-full">
+      <div className="max-w-container-max-width mx-auto">
+        {/* Page Header */}
+        <div className="mb-8">
+          <h2 className="text-display-md font-display-md text-on-background mb-2">Platform Settings</h2>
+          <p className="text-body-lg font-body-lg text-on-surface-variant">Manage your account, administrative roles, and system preferences.</p>
         </div>
-      </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 space-x-6 text-xs font-bold overflow-x-auto">
-        {SETTINGS_TABS.map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`pb-3 uppercase tracking-wider transition-colors border-b-2 flex-shrink-0 ${
-              activeTab === tab
-                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab Panels */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-xs max-w-3xl">
-        <form onSubmit={handleSave} className="space-y-6 text-xs">
-          {activeTab === 'Profile' && (
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center">
-                <User className="w-4 h-4 text-blue-500 mr-2" />
-                Officer Profile Information
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
-                  <input
-                    type="text"
-                    value={profileName}
-                    onChange={e => setProfileName(e.target.value)}
-                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Official Email</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Assigned Department</label>
-                <input
-                  type="text"
-                  readOnly
-                  value={user?.department || 'Town Planning & GIS Governance'}
-                  className="w-full p-2.5 bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 dark:text-slate-400"
-                />
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'Users & Roles' && (
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center">
-                <Shield className="w-4 h-4 text-emerald-500 mr-2" />
-                Role Access & Governance Control
-              </h3>
-
-              <div className="space-y-3 border border-slate-200 dark:border-slate-800 rounded-lg p-4 bg-slate-50 dark:bg-slate-800/40">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="font-bold text-slate-900 dark:text-slate-100 block">Active Role Persona</span>
-                    <span className="text-[11px] text-slate-500">Currently operating as: <strong className="text-blue-600 dark:text-blue-400">{user?.role}</strong></span>
-                  </div>
-
-                  <div className="flex gap-2">
-                    {['Administrator', 'GIS Planner', 'Municipal Officer', 'Citizen'].map(r => (
-                      <button
-                        key={r}
-                        type="button"
-                        onClick={() => switchRole(r)}
-                        className={`px-3 py-1 rounded text-[11px] font-semibold border transition-colors ${
-                          user?.role === r
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700'
-                        }`}
-                      >
-                        {r}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'Map Settings' && (
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center">
-                <Map className="w-4 h-4 text-cyan-500 mr-2" />
-                Leaflet GIS Defaults & Coordinate Bounds
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Default Zoom Level</label>
-                  <select
-                    value={defaultZoom}
-                    onChange={e => setDefaultZoom(e.target.value)}
-                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100"
-                  >
-                    <option value="12">12 (City Overview)</option>
-                    <option value="14">14 (Ward Level - Default)</option>
-                    <option value="16">16 (Parcel Level)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Map Tile Provider</label>
-                  <input
-                    type="text"
-                    readOnly
-                    value="OpenStreetMap (Standard Vector Tiles)"
-                    className="w-full p-2.5 bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 dark:text-slate-400"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'Notifications' && (
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center">
-                <Bell className="w-4 h-4 text-amber-500 mr-2" />
-                Alert Subscriptions & Incident Escalation
-              </h3>
-
-              <div className="space-y-2">
-                <label className="flex items-center space-x-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={emailAlerts}
-                    onChange={e => setEmailAlerts(e.target.checked)}
-                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="font-medium text-slate-800 dark:text-slate-200">Send instant email digest when critical citizen grievance is lodged</span>
-                </label>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'Theme & UI' && (
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center">
-                {theme === 'dark' ? <Moon className="w-4 h-4 text-purple-400 mr-2" /> : <Sun className="w-4 h-4 text-amber-500 mr-2" />}
-                Theme Customization & Contrast
-              </h3>
-
-              <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-800">
-                <div>
-                  <span className="font-bold text-slate-900 dark:text-slate-100 block">Current Theme Mode</span>
-                  <span className="text-slate-500 text-[11px]">Currently active: <strong className="capitalize text-blue-500">{theme} Mode</strong></span>
-                </div>
+        {/* Tabbed Interface */}
+        <div className="bg-surface rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] border border-outline-variant overflow-hidden">
+          {/* Tab Navigation */}
+          <div className="flex border-b border-outline-variant overflow-x-auto bg-surface-bright">
+            {SETTINGS_TABS.map(tab => {
+              const isActive = activeTab === tab.id;
+              return (
                 <button
-                  type="button"
-                  onClick={toggleTheme}
-                  className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-500 transition-colors"
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex-1 py-4 px-6 text-center text-label-md font-label-md whitespace-nowrap transition-colors flex justify-center items-center cursor-pointer ${
+                    isActive 
+                      ? 'text-primary border-b-2 border-primary font-bold hover:bg-surface-container-low' 
+                      : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
+                  }`}
                 >
-                  Toggle to {theme === 'dark' ? 'Light' : 'Dark'} Mode
+                  <span className="material-symbols-outlined align-middle mr-2 text-[18px]">{tab.icon}</span>
+                  {tab.id}
                 </button>
-              </div>
-            </div>
-          )}
-
-          <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-end">
-            <button
-              type="submit"
-              className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-md transition-colors flex items-center space-x-1.5"
-            >
-              <Save className="w-4 h-4" />
-              <span>Save Changes</span>
-            </button>
+              );
+            })}
           </div>
-        </form>
+
+          {/* Tab Contents */}
+          <div className="p-6 md:p-8">
+            {activeTab === 'Profile' && (
+              <form onSubmit={handleSave}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {/* Avatar Column */}
+                  <div className="col-span-1 flex flex-col items-center border-r border-outline-variant/50 pr-0 md:pr-8">
+                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-surface-container-high mb-4 shadow-sm relative group cursor-pointer">
+                      <img 
+                        className="w-full h-full object-cover" 
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhD9Cd25FDjzFv573--waE4Qs9D6rvNS1iucsqW0O7mnt_3iu1zBoLg6yGO6_eF58AhB5SvHX20ryAmQdADne9Lr-FoRaIBV1UUVVYjm_AR4IgI9Kwo6Gow0xmDxhW6XdZqg9m85Rp5NPZL-Jx0SHjMIdHGPkCZgPPr1l0yklq76sGfPdCXddQY2RLuq5fhobAk2GRafP9cI40Q04pXxMg4ri5j0vjZgZTJ9U047LK473mG6GTEU2SHw"
+                        alt="Profile"
+                      />
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="material-symbols-outlined text-white">photo_camera</span>
+                      </div>
+                    </div>
+                    <h3 className="text-title-lg font-title-lg mb-1 text-center">{profileName}</h3>
+                    <div className="bg-primary-fixed text-on-primary-fixed-variant px-3 py-1 rounded-full text-label-sm font-label-sm font-bold flex items-center mb-6">
+                      <span className="material-symbols-outlined text-[14px] mr-1">verified_user</span> Administrator
+                    </div>
+                    <button type="button" className="w-full py-2 bg-surface-container-low text-primary border border-outline-variant rounded-lg text-label-md font-label-md hover:bg-surface-container transition-colors cursor-pointer">
+                      Change Photo
+                    </button>
+                  </div>
+                  
+                  {/* Form Column */}
+                  <div className="col-span-1 md:col-span-2 space-y-6">
+                    <div>
+                      <h4 className="text-title-lg font-title-lg mb-4 text-primary border-b border-outline-variant/50 pb-2">Personal Information</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">Full Name</label>
+                          <input 
+                            className="w-full border border-outline-variant rounded-lg px-4 py-2 focus:ring-2 focus:ring-secondary focus:border-secondary bg-surface-bright text-body-md text-on-surface outline-none" 
+                            type="text" 
+                            value={profileName}
+                            onChange={(e) => setProfileName(e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">Email Address</label>
+                          <input 
+                            className="w-full border border-outline-variant rounded-lg px-4 py-2 focus:ring-2 focus:ring-secondary focus:border-secondary bg-surface-bright text-body-md text-on-surface outline-none" 
+                            type="email" 
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">Department</label>
+                          <select 
+                            className="w-full border border-outline-variant rounded-lg px-4 py-2 focus:ring-2 focus:ring-secondary focus:border-secondary bg-surface-bright text-body-md text-on-surface outline-none cursor-pointer"
+                            value={department}
+                            onChange={(e) => setDepartment(e.target.value)}
+                          >
+                            <option value="Urban Planning">Urban Planning</option>
+                            <option value="Public Works">Public Works</option>
+                            <option value="Central Administration">Central Administration</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-label-sm font-label-sm text-on-surface-variant mb-1">Phone Number</label>
+                          <input 
+                            className="w-full border border-outline-variant rounded-lg px-4 py-2 focus:ring-2 focus:ring-secondary focus:border-secondary bg-surface-bright text-body-md text-on-surface outline-none" 
+                            type="tel" 
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex justify-end mt-8">
+                      <button type="submit" className="bg-primary text-on-primary px-6 py-2 rounded-lg text-label-md font-label-md hover:bg-primary/90 transition-colors shadow-sm cursor-pointer">
+                        Save Changes
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            )}
+
+            {activeTab === 'Users & Roles' && (
+              <div>
+                <div className="flex justify-between items-center mb-6">
+                  <div>
+                    <h4 className="text-title-lg font-title-lg text-primary">User Management</h4>
+                    <p className="text-body-sm font-body-sm text-on-surface-variant">Manage platform access and role assignments.</p>
+                  </div>
+                  <button className="bg-primary text-on-primary px-4 py-2 rounded-lg text-label-md font-label-md hover:bg-primary/90 transition-colors shadow-sm flex items-center cursor-pointer">
+                    <span className="material-symbols-outlined text-[18px] mr-2">person_add</span> Invite User
+                  </button>
+                </div>
+                
+                <div className="mb-6 space-y-3 border border-outline-variant rounded-lg p-4 bg-surface-container-low">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="font-bold text-on-surface block">Active Role Persona</span>
+                      <span className="text-body-sm text-on-surface-variant">Currently operating as: <strong className="text-primary">{user?.role}</strong></span>
+                    </div>
+
+                    <div className="flex gap-2">
+                      {['Administrator', 'GIS Planner', 'Municipal Officer', 'Citizen'].map(r => (
+                        <button
+                          key={r}
+                          type="button"
+                          onClick={() => switchRole(r)}
+                          className={`px-3 py-1 rounded text-label-sm font-label-sm border transition-colors cursor-pointer ${
+                            user?.role === r
+                              ? 'bg-primary text-on-primary border-primary'
+                              : 'bg-surface text-on-surface border-outline-variant hover:bg-surface-container'
+                          }`}
+                        >
+                          {r}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border border-outline-variant rounded-lg overflow-hidden">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="bg-surface-bright text-label-sm font-label-sm text-on-surface-variant uppercase border-b border-outline-variant/50">
+                      <tr>
+                        <th className="py-3 px-4 font-semibold">User</th>
+                        <th className="py-3 px-4 font-semibold">Department</th>
+                        <th className="py-3 px-4 font-semibold">Role</th>
+                        <th className="py-3 px-4 font-semibold">Status</th>
+                        <th className="py-3 px-4 text-right font-semibold">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-body-md font-body-md text-on-surface">
+                      <tr className="border-b border-outline-variant/30 hover:bg-surface-container-lowest transition-colors">
+                        <td className="py-3 px-4 flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-primary font-bold">A</div>
+                          <div>
+                            <p className="font-medium text-on-surface">Anita Desai</p>
+                            <p className="text-body-sm text-on-surface-variant">anita.d@kopargaon.gov</p>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">Urban Planning</td>
+                        <td className="py-3 px-4"><span className="bg-surface-container-high text-on-surface px-2 py-1 rounded text-label-sm font-label-sm border border-outline-variant/50">Editor</span></td>
+                        <td className="py-3 px-4"><span className="bg-secondary-container/30 text-secondary px-2 py-1 rounded-full text-label-sm font-label-sm">Active</span></td>
+                        <td className="py-3 px-4 text-right">
+                          <button className="text-on-surface-variant hover:text-primary cursor-pointer"><span className="material-symbols-outlined text-[20px]">more_vert</span></button>
+                        </td>
+                      </tr>
+                      <tr className="border-b border-outline-variant/30 hover:bg-surface-container-lowest transition-colors">
+                        <td className="py-3 px-4 flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-primary font-bold">V</div>
+                          <div>
+                            <p className="font-medium text-on-surface">Vikram Singh</p>
+                            <p className="text-body-sm text-on-surface-variant">v.singh@kopargaon.gov</p>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">Public Works</td>
+                        <td className="py-3 px-4"><span className="bg-primary-container/20 text-primary px-2 py-1 rounded text-label-sm font-label-sm border border-primary/20">Administrator</span></td>
+                        <td className="py-3 px-4"><span className="bg-secondary-container/30 text-secondary px-2 py-1 rounded-full text-label-sm font-label-sm">Active</span></td>
+                        <td className="py-3 px-4 text-right">
+                          <button className="text-on-surface-variant hover:text-primary cursor-pointer"><span className="material-symbols-outlined text-[20px]">more_vert</span></button>
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-surface-container-lowest transition-colors">
+                        <td className="py-3 px-4 flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-primary font-bold">M</div>
+                          <div>
+                            <p className="font-medium text-on-surface">Meera Patel</p>
+                            <p className="text-body-sm text-on-surface-variant">m.patel@kopargaon.gov</p>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">Sanitation</td>
+                        <td className="py-3 px-4"><span className="bg-surface-container-high text-on-surface px-2 py-1 rounded text-label-sm font-label-sm border border-outline-variant/50">Viewer</span></td>
+                        <td className="py-3 px-4"><span className="bg-error-container text-error px-2 py-1 rounded-full text-label-sm font-label-sm">Inactive</span></td>
+                        <td className="py-3 px-4 text-right">
+                          <button className="text-on-surface-variant hover:text-primary cursor-pointer"><span className="material-symbols-outlined text-[20px]">more_vert</span></button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'Theme & UI' && (
+              <div>
+                <div className="mb-6">
+                  <h4 className="text-title-lg font-title-lg text-primary">Appearance</h4>
+                  <p className="text-body-sm font-body-sm text-on-surface-variant">Customize the visual presentation of the admin console.</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl">
+                  {/* Light Mode Card */}
+                  <div 
+                    onClick={() => { if(theme !== 'light') toggleTheme() }} 
+                    className={`border-2 rounded-xl p-1 cursor-pointer transition-colors ${theme === 'light' ? 'border-primary' : 'border-transparent hover:border-outline-variant'}`}
+                  >
+                    <div className="bg-white rounded-lg h-40 border border-slate-200 p-4 flex flex-col shadow-sm relative overflow-hidden">
+                      <div className="flex justify-between items-center mb-4">
+                        <div className="w-1/3 h-4 bg-slate-200 rounded"></div>
+                        <div className="w-8 h-8 bg-blue-100 rounded-full"></div>
+                      </div>
+                      <div className="flex-1 flex gap-4">
+                        <div className="w-1/4 h-full bg-slate-100 rounded"></div>
+                        <div className="w-3/4 h-full bg-slate-50 rounded border border-slate-200"></div>
+                      </div>
+                      {theme === 'light' && (
+                        <div className="absolute inset-0 bg-blue-500/10 flex items-center justify-center">
+                          <span className="bg-primary text-white px-3 py-1 rounded-full text-label-sm flex items-center">
+                            <span className="material-symbols-outlined text-[16px] mr-1">check_circle</span> Active
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-center py-3">
+                      <p className={`font-label-md text-label-md ${theme === 'light' ? 'font-bold text-on-surface' : 'text-on-surface-variant'}`}>Light Mode (Civic Standard)</p>
+                    </div>
+                  </div>
+                  
+                  {/* Dark Mode Card */}
+                  <div 
+                    onClick={() => { if(theme !== 'dark') toggleTheme() }} 
+                    className={`border-2 rounded-xl p-1 cursor-pointer transition-colors ${theme === 'dark' ? 'border-primary' : 'border-transparent hover:border-outline-variant'}`}
+                  >
+                    <div className="bg-slate-900 rounded-lg h-40 border border-slate-800 p-4 flex flex-col shadow-sm relative overflow-hidden">
+                      <div className="flex justify-between items-center mb-4">
+                        <div className="w-1/3 h-4 bg-slate-700 rounded"></div>
+                        <div className="w-8 h-8 bg-blue-900 rounded-full"></div>
+                      </div>
+                      <div className="flex-1 flex gap-4">
+                        <div className="w-1/4 h-full bg-slate-800 rounded"></div>
+                        <div className="w-3/4 h-full bg-slate-800/50 rounded border border-slate-700"></div>
+                      </div>
+                      {theme === 'dark' && (
+                        <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
+                          <span className="bg-primary text-white px-3 py-1 rounded-full text-label-sm flex items-center">
+                            <span className="material-symbols-outlined text-[16px] mr-1">check_circle</span> Active
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-center py-3">
+                      <p className={`font-label-md text-label-md ${theme === 'dark' ? 'font-bold text-on-surface' : 'text-on-surface-variant'}`}>Dark Mode (Low Light)</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'Notifications' && (
+              <div className="text-center py-12 text-on-surface-variant h-64 flex items-center justify-center">
+                <div>
+                  <span className="material-symbols-outlined text-[48px] opacity-50 mb-4 block">notifications</span>
+                  <p>Notification settings coming soon.</p>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'Map Settings' && (
+              <div className="text-center py-12 text-on-surface-variant h-64 flex items-center justify-center">
+                <div>
+                  <span className="material-symbols-outlined text-[48px] opacity-50 mb-4 block">map</span>
+                  <p>GIS Map configurations coming soon.</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

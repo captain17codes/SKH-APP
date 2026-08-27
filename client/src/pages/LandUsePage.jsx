@@ -12,7 +12,6 @@ const LAND_CATEGORIES = [
   'Commercial',
   'Industrial',
   'Agriculture',
-  'Government',
   'Green Zone',
   'Mixed Use'
 ];
@@ -26,91 +25,121 @@ const LandUsePage = () => {
   useEffect(() => {
     landService.getAll().then(data => {
       setPlots(data);
-      if (data.length > 0) setSelectedPlot(data[0]);
     });
   }, []);
-
-  const filteredPlots = selectedCategory === 'All Zones'
-    ? plots
-    : plots.filter(p => p.category === selectedCategory);
 
   const handleSimulateZoning = (plot) => {
     toast.success(`Zonal simulation initialized for ${plot.name}. AI recommendation logged in Master Plan draft.`);
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-xs">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center">
-            <Layers className="w-5 h-5 text-emerald-500 mr-2" />
-            {t('interactiveLandUse')}
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            {t('interactiveLandUseDesc')}
-          </p>
+    <div className="flex-1 flex flex-col lg:flex-row gap-stack-gap md:gap-section-gap w-full h-[calc(100vh-64px)] overflow-hidden">
+      {/* Left: GIS Map Area */}
+      <section className="flex-1 flex flex-col bg-surface rounded-xl shadow-md border border-outline-variant relative overflow-hidden h-full min-h-[400px]">
+        {/* Map Header/Controls overlay */}
+        <div className="absolute top-0 left-0 w-full p-4 bg-gradient-to-b from-surface/90 to-transparent z-10 flex justify-between items-start pointer-events-none">
+          <div>
+            <h2 className="font-headline-md text-headline-md text-on-surface mb-1">Land Use Viewer</h2>
+            <p className="font-body-sm text-body-sm text-on-surface-variant">Interactive zoning map for Kopargaon jurisdiction</p>
+          </div>
+          <div className="flex items-center gap-2 bg-surface p-1.5 rounded-lg shadow-sm border border-outline-variant pointer-events-auto">
+            <select 
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="bg-transparent border-none text-body-sm font-label-md focus:ring-0 py-1 pl-2 pr-8 text-on-surface cursor-pointer outline-none"
+            >
+              {LAND_CATEGORIES.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
         </div>
-      </div>
-
-      {/* Category Pills */}
-      <div className="flex items-center space-x-2 overflow-x-auto pb-1 text-xs">
-        {LAND_CATEGORIES.map(cat => (
-          <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
-            className={`px-3.5 py-1.5 rounded-lg border font-semibold flex-shrink-0 transition-colors ${
-              selectedCategory === cat
-                ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
-                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-400'
-            }`}
-          >
-            {t(cat.replace(/\s+/g, ''))}
-          </button>
-        ))}
-      </div>
-
-      {/* Main Workspace Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Interactive Map + Parcel Selector */}
-        <div className="lg:col-span-2 space-y-4">
+        
+        {/* The Map Canvas */}
+        <div className="flex-1 relative w-full h-full">
           <MapView
             center={selectedPlot ? selectedPlot.coordinates : [19.8917, 74.4789]}
             zoom={14}
-            height="h-[520px]"
+            height="h-full"
+            activeLayers={{ landUse: true }}
+            onCenterChange={() => {}}
+            onZoomChange={() => {}}
           />
-
-          {/* Plot selector grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {filteredPlots.map(plot => (
-              <div
-                key={plot.id}
-                onClick={() => setSelectedPlot(plot)}
-                className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
-                  selectedPlot?.id === plot.id
-                    ? 'bg-emerald-500/10 border-emerald-500 shadow-md'
-                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-400'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">{plot.id}</span>
-                  <span className="text-[10px] font-bold text-slate-400">{plot.areaAcres} Acres</span>
-                </div>
-                <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 mt-1 line-clamp-1">{plot.name}</h4>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Current: {plot.currentUsage}</p>
-              </div>
-            ))}
-          </div>
         </div>
+      </section>
 
-        {/* Right AI Land Analysis Inspector Panel */}
-        <div>
+      {/* Right: Details & Legend Panel */}
+      <section className="w-full lg:w-[360px] xl:w-[400px] flex flex-col gap-stack-gap h-full overflow-y-auto pb-8 lg:pb-0 pr-1">
+        {selectedPlot ? (
           <LandAnalysisPanel
             selectedPlot={selectedPlot}
             onSimulateZoning={handleSimulateZoning}
+            onClose={() => setSelectedPlot(null)}
           />
-        </div>
-      </div>
+        ) : (
+          <>
+            {/* Zone Analysis Summary Card */}
+            <div className="bg-surface rounded-xl shadow-md border border-outline-variant p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-title-lg text-title-lg text-on-surface">Zone Analysis</h3>
+                <button className="text-primary hover:bg-surface-container-low p-1 rounded transition-colors cursor-pointer">
+                  <span className="material-symbols-outlined">more_vert</span>
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="p-3 bg-surface-container rounded-lg">
+                  <p className="font-label-sm text-label-sm text-on-surface-variant mb-1">Total Parcels</p>
+                  <p className="font-headline-md text-headline-md text-primary">12,450</p>
+                </div>
+                <div className="p-3 bg-surface-container rounded-lg">
+                  <p className="font-label-sm text-label-sm text-on-surface-variant mb-1">Total Area (Sq.Km)</p>
+                  <p className="font-headline-md text-headline-md text-primary">45.2</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between font-label-md text-label-md mb-1">
+                    <span className="text-on-surface">Compliance Rate</span>
+                    <span className="text-secondary">92%</span>
+                  </div>
+                  <div className="w-full bg-surface-variant rounded-full h-2">
+                    <div className="bg-secondary h-2 rounded-full" style={{ width: '92%' }}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Legend Card */}
+            <div className="bg-surface rounded-xl shadow-md border border-outline-variant flex-1 flex flex-col overflow-hidden">
+              <div className="p-5 border-b border-outline-variant">
+                <h3 className="font-title-lg text-title-lg text-on-surface">Zoning Distribution</h3>
+                <p className="font-body-sm text-body-sm text-on-surface-variant">Current land allocation metrics</p>
+              </div>
+              <div className="flex-1 overflow-y-auto p-2">
+                {[
+                  { name: 'Residential', color: '#FFC107', borderColor: '#B38705', pct: '42%', area: '18.9 Sq.Km' },
+                  { name: 'Commercial', color: '#F44336', borderColor: '#AB2E26', pct: '15%', area: '6.7 Sq.Km' },
+                  { name: 'Industrial', color: '#9C27B0', borderColor: '#6D1B7B', pct: '12%', area: '5.4 Sq.Km' },
+                  { name: 'Green Zone', color: '#4CAF50', borderColor: '#357A38', pct: '18%', area: '8.1 Sq.Km' },
+                  { name: 'Agriculture', color: '#8D6E63', borderColor: '#634D45', pct: '8%', area: '3.6 Sq.Km' },
+                  { name: 'Mixed Use', color: '#FF9800', borderColor: '#B36A00', pct: '3%', area: '1.3 Sq.Km' },
+                ].map(item => (
+                  <div key={item.name} className="flex items-center justify-between p-3 hover:bg-surface-container-low rounded-lg transition-colors cursor-default">
+                    <div className="flex items-center gap-3">
+                      <div className="w-4 h-4 rounded border" style={{ backgroundColor: item.color, borderColor: item.borderColor }}></div>
+                      <span className="font-body-md text-body-md text-on-surface">{item.name}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-label-md text-label-md text-on-surface block">{item.pct}</span>
+                      <span className="font-label-sm text-label-sm text-on-surface-variant">{item.area}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </section>
     </div>
   );
 };
