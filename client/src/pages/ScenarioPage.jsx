@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import Map, { NavigationControl } from 'react-map-gl/maplibre';
-import maplibregl from 'maplibre-gl';
+import Map, { NavigationControl, Source, Layer } from 'react-map-gl/maplibre';
+import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
@@ -287,6 +287,65 @@ const ScenarioPage = () => {
                       <span className="text-xl font-extrabold text-rose-600">{analysisResult.conflict_count}</span>
                     </div>
 
+                    {analysisResult.land_use_impact && (
+                      <div className="bg-white dark:bg-slate-800 p-3 rounded border border-rose-100 dark:border-rose-700/50">
+                        <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 block mb-2">Land Use Impact:</span>
+                        <div className="space-y-1">
+                          {analysisResult.land_use_impact.breakdown?.map((item, idx) => (
+                            <div key={idx} className="flex justify-between text-xs text-slate-600 dark:text-slate-400">
+                              <span className="capitalize">{item.type}</span>
+                              <span className="font-bold">{item.percentage.toFixed(1)}% ({Math.round(item.area_sqm)} sqm)</span>
+                            </div>
+                          ))}
+                          {(!analysisResult.land_use_impact.breakdown || analysisResult.land_use_impact.breakdown.length === 0) && (
+                            <div className="text-xs text-slate-500 italic">No land use zones affected.</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {analysisResult.accessibility_analysis && (
+                      <div className="bg-white dark:bg-slate-800 p-3 rounded border border-rose-100 dark:border-rose-700/50">
+                        <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 block mb-2">Accessibility (400m walk):</span>
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-slate-600 dark:text-slate-400">Score:</span>
+                          <span className={`font-bold px-2 py-0.5 rounded-full ${
+                            analysisResult.accessibility_analysis.score === 'High' ? 'bg-emerald-100 text-emerald-800' : 
+                            analysisResult.accessibility_analysis.score === 'Medium' ? 'bg-amber-100 text-amber-800' : 
+                            'bg-rose-100 text-rose-800'
+                          }`}>
+                            {analysisResult.accessibility_analysis.score}
+                          </span>
+                        </div>
+                        <div className="mt-2 text-xs text-slate-500">
+                          {Math.round(analysisResult.accessibility_analysis.accessible_area_sqm)} sqm of residential area is within a 5-minute walk.
+                        </div>
+                      </div>
+                    )}
+
+                    {analysisResult.environmental_risk && (
+                      <div className="bg-white dark:bg-slate-800 p-3 rounded border border-rose-100 dark:border-rose-700/50">
+                        <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 block mb-2">Environmental Risk:</span>
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-slate-600 dark:text-slate-400">Flood/Water Risk:</span>
+                          <span className={`font-bold px-2 py-0.5 rounded-full ${
+                            analysisResult.environmental_risk.score === 'Low' ? 'bg-emerald-100 text-emerald-800' : 
+                            analysisResult.environmental_risk.score === 'Medium' ? 'bg-amber-100 text-amber-800' : 
+                            'bg-rose-100 text-rose-800'
+                          }`}>
+                            {analysisResult.environmental_risk.score}
+                          </span>
+                        </div>
+                        <div className="mt-2 text-xs text-slate-500">
+                          {analysisResult.environmental_risk.intersects_water 
+                            ? "Warning: Scenario directly intersects a water body/waterway!" 
+                            : analysisResult.environmental_risk.distance_to_nearest_water_m !== null
+                              ? `Nearest water feature is ${Math.round(analysisResult.environmental_risk.distance_to_nearest_water_m)}m away.`
+                              : "No water features detected in vicinity."}
+                        </div>
+                      </div>
+                    )}
+
                     {!aiAssessment ? (
                       <button
                         onClick={handleGenerateAiAssessment}
@@ -320,6 +379,20 @@ const ScenarioPage = () => {
                 style={{ width: '100%', height: '100%' }}
               >
                 <NavigationControl position="bottom-right" />
+                
+                {analysisResult?.accessibility_analysis?.buffer_geometry && (
+                  <Source id="accessibility-buffer" type="geojson" data={analysisResult.accessibility_analysis.buffer_geometry}>
+                    <Layer 
+                      id="accessibility-buffer-layer"
+                      type="fill"
+                      paint={{
+                        'fill-color': '#4ade80',
+                        'fill-opacity': 0.2,
+                        'fill-outline-color': '#16a34a'
+                      }}
+                    />
+                  </Source>
+                )}
               </Map>
             </div>
           </div>
