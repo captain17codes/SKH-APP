@@ -56,6 +56,26 @@ router.post('/urban-planner', async (req, res) => {
   }
 });
 
+// AI Scenario Assessment Endpoint
+router.post('/scenario-assessment', async (req, res) => {
+  const { scenarioId, name, scenario_type, conflict_count, conflict_details } = req.body;
+
+  try {
+    const assessment = await aiService.generateScenarioAssessment(req.body);
+    res.json({
+      success: true,
+      assessment
+    });
+  } catch (e) {
+    console.error('Scenario Assessment API Route Error:', e);
+    res.status(500).json({
+      success: false,
+      error: e.message,
+      assessment: 'Unable to generate AI assessment due to a server error.'
+    });
+  }
+});
+
 // AI Urban Planner Health Endpoint
 router.get('/urban-planner/health', (req, res) => {
   res.json({

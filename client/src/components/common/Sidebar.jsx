@@ -11,6 +11,7 @@ import {
   FileText,
   Settings,
   Building2,
+  GitCompare,
   X
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -24,6 +25,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { path: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
     { path: '/gis', label: t('gisSmartMap'), icon: MapPin, badge: t('liveGis') },
     { path: '/projects', label: t('projects'), icon: FolderKanban },
+    { path: '/scenarios', label: 'WHAT-IF Scenarios', icon: GitCompare, badge: 'New' },
     { path: '/land-use', label: t('landUsePlanning'), icon: Layers },
     { path: '/complaints', label: t('citizenComplaints'), icon: MessageSquareWarning, badge: `6 ${t('new')}` },
     { path: '/analytics', label: t('analytics'), icon: BarChart3 },

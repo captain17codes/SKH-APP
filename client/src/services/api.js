@@ -559,4 +559,50 @@ export const authService = {
   }
 };
 
+export const scenarioService = {
+  create: async (data) => {
+    const res = await apiClient.post('/scenarios', data);
+    return res.data.data;
+  },
+  getAll: async (status) => {
+    const res = await apiClient.get('/scenarios', { params: { status } });
+    return res.data.data;
+  },
+  getById: async (id) => {
+    const res = await apiClient.get(`/scenarios/${id}`);
+    return res.data.data;
+  },
+  updateStatus: async (id, status) => {
+    const res = await apiClient.patch(`/scenarios/${id}/status`, { status });
+    return res.data.data;
+  },
+  delete: async (id) => {
+    const res = await apiClient.delete(`/scenarios/${id}`);
+    return res.data;
+  },
+  getAiAssessment: async (scenarioData) => {
+    const res = await apiClient.post('/ai/scenario-assessment', scenarioData);
+    return res.data.assessment;
+  }
+};
+
+export const milestoneService = {
+  getByProject: async (projectId) => {
+    const res = await apiClient.get(`/projects/${projectId}/milestones`);
+    return res.data.data;
+  },
+  create: async (projectId, data) => {
+    const res = await apiClient.post(`/projects/${projectId}/milestones`, data);
+    return res.data.data;
+  },
+  update: async (id, data) => {
+    const res = await apiClient.patch(`/projects/milestones/${id}`, data);
+    return res.data.data;
+  },
+  delete: async (id) => {
+    const res = await apiClient.delete(`/projects/milestones/${id}`);
+    return res.data;
+  }
+};
+
 export default apiClient;
