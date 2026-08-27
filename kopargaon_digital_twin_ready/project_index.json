@@ -1,0 +1,22 @@
+{
+  "project": "Smart Development Planning and Digital Layout for Kopargaon",
+  "twin_name": "Kopargaon GIS-Enabled Evolving Urban Digital Twin",
+  "release": "ready-1.0",
+  "city_id": "kopargaon",
+  "analysis_aoi_bbox": [
+    74.455,
+    19.865,
+    74.51,
+    19.915
+  ],
+  "sources": {
+    "master_dataset": "data/as_is/kopargaon_master_dataset.json",
+    "dem": "data/terrain/kopargaon_dem_glo30_aoi.tif",
+    "facility_elevations": "data/derived/kopargaon_facility_elevations.json",
+    "flood_scenarios": "data/scenarios/godavari_preliminary_flood_scenarios.geojson",
+    "flood_summary": "data/derived/kopargaon_flood_twin_summary.json"
+  },
+  "configuration": "config/twin_sources.json",
+  "flowchart": "docs/final_flowchart.mmd",
+  "validation_report": "validation/validation_report.json"
+}

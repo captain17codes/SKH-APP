@@ -10,6 +10,7 @@ import gisRouter from "./routes/gis.routes.js";
 import feedbackRouter from "./routes/feedback.routes.js";
 import analyticsRouter from "./routes/analytics.routes.js";
 import scenarioRouter from "./routes/scenario.routes.js";
+import floodRouter from "./routes/flood.routes.js";
 import mcpClient from "./services/mcpClient.js";
 
 import { isDatabaseAvailable } from "./config/db.js";
@@ -35,6 +36,7 @@ app.use("/api/ai", aiRouter);
 app.use("/api/complaints", complaintRouter);
 app.use("/api/projects", projectRouter);
 app.use("/api/scenarios", scenarioRouter);
+app.use("/api/flood", floodRouter);
 app.use("/api/tts", ttsRouter);
 
 app.get("/", (req, res) => {

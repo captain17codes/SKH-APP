@@ -1,0 +1,66 @@
+{
+  "release": "kopargaon-digital-twin-ready-1.0",
+  "created_at": "2026-08-27T07:11:24.837874+00:00",
+  "files": [
+    {
+      "path": "project_index.json",
+      "role": "package entry point",
+      "bytes": 799,
+      "sha256": "230f113101e1caafcfc87f39f0761492472f6e5a2480a397337740d4ea4a93ff"
+    },
+    {
+      "path": "config/twin_sources.json",
+      "role": "runtime source configuration",
+      "bytes": 1375,
+      "sha256": "8d4435cd015429f6d6142e6e940c4849a49311279542cd1e36e929eb33d85f08"
+    },
+    {
+      "path": "data/as_is/kopargaon_master_dataset.json",
+      "role": "AS-IS master vector GIS dataset",
+      "bytes": 1793508,
+      "sha256": "b2ca2cedf05449cfbada8e85a7fa34ba1fb7f30008ab10c0547c5797f44eb513"
+    },
+    {
+      "path": "data/terrain/kopargaon_dem_glo30_aoi.tif",
+      "role": "terrain DEM/DSM raster",
+      "bytes": 118867,
+      "sha256": "8c1f04da7f6bf81fbb11ebcb95156b30cedb7ab6ee3924c243d82821a9cf289c"
+    },
+    {
+      "path": "data/derived/kopargaon_facility_elevations.json",
+      "role": "facility elevation analytics",
+      "bytes": 17646,
+      "sha256": "81310c29404134f17f8044887d3747d44c964aa0d4becc3d09c2256df8debcc0"
+    },
+    {
+      "path": "data/scenarios/godavari_preliminary_flood_scenarios.geojson",
+      "role": "frontend-ready preliminary flood scenario polygons",
+      "bytes": 182187,
+      "sha256": "c8bc097ff084ef518bb1ddd66856b98503f1ffa1ce794af4bd3e7b5c2cfa1f8b"
+    },
+    {
+      "path": "data/derived/kopargaon_flood_twin_summary.json",
+      "role": "flood methodology and impact summary",
+      "bytes": 6834,
+      "sha256": "9929829726145501f5bda14c414ae0d72344126091a45ce8fb4c90bc90663df8"
+    },
+    {
+      "path": "docs/final_flowchart.mmd",
+      "role": "final architecture/lifecycle Mermaid flowchart",
+      "bytes": 1803,
+      "sha256": "9a6091e139b334e4e9fd1c7c4105b71bd19b69890eac9a7f33f8cc7cd0e9cf2f"
+    },
+    {
+      "path": "README.md",
+      "role": "implementation instructions",
+      "bytes": 3247,
+      "sha256": "f11649e31bf7f9c498c4ba60cad524c95eb64355689c824960cca71c0cff06de"
+    },
+    {
+      "path": "validation/validation_report.json",
+      "role": "validation results",
+      "bytes": 2535,
+      "sha256": "c87c97e8602faec95024d67c573f9450d083ec08fddf67fe66e837f7b5ee9a71"
+    }
+  ]
+}

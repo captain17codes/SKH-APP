@@ -1,14 +1,78 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import Map, { NavigationControl, Source, Layer } from 'react-map-gl/maplibre';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
-import { Layers, MapPin, CheckCircle2, ShieldAlert, GitCompare, Save, Trash2, ArrowRight } from 'lucide-react';
+import { Layers, MapPin, ShieldAlert, GitCompare, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { scenarioService } from '../services/api';
+import api, { scenarioService } from '../services/api';
+import GodavariFloodPanel from '../components/gis/GodavariFloodPanel';
 import { KOPARGAON_CENTER } from '../data/mockData';
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
+
+maplibregl.setWorkerUrl(maplibreWorkerUrl);
+
+const BUILDINGS_3D_LAYER = {
+  id: 'buildings-layer-f',
+  type: 'fill-extrusion',
+  source: 'buildings-f',
+  paint: {
+    'fill-extrusion-color': '#e5e7eb',
+    'fill-extrusion-height': ['get', 'height_m'],
+    'fill-extrusion-base': 0,
+    'fill-extrusion-opacity': 0.95
+  }
+};
+
+const FLOOD_GROUND_LAYER = {
+  id: 'flood-extent-ground-layer-f',
+  type: 'fill',
+  source: 'flood-extent-f',
+  paint: {
+    'fill-color': '#38bdf8',
+    'fill-opacity': 0.38,
+    'fill-outline-color': '#0ea5e9'
+  }
+};
+
+const FLOOD_3D_LAYER = {
+  id: 'flood-extent-layer-f',
+  type: 'fill-extrusion',
+  source: 'flood-extent-f',
+  paint: {
+    'fill-extrusion-color': '#0f7490',
+    'fill-extrusion-height': 3,
+    'fill-extrusion-base': 0,
+    'fill-extrusion-opacity': 0.78
+  }
+};
+
+const isRenderableFeatureCollection = (value) => (
+  value?.type === 'FeatureCollection' &&
+  Array.isArray(value.features) &&
+  value.features.every(feature => (
+    feature?.type === 'Feature' &&
+    ['Polygon', 'MultiPolygon'].includes(feature.geometry?.type) &&
+    Array.isArray(feature.geometry.coordinates) &&
+    feature.geometry.coordinates.length > 0
+  ))
+);
+
+const logGeoJSONPayload = (label, value) => {
+  if (!value) {
+    console.log(`[FLOOD 3D] ${label} payload is not available yet`);
+    return;
+  }
+  const features = Array.isArray(value.features) ? value.features : [];
+  const sample = features[0];
+  console.log(`[FLOOD 3D] ${label} payload:`, JSON.stringify(value).slice(0, 500));
+  console.log(`[FLOOD 3D] ${label} feature count:`, features.length);
+  console.log(`[FLOOD 3D] ${label} sample geometry:`, sample?.geometry?.type, sample?.geometry?.coordinates);
+  if (!isRenderableFeatureCollection(value)) {
+    console.error(`[FLOOD 3D] Invalid or empty ${label} GeoJSON`, value);
+  }
+};
 
 // OSM tile style matching MapView.jsx
 const OSM_STYLE = {
@@ -39,7 +103,7 @@ const OSM_STYLE = {
 const ScenarioPage = () => {
   const [activeTab, setActiveTab] = useState('draw'); // 'draw', 'list', 'compare'
   const [scenarios, setScenarios] = useState([]);
-  const [mapCenter, setMapCenter] = useState(KOPARGAON_CENTER);
+  const mapCenter = KOPARGAON_CENTER;
   
   // New Scenario State
   const [newScenario, setNewScenario] = useState({ name: '', type: 'road', description: '' });
@@ -51,21 +115,75 @@ const ScenarioPage = () => {
   // Comparison State
   const [selectedForCompare, setSelectedForCompare] = useState([]);
   
+  // Flood Twin State
+  const [floodLevel, setFloodLevel] = useState(3);
+  const [floodScenarios, setFloodScenarios] = useState(null);
+  const [floodSummary, setFloodSummary] = useState(null);
+  const [floodFacilities, setFloodFacilities] = useState(null);
+  const [waterFeatures, setWaterFeatures] = useState(null);
+  const [buildingsData, setBuildingsData] = useState(null);
+  const [isFloodMapReady, setIsFloodMapReady] = useState(false);
+
   const mapRef = useRef(null);
+  const floodMapRef = useRef(null);
   const drawRef = useRef(null);
+  const [isRotating, setIsRotating] = useState(true);
+  const rotationIntervalRef = useRef(null);
+  const currentWaterHeight = useRef(3);
 
   useEffect(() => {
     fetchScenarios();
+    fetchFloodData();
   }, []);
 
-  const fetchScenarios = async () => {
+  async function fetchFloodData() {
+    try {
+      const [scenariosRes, summaryRes, facilitiesRes, waterRes, buildingsRes] = await Promise.all([
+        api.get('/flood/scenarios'),
+        api.get('/flood/summary'),
+        api.get('/flood/facility-elevations'),
+        api.get('/flood/water-features'),
+        api.get('/flood/buildings')
+      ]);
+      setFloodScenarios(scenariosRes.data);
+      setFloodSummary(summaryRes.data);
+      setFloodFacilities(facilitiesRes.data);
+      setWaterFeatures(waterRes.data);
+      setBuildingsData(buildingsRes.data);
+    } catch (error) {
+      console.error('[FLOOD 3D] Failed to load flood data:', error);
+    }
+  }
+
+  useEffect(() => {
+    logGeoJSONPayload('buildings', buildingsData);
+  }, [buildingsData]);
+
+  const activeFloodPolygon = useMemo(() => {
+    if (activeTab === 'flood' && isRenderableFeatureCollection(floodScenarios)) {
+      const activeFeature = floodScenarios.features.find(f => Number(f.properties?.relative_rise_m) === Number(floodLevel));
+      if (activeFeature) {
+        return {
+          type: 'FeatureCollection',
+          features: [activeFeature]
+        };
+      }
+    }
+    return null;
+  }, [activeTab, floodLevel, floodScenarios]);
+
+  useEffect(() => {
+    logGeoJSONPayload(`flood level +${floodLevel}m`, activeFloodPolygon);
+  }, [activeFloodPolygon, floodLevel]);
+
+  async function fetchScenarios() {
     try {
       const list = await scenarioService.getAll();
       setScenarios(list);
-    } catch (e) {
+    } catch {
       toast.error('Failed to load scenarios');
     }
-  };
+  }
 
   const initDraw = () => {
     if (!mapRef.current) return;
@@ -86,7 +204,7 @@ const ScenarioPage = () => {
     }
   };
 
-  const updateArea = (e) => {
+  const updateArea = () => {
     const data = drawRef.current.getAll();
     if (data.features.length > 0) {
       // Get the first drawn polygon
@@ -95,6 +213,135 @@ const ScenarioPage = () => {
       setDrawnGeometry(null);
     }
   };
+
+  // 3D Map Setup and Rotation
+  const handleFloodMapError = (event) => {
+    console.error('[FLOOD 3D] MapLibre error event:', event?.error || event);
+  };
+
+  const logFloodMapState = (map) => {
+    try {
+      const style = map.getStyle();
+      console.log('[FLOOD 3D] sources:', Object.keys(style?.sources || {}));
+      console.log('[FLOOD 3D] layers:', (style?.layers || []).map(layer => layer.id));
+      console.log('[FLOOD 3D] building layer definition:', BUILDINGS_3D_LAYER);
+      console.log('[FLOOD 3D] flood layer definition:', FLOOD_3D_LAYER);
+    } catch (error) {
+      console.error('[FLOOD 3D] Failed to inspect MapLibre style:', error);
+    }
+  };
+
+  const handleFloodMapLoad = (event) => {
+    const map = event?.target || floodMapRef.current?.getMap();
+    if (!map) {
+      console.error('[FLOOD 3D] Map load fired without a MapLibre instance');
+      return;
+    }
+
+    try {
+      console.log('[FLOOD 3D] MapLibre load reached; style loaded:', map.isStyleLoaded());
+      console.log('[FLOOD 3D] pitch before:', map.getPitch());
+      map.once('moveend', () => {
+        console.log('[FLOOD 3D] pitch after:', map.getPitch());
+        console.log('[FLOOD 3D] bearing after:', map.getBearing());
+      });
+      map.easeTo({ pitch: 55, bearing: -17.6, duration: 2000 });
+      console.log('[FLOOD 3D] pitch after scheduling easeTo:', map.getPitch());
+      setIsFloodMapReady(true);
+      logFloodMapState(map);
+    } catch (error) {
+      console.error('[FLOOD 3D] Failed to initialize 3D camera:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab !== 'flood') {
+      clearInterval(rotationIntervalRef.current);
+      rotationIntervalRef.current = null;
+      return undefined;
+    }
+
+    if (!isFloodMapReady || !isRotating || !floodMapRef.current) return undefined;
+    rotationIntervalRef.current = setInterval(() => {
+      try {
+        const currentMap = floodMapRef.current?.getMap();
+        if (currentMap?.loaded()) {
+          currentMap.setBearing(currentMap.getBearing() + 0.05);
+        }
+      } catch (error) {
+        console.error('[FLOOD 3D] Camera rotation failed:', error);
+      }
+    }, 100);
+
+    return () => {
+      clearInterval(rotationIntervalRef.current);
+      rotationIntervalRef.current = null;
+    };
+  }, [activeTab, isRotating, isFloodMapReady]);
+
+  useEffect(() => {
+    if (activeTab !== 'flood' || !isFloodMapReady || !floodMapRef.current) return undefined;
+    const map = floodMapRef.current.getMap();
+    let animationFrame;
+    let idleHandler;
+    let cancelled = false;
+
+    const animateWater = () => {
+      if (cancelled || !map.loaded() || !map.isStyleLoaded()) return;
+      if (!map.getLayer(FLOOD_3D_LAYER.id)) {
+        console.error('[FLOOD 3D] Flood extrusion layer is missing:', FLOOD_3D_LAYER.id);
+        return;
+      }
+
+      const targetHeight = Number(floodLevel);
+      const startHeight = currentWaterHeight.current;
+      console.log('[FLOOD 3D] Water height target (true scale, m):', targetHeight);
+      const startTime = performance.now();
+      const duration = 1500;
+
+      const updateHeight = (time) => {
+        if (cancelled) return;
+        try {
+          const progress = Math.min(1, (time - startTime) / duration);
+          const newHeight = startHeight + (targetHeight - startHeight) * progress;
+          currentWaterHeight.current = newHeight;
+          map.setPaintProperty(FLOOD_3D_LAYER.id, 'fill-extrusion-height', newHeight);
+          if (progress < 1) animationFrame = requestAnimationFrame(updateHeight);
+        } catch (error) {
+          console.error('[FLOOD 3D] Water height animation failed:', error);
+        }
+      };
+
+      animationFrame = requestAnimationFrame(updateHeight);
+    };
+
+    if (map.loaded() && map.isStyleLoaded()) {
+      animateWater();
+    } else {
+      idleHandler = () => animateWater();
+      map.once('idle', idleHandler);
+    }
+
+    return () => {
+      cancelled = true;
+      if (animationFrame) cancelAnimationFrame(animationFrame);
+      if (idleHandler) map.off('idle', idleHandler);
+    };
+  }, [floodLevel, activeTab, isFloodMapReady]);
+
+  useEffect(() => {
+    if (activeTab !== 'flood' || !isFloodMapReady || !floodMapRef.current) return undefined;
+    const map = floodMapRef.current.getMap();
+    let frame;
+    const inspect = () => {
+      logFloodMapState(map);
+      frame = undefined;
+    };
+    frame = requestAnimationFrame(inspect);
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [activeTab, isFloodMapReady, buildingsData, waterFeatures, activeFloodPolygon]);
 
   const handleRunAnalysis = async () => {
     if (!drawnGeometry) {
@@ -118,7 +365,7 @@ const ScenarioPage = () => {
       setAnalysisResult(result);
       toast.success("Analysis complete!", { id: 'analysis' });
       fetchScenarios();
-    } catch (e) {
+    } catch {
       toast.error("Failed to run analysis.", { id: 'analysis' });
     } finally {
       setIsAnalyzing(false);
@@ -143,7 +390,7 @@ const ScenarioPage = () => {
       // Actually, let's assume the endpoint handles updating the DB.
       fetchScenarios(); 
       toast.success("AI Assessment ready!", { id: 'ai' });
-    } catch (e) {
+    } catch {
       toast.error("Failed to generate AI Assessment.", { id: 'ai' });
     } finally {
       setIsAnalyzing(false);
@@ -166,7 +413,7 @@ const ScenarioPage = () => {
       await scenarioService.updateStatus(id, 'APPROVED');
       toast.success("Scenario Approved!");
       fetchScenarios();
-    } catch (e) {
+    } catch {
       toast.error("Failed to approve scenario");
     }
   };
@@ -215,6 +462,12 @@ const ScenarioPage = () => {
           className={`px-4 py-2 font-semibold text-sm border-b-2 transition-colors ${activeTab === 'compare' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
         >
           Compare Scenarios ({selectedForCompare.length}/2)
+        </button>
+        <button
+          onClick={() => setActiveTab('flood')}
+          className={`px-4 py-2 font-semibold text-sm border-b-2 transition-colors ${activeTab === 'flood' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+        >
+          Flood Twin
         </button>
       </div>
 
@@ -393,7 +646,131 @@ const ScenarioPage = () => {
                     />
                   </Source>
                 )}
+
+                {/* Water Features (Context) */}
+                {waterFeatures?.water_bodies && (activeTab === 'flood' || activeTab === 'draw') && (
+                  <Source id="water-bodies" type="geojson" data={waterFeatures.water_bodies}>
+                    <Layer
+                      id="water-bodies-layer"
+                      type="fill"
+                      paint={{
+                        'fill-color': '#93c5fd',
+                        'fill-opacity': 0.6
+                      }}
+                    />
+                  </Source>
+                )}
+                {waterFeatures?.waterways && (activeTab === 'flood' || activeTab === 'draw') && (
+                  <Source id="waterways" type="geojson" data={waterFeatures.waterways}>
+                    <Layer
+                      id="waterways-layer"
+                      type="line"
+                      paint={{
+                        'line-color': '#60a5fa',
+                        'line-width': 2
+                      }}
+                    />
+                  </Source>
+                )}
+
+                {/* Flood Scenario Extent */}
+                {activeFloodPolygon && activeTab === 'flood' && (
+                  <Source id="flood-extent" type="geojson" data={activeFloodPolygon}>
+                    <Layer
+                      id="flood-extent-layer"
+                      type="fill"
+                      paint={{
+                        'fill-color': 'rgba(200, 50, 50, 0.35)',
+                        'fill-outline-color': '#ef4444'
+                      }}
+                    />
+                  </Source>
+                )}
               </Map>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'flood' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
+            {/* Control Panel */}
+            <GodavariFloodPanel 
+              selectedLevel={floodLevel}
+              setSelectedLevel={setFloodLevel}
+              summary={floodSummary}
+              facilities={floodFacilities}
+            />
+
+            {/* Map Area */}
+            <div className="lg:col-span-2 relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm bg-slate-100 dark:bg-slate-950">
+              <Map
+                ref={floodMapRef}
+                onLoad={handleFloodMapLoad}
+                onError={handleFloodMapError}
+                maxPitch={85}
+                pitchWithRotate={true}
+                dragRotate={true}
+                initialViewState={{
+                  longitude: mapCenter[1],
+                  latitude: mapCenter[0],
+                  zoom: 14.5
+                }}
+                mapStyle={OSM_STYLE}
+                style={{ width: '100%', height: '100%' }}
+              >
+                <NavigationControl position="bottom-right" />
+                
+                {/* 3D Buildings */}
+                {isRenderableFeatureCollection(buildingsData) && (
+                  <Source id="buildings-f" type="geojson" data={buildingsData}>
+                    <Layer {...BUILDINGS_3D_LAYER} />
+                  </Source>
+                )}
+
+                {/* Water Features (Context) */}
+                {waterFeatures?.water_bodies && (
+                  <Source id="water-bodies-f" type="geojson" data={waterFeatures.water_bodies}>
+                    <Layer
+                      id="water-bodies-layer-f"
+                      type="fill"
+                      paint={{
+                        'fill-color': '#93c5fd',
+                        'fill-opacity': 0.6
+                      }}
+                    />
+                  </Source>
+                )}
+                {waterFeatures?.waterways && (
+                  <Source id="waterways-f" type="geojson" data={waterFeatures.waterways}>
+                    <Layer
+                      id="waterways-layer-f"
+                      type="line"
+                      paint={{
+                        'line-color': '#60a5fa',
+                        'line-width': 2
+                      }}
+                    />
+                  </Source>
+                )}
+
+                {/* Full flood extent plus true-scale water depth */}
+                {isRenderableFeatureCollection(activeFloodPolygon) && (
+                  <Source id="flood-extent-f" type="geojson" data={activeFloodPolygon}>
+                    <Layer {...FLOOD_GROUND_LAYER} />
+                    <Layer {...FLOOD_3D_LAYER} />
+                  </Source>
+                )}
+              </Map>
+              
+              {/* Camera Controls */}
+              <div className="absolute bottom-6 left-4 flex gap-2">
+                <button
+                  onClick={() => setIsRotating(!isRotating)}
+                  className="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded shadow-sm text-xs font-bold border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  {isRotating ? 'Pause Rotation' : 'Resume Rotation'}
+                </button>
+              </div>
             </div>
           </div>
         )}

@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "city_id": "kopargaon",
+  "city_name": "Kopargaon",
+  "analysis_aoi": {
+    "name": "Kopargaon MVP Planning Area",
+    "bbox": [
+      74.455,
+      19.865,
+      74.51,
+      19.915
+    ],
+    "bbox_order": [
+      "west",
+      "south",
+      "east",
+      "north"
+    ],
+    "official_boundary": false
+  },
+  "frontend_sources": {
+    "master_dataset": "../data/as_is/kopargaon_master_dataset.json",
+    "facility_elevations": "../data/derived/kopargaon_facility_elevations.json",
+    "flood_scenarios": "../data/scenarios/godavari_preliminary_flood_scenarios.geojson",
+    "flood_summary": "../data/derived/kopargaon_flood_twin_summary.json"
+  },
+  "backend_geospatial_sources": {
+    "dem": "../data/terrain/kopargaon_dem_glo30_aoi.tif"
+  },
+  "scenario_engine": {
+    "default_mode": "precomputed_demo",
+    "available_relative_rise_m": [
+      0.5,
+      1.0,
+      2.0,
+      3.0
+    ],
+    "precomputed_source": "../data/scenarios/godavari_preliminary_flood_scenarios.geojson",
+    "dynamic_mode_note": "For dynamic scenarios, compute from the DEM on the backend/GIS service. Do not invent flood values in the AI layer."
+  },
+  "ai_rules": {
+    "gis_is_evidence_layer": true,
+    "ai_may_explain_structured_results": true,
+    "ai_must_not_invent_spatial_calculations": true,
+    "ai_must_not_issue_final_project_approval": true
+  }
+}

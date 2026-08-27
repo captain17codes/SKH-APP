@@ -1,0 +1,7 @@
+{
+  "name": "status",
+  "description": "Show project status — git log, branches, uncommitted files",
+  "steps": [
+    "bash echo '=== Branch ===' && git branch && echo '' && echo '=== Recent commits ===' && git log --oneline -5 && echo '' && echo '=== Status ===' && git status --short"
+  ]
+}

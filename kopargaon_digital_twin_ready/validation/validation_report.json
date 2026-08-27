@@ -1,0 +1,99 @@
+{
+  "generated_at": "2026-08-27T07:11:24.793597+00:00",
+  "status": "PASS",
+  "checks": {
+    "json_parse:data/as_is/kopargaon_master_dataset.json": "PASS",
+    "json_parse:data/derived/kopargaon_facility_elevations.json": "PASS",
+    "json_parse:data/scenarios/godavari_preliminary_flood_scenarios.geojson": "PASS",
+    "json_parse:data/derived/kopargaon_flood_twin_summary.json": "PASS",
+    "json_parse:config/twin_sources.json": "PASS",
+    "json_parse:project_index.json": "PASS",
+    "master_total_features": 628,
+    "master_invalid_geometries": 0,
+    "flood_scenario_features": 4,
+    "flood_invalid_geometries": 0,
+    "dem_readable": "PASS",
+    "dem_crs": "EPSG:4326",
+    "dem_width": 199,
+    "dem_height": 181,
+    "dem_bounds": [
+      74.45486111111111,
+      19.864861111111107,
+      74.51013888888889,
+      19.915138888888887
+    ],
+    "dem_dtype": "float32",
+    "referenced_paths_missing": [],
+    "removed_exact_duplicate_police_points": 1,
+    "layer_catalog": {
+      "facilities": {
+        "feature_count": 44,
+        "geometry_types": {
+          "Point": 44
+        }
+      },
+      "roads": {
+        "feature_count": 280,
+        "geometry_types": {
+          "LineString": 280
+        }
+      },
+      "buildings": {
+        "feature_count": 238,
+        "geometry_types": {
+          "Polygon": 238
+        }
+      },
+      "waterways": {
+        "feature_count": 5,
+        "geometry_types": {
+          "MultiLineString": 1,
+          "LineString": 4
+        }
+      },
+      "water_bodies": {
+        "feature_count": 4,
+        "geometry_types": {
+          "Polygon": 4
+        }
+      },
+      "landuse": {
+        "feature_count": 7,
+        "geometry_types": {
+          "Polygon": 7
+        }
+      },
+      "power_infrastructure": {
+        "feature_count": 30,
+        "geometry_types": {
+          "Polygon": 2,
+          "LineString": 3,
+          "Point": 25
+        }
+      },
+      "bridges": {
+        "feature_count": 12,
+        "geometry_types": {
+          "LineString": 12
+        }
+      },
+      "rail_infrastructure": {
+        "feature_count": 2,
+        "geometry_types": {
+          "LineString": 1,
+          "Point": 1
+        }
+      },
+      "civic_logistics": {
+        "feature_count": 6,
+        "geometry_types": {
+          "Point": 6
+        }
+      }
+    }
+  },
+  "notes": [
+    "PASS means package files parse/read correctly, relative paths exist, and vector geometries validate.",
+    "It cannot guarantee that external application code has zero bugs."
+  ]
+}

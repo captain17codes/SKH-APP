@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings as SettingsIcon, User, Shield, Bell, Map, Moon, Sun, Save, Check } from 'lucide-react';
+import { Settings as SettingsIcon, User, Shield, Bell, Map, Moon, Sun, Save } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import toast from 'react-hot-toast';
@@ -14,7 +14,6 @@ const SettingsPage = () => {
   const [profileName, setProfileName] = useState(user?.name || 'Er. Rajan Patel');
   const [email, setEmail] = useState(user?.email || 'rajan.patel@kopargaon.gov.in');
   const [defaultZoom, setDefaultZoom] = useState('14');
-  const [enableGisClustering, setEnableGisClustering] = useState(true);
   const [emailAlerts, setEmailAlerts] = useState(true);
 
   const handleSave = (e) => {

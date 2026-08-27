@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GIS Map Viewer - Kopargaon Smart City</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed": "#002113",
+                      "secondary": "#00687a",
+                      "secondary-fixed-dim": "#4cd7f6",
+                      "surface-container-low": "#eff4ff",
+                      "surface-dim": "#ccdbf4",
+                      "on-surface-variant": "#444651",
+                      "on-primary-fixed": "#00164e",
+                      "on-secondary-fixed-variant": "#004e5c",
+                      "surface-tint": "#4059aa",
+                      "on-secondary": "#ffffff",
+                      "surface-container-highest": "#d5e3fd",
+                      "outline": "#757682",
+                      "on-primary-fixed-variant": "#264191",
+                      "on-tertiary": "#ffffff",
+                      "surface-bright": "#f8f9ff",
+                      "outline-variant": "#c5c5d3",
+                      "primary-container": "#1e3a8a",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "primary": "#00236f",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-container": "#27c38a",
+                      "on-primary-container": "#90a8ff",
+                      "inverse-on-surface": "#ebf1ff",
+                      "on-secondary-container": "#006172",
+                      "tertiary": "#00311f",
+                      "on-error-container": "#93000a",
+                      "secondary-container": "#57dffe",
+                      "secondary-fixed": "#acedff",
+                      "error": "#ba1a1a",
+                      "tertiary-container": "#004a31",
+                      "surface-container": "#e6eeff",
+                      "surface-variant": "#d5e3fd",
+                      "primary-fixed-dim": "#b6c4ff",
+                      "primary-fixed": "#dce1ff",
+                      "tertiary-fixed": "#6ffbbe",
+                      "inverse-primary": "#b6c4ff",
+                      "surface-container-high": "#dde9ff",
+                      "inverse-surface": "#233144",
+                      "background": "#f8f9ff",
+                      "on-background": "#0d1c2f",
+                      "on-secondary-fixed": "#001f26",
+                      "on-primary": "#ffffff",
+                      "surface": "#f8f9ff",
+                      "on-surface": "#0d1c2f",
+                      "on-error": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-gap": "1rem",
+                      "gutter": "1.5rem",
+                      "margin-mobile": "1rem",
+                      "sidebar-width": "260px",
+                      "section-gap": "2.5rem",
+                      "margin-desktop": "2rem",
+                      "container-max-width": "1440px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Public Sans"
+                      ],
+                      "display-md": [
+                              "Public Sans"
+                      ],
+                      "title-lg": [
+                              "Public Sans"
+                      ],
+                      "label-sm": [
+                              "Public Sans"
+                      ],
+                      "body-md": [
+                              "Public Sans"
+                      ],
+                      "display-lg": [
+                              "Public Sans"
+                      ],
+                      "label-md": [
+                              "Public Sans"
+                      ],
+                      "body-lg": [
+                              "Public Sans"
+                      ],
+                      "headline-lg": [
+                              "Public Sans"
+                      ],
+                      "body-sm": [
+                              "Public Sans"
+                      ],
+                      "headline-lg-mobile": [
+                              "Public Sans"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-md": [
+                              "36px",
+                              {
+                                      "lineHeight": "44px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "title-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "60px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "30px",
+                              {
+                                      "lineHeight": "38px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+            },
+          },
+        }
+      </script>
+<link href="css/styles.css" rel="stylesheet"/>
+</head>
+<body>
+<div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div> class="h-full bg-background font-body-md text-on-surface flex overflow-hidden">
+<!-- SideNavBar -->
+<aside id="sidebar" class="fixed left-0 top-0 h-full w-[260px] bg-surface dark:bg-inverse-surface border-r border-outline-variant dark:border-outline z-40">
+<div class="flex flex-col h-full py-6 px-4">
+<div class="mb-8 px-2 flex items-center gap-3">
+<img alt="Kopargaon Seal" class="w-10 h-10 rounded-full bg-surface-container-low" data-alt="A clean, modern geometric logo suitable for a smart city municipal portal, featuring blue and teal abstract shapes representing buildings and connectivity on a solid white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWTOEXH3Tj6YfUdYsnQ2PLmiqKjy9zuRFuq2ieKW2waDX5wWt-YAydQSY86Tt1Y8uQb706m_q0Emt8DT6aUFDAE3LAYCIwkS3FyJjXApcejukG1q5SCNjeJI1Cu_r1U22r1w98BA-YgW01nCcMJ3-YkG9Bu6i93-O3HHa2EO5N22Sp-knX7aE7mNput6ecHM6BJjp8ENnqMWHhbZ5Yx046pLgbDHq1S0CUJch694O7vdKRyUcRLnsx5Q"/>
+<div>
+<h1 class="font-title-lg text-title-lg font-bold text-primary dark:text-primary-fixed-dim leading-tight">Kopargaon Smart City</h1>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Municipal Portal</span>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Dashboard -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest transition-all duration-200 ease-in-out font-label-md text-label-md nav-link" href="dashboard.html">
+<span class="material-symbols-outlined nav-link" style="font-variation-settings: 'FILL' 0;">dashboard</span>
+                    Dashboard
+                </a>
+<!-- GIS Map (Active) -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-surface-container-low text-primary border-l-4 border-primary font-bold dark:bg-primary-container dark:text-on-primary-container hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest transition-all duration-200 ease-in-out font-label-md text-label-md nav-link" href="gis-map.html">
+<span class="material-symbols-outlined nav-link" style="font-variation-settings: 'FILL' 1;">map</span>
+                    GIS Map
+                </a>
+<!-- Projects -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest transition-all duration-200 ease-in-out font-label-md text-label-md nav-link" href="projects.html">
+<span class="material-symbols-outlined nav-link" style="font-variation-settings: 'FILL' 0;">engineering</span>
+                    Projects
+                </a>
+<!-- Land Use -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest transition-all duration-200 ease-in-out font-label-md text-label-md nav-link" href="land-use.html">
+<span class="material-symbols-outlined nav-link" style="font-variation-settings: 'FILL' 0;">layers</span>
+                    Land Use
+                </a>
+<!-- Complaints -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest transition-all duration-200 ease-in-out font-label-md text-label-md nav-link" href="complaints.html">
+<span class="material-symbols-outlined nav-link" style="font-variation-settings: 'FILL' 0;">forum</span>
+                    Complaints
+                </a>
+<!-- Analytics -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest transition-all duration-200 ease-in-out font-label-md text-label-md nav-link" href="analytics.html">
+<span class="material-symbols-outlined nav-link" style="font-variation-settings: 'FILL' 0;">monitoring</span>
+                    Analytics
+                </a>
+<!-- AI Planner -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest transition-all duration-200 ease-in-out font-label-md text-label-md nav-link" href="ai-planner.html">
+<span class="material-symbols-outlined nav-link" style="font-variation-settings: 'FILL' 0;">psychology</span>
+                    AI Planner
+                </a>
+<!-- Documents -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest transition-all duration-200 ease-in-out font-label-md text-label-md nav-link" href="documents.html">
+<span class="material-symbols-outlined nav-link" style="font-variation-settings: 'FILL' 0;">description</span>
+                    Documents
+                </a>
+<!-- Settings -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest transition-all duration-200 ease-in-out font-label-md text-label-md nav-link" href="settings.html">
+<span class="material-symbols-outlined nav-link" style="font-variation-settings: 'FILL' 0;">settings</span>
+                    Settings
+                </a>
+</nav>
+<div class="pt-4 border-t border-outline-variant dark:border-outline space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-lowest transition-all font-label-md text-label-md nav-link" href="settings.html">
+<span class="material-symbols-outlined nav-link" style="font-variation-settings: 'FILL' 0;">help</span>
+                    Help Center
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-lowest transition-all font-label-md text-label-md nav-link" href="settings.html">
+<span class="material-symbols-outlined nav-link" style="font-variation-settings: 'FILL' 0;">logout</span>
+                    Logout
+                </a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[260px] flex-1 flex flex-col h-full relative">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center px-gutter h-16 w-full bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline shadow-sm z-30 absolute top-0">
+<div class="flex items-center">
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">GIS Map Viewer</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 rounded-full hover:bg-surface-container-low flex items-center justify-center text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 rounded-full hover:bg-surface-container-low flex items-center justify-center text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">translate</span>
+</button>
+<button class="w-10 h-10 rounded-full hover:bg-surface-container-low flex items-center justify-center text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">dark_mode</span>
+</button>
+<div class="h-8 w-px bg-outline-variant mx-2"></div>
+<button class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+<img alt="User avatar" class="w-8 h-8 rounded-full border border-outline-variant object-cover" data-alt="A professional headshot of a municipal administrator in formal attire, clear lighting, light background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIfW9iqE2RpwoaUKRCxuD19CstUKfdD-q0s6U36Rxcn88VhPih6g0XMgLaeaXCcvX-h1juSyqprHMpPd8fkwMuk2hKr2if5DlxTvcH_3MXEFwCoRIdyhgsiCpu712mWKZjWUEMgnIM3Sh0Z_ARDmL2RDIFznUk51S2SdjijAZAxrXsYl5f6ZVOuB0qt3ZTWf7uLgh2J5PrGx3E0oB-LAl7Kgpm25V1rJcNeJj-51OFCPBTmQ62cHa14Q"/>
+<span class="font-label-md text-label-md text-on-surface-variant hidden md:block">Profile</span>
+</button>
+</div>
+</header>
+<!-- Map Canvas -->
+<div class="flex-1 mt-16 relative bg-surface-container-high overflow-hidden">
+<!-- Simulated Map Image Background -->
+<div class="absolute inset-0 w-full h-full bg-cover bg-center" data-alt="A detailed, high-resolution satellite map view of a suburban city grid. Streets, building footprints, and green zones are clearly visible. A soft blue data overlay suggests zoning regions. Professional cartography aesthetic." data-location="Kopargaon" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDShDhCuFNqZCW37UcocX3ChGepGRmRpBSOZ9CjwblT6ofSezM0lCAd-Fl_RWViHpBgDqbmwgF8WD187Wakn8A8l7A3YB8siMI34Hgu-FHljaIfaAE6hU7IJBC-AnGDHN6nIVhGHxlwsF8yhYEGXMGjHJ5ak5griZfbz6GhxvaRTi0kt7TpHvvDICvk_2nwGySUnD8vWJpx5poZVGPvCbJTfsOjRoCLmKJmrdFhHHFYpkYRCsVSQLTrww')"></div>
+<!-- Toolbar (Top Left) -->
+<div class="absolute top-4 left-4 bg-surface rounded-xl shadow-md border border-outline-variant flex flex-col overflow-hidden z-10">
+<button class="w-10 h-10 flex items-center justify-center text-on-surface hover:bg-surface-container-low transition-colors border-b border-outline-variant" title="Zoom In">
+<span class="material-symbols-outlined">add</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center text-on-surface hover:bg-surface-container-low transition-colors border-b border-outline-variant" title="Zoom Out">
+<span class="material-symbols-outlined">remove</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center text-on-surface hover:bg-surface-container-low transition-colors border-b border-outline-variant" title="Measure Distance">
+<span class="material-symbols-outlined">straighten</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center text-on-surface hover:bg-surface-container-low transition-colors" title="Draw Polygon">
+<span class="material-symbols-outlined">draw</span>
+</button>
+</div>
+<!-- Layer Control Panel (Top Right) -->
+<div class="absolute top-4 right-4 w-72 bg-surface rounded-xl shadow-md border border-outline-variant z-10 flex flex-col max-h-[calc(100vh-8rem)]">
+<div class="px-4 py-3 border-b border-outline-variant flex justify-between items-center bg-surface-bright rounded-t-xl">
+<h2 class="font-title-lg text-title-lg text-primary">Map Layers</h2>
+<span class="material-symbols-outlined text-on-surface-variant">layers</span>
+</div>
+<div class="p-4 space-y-3 overflow-y-auto scrollbar-hide">
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="relative flex items-center">
+<input checked="" class="peer sr-only" type="checkbox"/>
+<div class="w-5 h-5 rounded border border-outline-variant peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-white text-[16px] opacity-0 peer-checked:opacity-100">check</span>
+</div>
+</div>
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Ward Boundaries</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="relative flex items-center">
+<input checked="" class="peer sr-only" type="checkbox"/>
+<div class="w-5 h-5 rounded border border-outline-variant peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-white text-[16px] opacity-0 peer-checked:opacity-100">check</span>
+</div>
+</div>
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Projects (Active)</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="relative flex items-center">
+<input class="peer sr-only" type="checkbox"/>
+<div class="w-5 h-5 rounded border border-outline-variant peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-white text-[16px] opacity-0 peer-checked:opacity-100">check</span>
+</div>
+</div>
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Complaints</span>
+</label>
+<div class="h-px bg-outline-variant my-2"></div>
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="relative flex items-center">
+<input checked="" class="peer sr-only" type="checkbox"/>
+<div class="w-5 h-5 rounded border border-outline-variant peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-white text-[16px] opacity-0 peer-checked:opacity-100">check</span>
+</div>
+</div>
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Infrastructure</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="relative flex items-center">
+<input class="peer sr-only" type="checkbox"/>
+<div class="w-5 h-5 rounded border border-outline-variant peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-white text-[16px] opacity-0 peer-checked:opacity-100">check</span>
+</div>
+</div>
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Land Use Zoning</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="relative flex items-center">
+<input class="peer sr-only" type="checkbox"/>
+<div class="w-5 h-5 rounded border border-outline-variant peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-white text-[16px] opacity-0 peer-checked:opacity-100">check</span>
+</div>
+</div>
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Road Networks</span>
+</label>
+</div>
+</div>
+<!-- Legend (Bottom Left) -->
+<div class="absolute bottom-4 left-4 bg-surface rounded-xl shadow-md border border-outline-variant p-4 z-10 w-64">
+<h3 class="font-label-md text-label-md text-on-surface-variant uppercase mb-3 tracking-wider">Legend</h3>
+<div class="space-y-2">
+<div class="flex items-center gap-3">
+<div class="w-4 h-4 rounded-sm bg-primary opacity-80 border border-primary-container"></div>
+<span class="font-body-sm text-body-sm text-on-surface">Ward Boundary</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-4 h-4 rounded-full bg-secondary border border-secondary-container"></div>
+<span class="font-body-sm text-body-sm text-on-surface">Active Project</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-4 h-4 rounded-sm bg-tertiary-fixed-dim opacity-50 border border-tertiary"></div>
+<span class="font-body-sm text-body-sm text-on-surface">Commercial Zone</span>
+</div>
+</div>
+</div>
+<!-- Marker Popup Example (Centered/Simulated placement) -->
+<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
+<!-- Pin indicator -->
+<div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-surface rotate-45 border-r border-b border-outline-variant z-10"></div>
+<!-- Card -->
+<div class="relative bg-surface rounded-xl shadow-lg border border-outline-variant w-80 overflow-hidden z-20">
+<div class="h-24 w-full bg-cover bg-center" data-alt="A construction site for a new community center. Concrete foundation is laid, steel beams rising. Daytime, clear sky, realistic municipal project documentation style." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD96qAZhadygONzo71a2xjQnzlNr10Orj8Q5TLR_mFvy_dXVkmriUZ0ykhJD54RQQOdJoJMGr1XHYy_c-3hBDIt01CiAmRVfJstq_pa7giYB-bKCyXeOuDswo4TVdq9GLNr4wMdinVMOyMbleYf4VKbbisMMXXRqSLbbWtqfgAyB6Vyy266op9FDsXCm5y0j4If1T61rc_Se5oMy-0apeObpBZXB4V9bQi0oS-xANYzFA1PnTbxfDccFw')"></div>
+<div class="p-4">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-title-lg text-title-lg text-on-surface leading-tight">Ward 4 Water Treatment Upgrade</h4>
+<button class="text-outline hover:text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">Phase 2 pipeline installation in progress. Expected completion Q3 2024.</p>
+<div class="flex items-center gap-2 mb-4">
+<span class="px-2 py-1 bg-surface-container-low text-primary font-label-sm text-label-sm rounded border border-primary-fixed-dim">Ongoing</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                                Oct 12, 2023
+                            </span>
+</div>
+<a class="inline-flex items-center gap-2 text-primary hover:text-primary-container font-label-md text-label-md transition-colors nav-link" href="#">
+                            View Details
+                            <span class="material-symbols-outlined text-[18px] nav-link">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script src="js/app.js"></script>
+</body></html>

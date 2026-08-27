@@ -1,0 +1,50 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e12]:
+        - heading "KOPARGAON SMART CITY" [level=1] [ref=e13]
+        - paragraph [ref=e14]: Smart Governance Platform
+      - generic [ref=e15]:
+        - generic [ref=e20]:
+          - button "EN" [ref=e21]
+          - button "हिंदी" [ref=e22]
+          - button "मराठी" [ref=e23]
+        - navigation [ref=e24]:
+          - link "About" [ref=e25] [cursor=pointer]:
+            - /url: "#about"
+          - link "How It Works" [ref=e26] [cursor=pointer]:
+            - /url: "#how-it-works"
+          - link "Contact" [ref=e27] [cursor=pointer]:
+            - /url: "#contact"
+  - main [ref=e28]:
+    - generic [ref=e29]:
+      - heading "Kopargaon Smart City" [level=1] [ref=e30]
+      - paragraph [ref=e31]: Digital GIS & Urban Intelligence Platform
+      - generic [ref=e32]: Choose your access
+    - generic [ref=e34]:
+      - generic [ref=e35]:
+        - heading "Administrator Portal" [level=3] [ref=e39]
+        - link "Log In →" [ref=e40] [cursor=pointer]:
+          - /url: /admin/login
+      - generic [ref=e44]:
+        - heading "Citizen Portal" [level=3] [ref=e50]
+        - link "Log In →" [ref=e51] [cursor=pointer]:
+          - /url: /citizen/login
+      - generic [ref=e55]:
+        - heading "Business Portal" [level=3] [ref=e60]
+        - link "Log In →" [ref=e61] [cursor=pointer]:
+          - /url: /business/login
+  - generic [ref=e66]:
+    - heading "About Kopargaon Smart City" [level=3] [ref=e67]
+    - paragraph [ref=e68]: Official GIS & Urban Planning Platform for Kopargaon Municipal Council.
+  - generic [ref=e70]:
+    - heading "How It Works" [level=3] [ref=e71]
+    - paragraph [ref=e72]: Select your role above, sign in with your credentials, and access your dedicated platform workspace.
+  - generic [ref=e74]:
+    - heading "Kopargaon Municipal Helpdesk" [level=3] [ref=e75]
+    - generic [ref=e76]:
+      - generic [ref=e77]: Tilak Road, Kopargaon, Maharashtra 423601
+      - generic [ref=e82]: +91 (02423) 222-104
+      - generic [ref=e86]: contact@kopargaon.gov.in
+  - contentinfo [ref=e91]:
+    - paragraph [ref=e92]: © 2026 Kopargaon Municipal Council

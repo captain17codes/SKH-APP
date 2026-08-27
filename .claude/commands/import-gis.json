@@ -1,0 +1,9 @@
+{
+  "name": "import-gis",
+  "description": "Import V3 master GIS dataset into the database (requires confirmation)",
+  "steps": [
+    "bash npm --prefix server run validate:master-dataset",
+    "bash npm --prefix server run migrate",
+    "bash npm --prefix server run import:master-dataset"
+  ]
+}

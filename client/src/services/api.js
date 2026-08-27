@@ -4,8 +4,7 @@ import {
   MOCK_COMPLAINTS,
   MOCK_LAND_PLOTS,
   MOCK_DOCUMENTS,
-  KOPARGAON_WARDS_GEOJSON,
-  AI_MOCK_RESPONSES
+  KOPARGAON_WARDS_GEOJSON
 } from '../data/mockData';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
@@ -384,7 +383,7 @@ export const complaintService = {
         const token = `verify_mock_${Date.now()}`;
         return { success: true, verificationToken: token };
       }
-      throw new Error('Invalid OTP');
+      throw new Error('Invalid OTP', { cause: e });
     }
   }
 };

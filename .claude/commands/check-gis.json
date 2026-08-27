@@ -1,0 +1,7 @@
+{
+  "name": "check-gis",
+  "description": "Dry-run validate the V3 master GIS dataset",
+  "steps": [
+    "bash npm --prefix server run validate:master-dataset"
+  ]
+}
