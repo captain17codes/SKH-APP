@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   getAllComplaints,
+  getMyComplaints,
   getComplaintById,
   createComplaint,
   updateComplaint,
@@ -11,7 +12,7 @@ import {
   verifyOtp
 } from '../controllers/complaint.controller.js';
 
-import { protect, authorize } from '../middleware/auth.middleware.js';
+import { protect, optionalProtect, authorize } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
@@ -22,10 +23,13 @@ router.get('/hotspots', getHotspots);
 router.post('/otp/send', sendOtp);
 router.post('/otp/verify', verifyOtp);
 
+// User-specific complaints route (Authenticated Citizen)
+router.get('/my', protect, getMyComplaints);
+
 // CRUD
 router.get('/', getAllComplaints);
 router.get('/:id', getComplaintById);
-router.post('/', createComplaint); // Open for citizens
+router.post('/', optionalProtect, createComplaint); // Open for citizens (with optional JWT auth)
 
 // Protected routes (Admin / Officers only)
 router.patch('/:id', protect, authorize('Admin', 'Officer'), updateComplaint);

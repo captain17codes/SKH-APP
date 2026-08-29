@@ -152,6 +152,16 @@ export const getAllComplaints = (req, res) => {
   res.json(filtered.map(sanitizeComplaint));
 };
 
+// GET /api/complaints/my
+export const getMyComplaints = (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  const userId = req.user.id;
+  const userComplaints = complaints.filter(c => c.userId === userId || c.reporterId === userId);
+  res.json(userComplaints.map(sanitizeComplaint));
+};
+
 // GET /api/complaints/:id
 export const getComplaintById = (req, res) => {
   const complaint = complaints.find(c => c.id === req.params.id);
@@ -171,13 +181,13 @@ export const createComplaint = async (req, res) => {
       return res.status(400).json({ error: 'title, category, and location are required' });
     }
 
-    if (!verificationToken || !mockOtpStore.has(verificationToken)) {
+    let verifiedPhone = null;
+    if (verificationToken && mockOtpStore.has(verificationToken)) {
+      verifiedPhone = mockOtpStore.get(verificationToken);
+      mockOtpStore.delete(verificationToken);
+    } else if (!req.user && verificationToken) {
       return res.status(401).json({ error: 'Invalid or missing OTP verification token. Please verify your mobile number.' });
     }
-    
-    // Consume the token
-    const verifiedPhone = mockOtpStore.get(verificationToken);
-    mockOtpStore.delete(verificationToken);
 
     // Run AI priority scoring
     const lat = coordinates ? coordinates[0] : null;
@@ -192,9 +202,12 @@ export const createComplaint = async (req, res) => {
       }
     }
 
+    const authenticatedUser = req.user || null;
     const newId = `CMP-2026-${Math.floor(9000 + Math.random() * 999)}`;
     const complaint = {
       id: newId,
+      userId: authenticatedUser ? authenticatedUser.id : (req.body.userId || null),
+      citizenName: authenticatedUser ? authenticatedUser.name : (reporterName || 'Citizen'),
       title,
       category,
       ward: ward || 'Unknown Ward',
@@ -205,8 +218,8 @@ export const createComplaint = async (req, res) => {
       priority: aiResult.priority,
       aiScore: aiResult.score,
       aiReasons: aiResult.reasons,
-      reporterName: isAnonymous ? 'Anonymous Citizen' : (reporterName || 'Anonymous'),
-      reporterContact: isAnonymous ? '[REDACTED]' : (verifiedPhone || reporterContact || 'N/A'),
+      reporterName: isAnonymous ? 'Anonymous Citizen' : (authenticatedUser ? authenticatedUser.name : (reporterName || 'Anonymous')),
+      reporterContact: isAnonymous ? '[REDACTED]' : (verifiedPhone || (authenticatedUser ? authenticatedUser.phone : null) || reporterContact || 'N/A'),
       isAnonymous: !!isAnonymous,
       description: description || '',
       assignedDept: resolveDept(category),
@@ -215,7 +228,7 @@ export const createComplaint = async (req, res) => {
 
     // Store actual secure data separately
     secureContacts.set(newId, {
-      reporterContact: verifiedPhone || reporterContact || 'N/A',
+      reporterContact: verifiedPhone || (authenticatedUser ? authenticatedUser.phone : null) || reporterContact || 'N/A',
       isAnonymous: !!isAnonymous
     });
 

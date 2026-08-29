@@ -320,6 +320,7 @@ const CitizenAiAssistant = () => {
 
   const chatEndRef = useRef(null);
   const audioRef = useRef(null);
+  const recognitionRef = useRef(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -395,33 +396,37 @@ const CitizenAiAssistant = () => {
           utterance.rate = 0.95;
           utterance.pitch = 1;
 
+          const femaleKeywords = ['female', 'zira', 'heera', 'jenny', 'samantha', 'veena', 'kalpana', 'hazel', 'aria', 'natasha', 'victoria', 'karen', 'google us english', 'google uk english female', 'microsoft zira'];
+          const maleKeywords = ['male', 'ravi', 'david', 'mark', 'george', 'james', 'richard'];
+
           const voices = window.speechSynthesis.getVoices();
           if (voices && voices.length > 0) {
-            let match = null;
+            let match = voices.find(v => {
+              const langMatch = (v.lang === cleanLang || v.lang.replace('_', '-').toLowerCase() === cleanLang.toLowerCase());
+              const nameLower = v.name.toLowerCase();
+              const isFemale = femaleKeywords.some(kw => nameLower.includes(kw));
+              const isMale = maleKeywords.some(kw => nameLower.includes(kw));
+              return langMatch && (isFemale || !isMale);
+            });
 
-            if (isEnglish) {
-              // 1. English Male Voice matching
-              match = voices.find(v => v.lang.toLowerCase().startsWith('en') && (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('david') || v.name.toLowerCase().includes('mark') || v.name.toLowerCase().includes('george') || v.name.toLowerCase().includes('rishi'))) ||
-                voices.find(v => v.lang === cleanLang || v.lang.replace('_', '-').toLowerCase() === cleanLang.toLowerCase());
-            } else if (isMarathi) {
-              // 2. Marathi Female Voice matching (Devanagari text sent unchanged)
-              match = voices.find(v => v.lang.toLowerCase().startsWith('mr')) ||
-                voices.find(v => v.lang.toLowerCase().startsWith('hi') && (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('kalpana') || v.name.toLowerCase().includes('heera') || v.name.toLowerCase().includes('swara') || v.name.toLowerCase().includes('hindi'))) ||
-                voices.find(v => v.lang.toLowerCase().startsWith('hi'));
-            } else {
-              // 3. Hindi Voice matching
-              match = voices.find(v => v.lang.toLowerCase().startsWith('hi')) ||
-                voices.find(v => v.lang === cleanLang);
+            if (!match && isMarathi) {
+              match = voices.find(v => v.lang.toLowerCase().startsWith('mr') || v.lang.toLowerCase().startsWith('hi'));
             }
 
-            // 4. General Indian voice fallback (en-IN)
             if (!match) {
-              match = voices.find(v => v.lang.toLowerCase().startsWith('en-in') || v.name.toLowerCase().includes('india'));
+              match = voices.find(v => {
+                const nameLower = v.name.toLowerCase();
+                return femaleKeywords.some(kw => nameLower.includes(kw)) && !maleKeywords.some(kw => nameLower.includes(kw));
+              });
+            }
+
+            if (!match) {
+              match = voices.find(v => !maleKeywords.some(kw => v.name.toLowerCase().includes(kw)));
             }
 
             if (match) {
               utterance.voice = match;
-              console.log(`🔊 Assigned TTS voice: ${match.name} (${match.lang}) for language: ${cleanLang}`);
+              console.log(`🔊 Assigned female TTS voice: ${match.name} (${match.lang}) for language: ${cleanLang}`);
             }
           }
 
@@ -531,15 +536,13 @@ const CitizenAiAssistant = () => {
   };
 
   const suggestedQueries = [
-    "How can I report a road problem?",
-    "Show ongoing development projects in my area",
-    "How can I register a water complaint?",
-    "Where can I see nearby public facilities?",
-    "What infrastructure projects are planned in my ward?",
-    "माझ्या परिसरातील रस्त्याची तक्रार कशी करायची?",
-    "माझ्या वॉर्डमध्ये कोणते विकास प्रकल्प सुरू आहेत?",
-    "मेरी शिकायत का स्टेटस क्या है?",
-    "Water supply schedule in Ward 4"
+    "What is the population of Kopargaon?",
+    "Which ward needs the most development?",
+    "Which wards have water supply problems?",
+    "Which ward has the most complaints?",
+    "How many smart city projects are active?",
+    "कोपरगावची एकूण लोकसंख्या किती आहे?",
+    "कोपरगांव की कुल जनसंख्या कितनी है?"
   ];
 
   const handleSend = async (queryText, overrideLang) => {
@@ -706,64 +709,85 @@ const CitizenAiAssistant = () => {
 
   const handleVoiceInput = () => {
     unlockAudioEngine();
+
+    // Stop listening if mic button clicked while already listening
+    if (isListening && recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {}
+      setIsListening(false);
+      toast.dismiss('voice-toast');
+      return;
+    }
+
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      toast.error('Voice input is not supported in this browser.');
+      toast.error('Voice input is not supported in this browser.', { id: 'voice-toast' });
       return;
     }
 
     stopSpeaking();
 
-    const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    
-    // Determine recognition language: Default to en-IN for universal English & civic term recognition
-    // If the active language is explicitly Marathi or Hindi, use that specific locale
-    let sttLang = 'en-IN';
-    if (language === 'mr' || language === 'mr-IN') {
-      sttLang = 'mr-IN';
-    } else if (language === 'hi' || language === 'hi-IN') {
-      sttLang = 'hi-IN';
-    }
+    try {
+      const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
+      recognition.continuous = false;
+      recognition.interimResults = false;
 
-    recognition.lang = sttLang;
-    recognition.interimResults = false;
-
-    recognition.onstart = () => {
-      setIsListening(true);
-      const displayLang = sttLang === 'mr-IN' ? 'मराठी' : (sttLang === 'hi-IN' ? 'हिंदी' : 'English');
-      toast.loading(`🎤 Listening... (${displayLang})`, { id: 'voice-toast' });
-    };
-
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      if (!transcript.trim()) {
-        toast.error('No speech detected.', { id: 'voice-toast' });
-        return;
+      let sttLang = 'en-IN';
+      if (language === 'mr' || language === 'mr-IN') {
+        sttLang = 'mr-IN';
+      } else if (language === 'hi' || language === 'hi-IN') {
+        sttLang = 'hi-IN';
       }
 
-      // Detect language from the actual recognized text without translating
-      const detectedLang = detectLanguageFromText(transcript);
-      console.log(`🎤 [STT TRANSCRIPT]: "${transcript}" | Detected Language: ${detectedLang}`);
-      setLanguage(detectedLang);
-      setInput(transcript);
+      recognition.lang = sttLang;
 
-      toast.success(`✅ "${transcript}"`, { id: 'voice-toast' });
-      // Pass the raw recognized text as-is to the existing AI query function
-      setTimeout(() => handleSend(transcript, detectedLang), 200);
-    };
+      recognition.onstart = () => {
+        setIsListening(true);
+        const displayLang = sttLang === 'mr-IN' ? 'मराठी' : (sttLang === 'hi-IN' ? 'हिंदी' : 'English');
+        toast.loading(`🎤 Listening... (${displayLang})`, { id: 'voice-toast' });
+      };
 
-    recognition.onerror = (event) => {
-      console.error('Speech recognition error:', event.error);
-      toast.error(`Speech recognition failed: ${event.error}`, { id: 'voice-toast' });
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        if (!transcript || !transcript.trim()) {
+          toast.error("Sorry, I couldn't hear that. Please try again.", { id: 'voice-toast' });
+          return;
+        }
+
+        const detectedLang = detectLanguageFromText(transcript);
+        console.log(`🎤 [STT TRANSCRIPT]: "${transcript}" | Detected Language: ${detectedLang}`);
+        setLanguage(detectedLang);
+        setInput(transcript);
+
+        toast.success(`✅ Speech captured! Review text in input box and click Send.`, { id: 'voice-toast', duration: 4000 });
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+          toast.error('Microphone permission is required for voice input.', { id: 'voice-toast' });
+        } else if (event.error === 'no-speech') {
+          toast.error("Sorry, I couldn't hear that. Please try again.", { id: 'voice-toast' });
+        } else if (event.error === 'audio-capture') {
+          toast.error('No microphone was found on your device.', { id: 'voice-toast' });
+        } else {
+          toast.error(`Voice input error: ${event.error}`, { id: 'voice-toast' });
+        }
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognition.start();
+    } catch (err) {
+      console.error('Failed to start speech recognition:', err);
       setIsListening(false);
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognition.start();
+      toast.error(`Failed to access microphone: ${err.message}`, { id: 'voice-toast' });
+    }
   };
 
   const handleClearHistory = () => {
@@ -855,8 +879,51 @@ const CitizenAiAssistant = () => {
                           {msg.text}
                         </div>
 
-                        {/* Recommendations Highlights */}
-                        {msg.data?.recommendations && msg.data.recommendations.length > 0 && (
+                        {/* Structured Active Projects Cards */}
+                        {msg.data?.projects && msg.data.projects.length > 0 && (
+                          <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 space-y-2">
+                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
+                              Active Smart City Projects ({msg.data.projects.length})
+                            </span>
+                            <div className="space-y-2">
+                              {msg.data.projects.map((prj, idx) => {
+                                const coords = prj.coordinates || [19.8830, 74.4880];
+                                const lat = coords[0];
+                                const lng = coords[1];
+                                return (
+                                  <div
+                                    key={prj.id || idx}
+                                    className="p-3 rounded-xl border bg-emerald-500/10 border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-xs"
+                                  >
+                                    <div className="space-y-0.5">
+                                      <div className="flex items-center space-x-2">
+                                        <span className="font-bold text-slate-900 dark:text-slate-100">{prj.name}</span>
+                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                                          {prj.status}
+                                        </span>
+                                      </div>
+                                      <div className="flex flex-wrap items-center gap-x-2 text-[10px] text-slate-500 dark:text-slate-400">
+                                        <span>📍 {prj.ward || prj.location}</span>
+                                        <span>🏢 {prj.department || prj.category}</span>
+                                        {prj.progress !== undefined && <span>📊 {prj.progress}%</span>}
+                                      </div>
+                                    </div>
+                                    <Link
+                                      to={`/gis?lat=${lat}&lng=${lng}&zoom=16&featureId=${encodeURIComponent(prj.id || prj.name)}&featureType=project`}
+                                      className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center space-x-1.5 flex-shrink-0 cursor-pointer shadow-xs"
+                                    >
+                                      <MapPin className="w-3.5 h-3.5" />
+                                      <span>📍 View on Map</span>
+                                    </Link>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Structured Recommendations Site Rankings */}
+                        {msg.data?.recommendations && msg.data.recommendations.length > 0 && !msg.data?.projects && (
                           <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 space-y-2.5">
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Civic Location Highlights</span>
                             {msg.data.recommendations.map((rec, idx) => (

@@ -12,7 +12,7 @@ import toast from 'react-hot-toast';
 const CitizenPropertyDetailsPage = () => {
   const { propertyId } = useParams();
   const auth = useAuth() || {};
-  const user = auth.user || { name: 'Aniket Sharma', id: 'USR-CITIZEN-01' };
+  const user = auth.user;
   const navigate = useNavigate();
 
   const [property, setProperty] = useState(null);
@@ -22,9 +22,9 @@ const CitizenPropertyDetailsPage = () => {
   // Inquiry Form State
   const [inquirySubmitted, setInquirySubmitted] = useState(false);
   const [inquiryForm, setInquiryForm] = useState({
-    name: user?.name || 'Aniket Sharma',
-    contact: '+91 98220 *****',
-    email: 'aniket.sharma@example.com',
+    name: user?.name || '',
+    contact: user?.phone || '',
+    email: user?.email || '',
     message: 'I am interested in acquiring/inspecting this property. Please contact me regarding site visit and title documents.'
   });
 
@@ -58,8 +58,8 @@ const CitizenPropertyDetailsPage = () => {
 
     try {
       await propertyService.submitInquiry(propertyId, {
-        buyerId: user?.id || 'USR-CITIZEN-BUYER',
-        buyerName: inquiryForm.name,
+        buyerId: user?.id || null,
+        buyerName: inquiryForm.name || user?.name || 'Citizen Buyer',
         buyerContact: inquiryForm.contact,
         buyerEmail: inquiryForm.email,
         message: inquiryForm.message

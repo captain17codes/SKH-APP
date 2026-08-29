@@ -41,7 +41,6 @@ const CitizenDashboardLayout = () => {
 
   const handleLogout = () => {
     logout();
-    toast.success('Logged out successfully');
     navigate('/');
   };
 
@@ -55,7 +54,7 @@ const CitizenDashboardLayout = () => {
   };
 
   return (
-    <div className="bg-background text-on-background min-h-screen flex font-body-md">
+    <div className="bg-background dark:bg-inverse-surface text-on-background dark:text-inverse-on-surface min-h-screen flex font-body-md">
       {/* MOBILE BACKDROP */}
       {mobileMenuOpen && (
         <div

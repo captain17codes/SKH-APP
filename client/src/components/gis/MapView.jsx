@@ -352,7 +352,7 @@ const MapView = ({
       )}
 
       {/* Actual Map Container */}
-      <div className="flex-1 relative w-full h-full min-h-[400px] bg-slate-100">
+      <div className="flex-1 relative w-full h-full min-h-[400px]">
         <Map
           ref={mapRef}
           {...viewState}

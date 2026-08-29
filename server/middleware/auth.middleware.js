@@ -12,7 +12,7 @@ export const protect = async (req, res, next) => {
 
       const decoded = jwt.verify(token, JWT_SECRET);
 
-      req.user = await getUserById(decoded.id);
+      req.user = await getUserById(decoded.userId);
 
       if (!req.user) {
         return res.status(401).json({ success: false, message: 'Not authorized, user not found' });
@@ -28,12 +28,42 @@ export const protect = async (req, res, next) => {
   }
 };
 
+export const optionalProtect = async (req, res, next) => {
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    try {
+      const token = req.headers.authorization.split(' ')[1];
+      const decoded = jwt.verify(token, JWT_SECRET);
+      req.user = await getUserById(decoded.userId);
+    } catch (error) {
+      // Continue without user
+      req.user = null;
+    }
+  }
+  next();
+};
+
 export const authorize = (...roles) => {
   return (req, res, next) => {
-    if (!req.user || !roles.includes(req.user.role)) {
+    if (!req.user) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Not authenticated' 
+      });
+    }
+
+    const userRole = req.user.role;
+    // Normalize role checks (e.g. 'Admin' <-> 'Administrator')
+    const normalizedUserRole = userRole === 'Admin' ? 'Administrator' : userRole;
+    
+    const isAuthorized = roles.some(role => {
+      const normalizedAllowedRole = role === 'Admin' ? 'Administrator' : role;
+      return userRole === role || normalizedUserRole === normalizedAllowedRole;
+    });
+
+    if (!isAuthorized) {
       return res.status(403).json({ 
         success: false, 
-        message: `User role ${req.user ? req.user.role : 'Unknown'} is not authorized to access this route` 
+        message: 'Access denied' 
       });
     }
     next();

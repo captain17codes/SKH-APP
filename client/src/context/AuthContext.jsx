@@ -42,7 +42,9 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('kopargaon-auth-token');
     setUser(null);
     setIsAuthenticated(false);
-    toast.success('Logged out successfully');
+    setTimeout(() => {
+      toast.success('Logged out successfully');
+    }, 100);
   };
 
   const switchRole = (newRole) => {

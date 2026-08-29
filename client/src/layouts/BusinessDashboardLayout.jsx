@@ -13,7 +13,7 @@ import toast from 'react-hot-toast';
 const BusinessDashboardLayout = () => {
   const { t } = useTranslation();
   const auth = useAuth() || {};
-  const user = auth.user || { name: 'Vikram Shah', id: 'USR-BUS-01' };
+  const user = auth.user;
   const logout = auth.logout || (() => {});
 
   const businessNavItems = [
@@ -39,7 +39,6 @@ const BusinessDashboardLayout = () => {
 
   const handleLogout = () => {
     logout();
-    toast.success('Logged out successfully');
     navigate('/');
   };
 
@@ -104,13 +103,12 @@ const BusinessDashboardLayout = () => {
         {/* User Quick Info Card */}
         <div className="p-4 border-b border-slate-200 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-950/40">
           <div className="flex items-center space-x-3">
-            <img
-              src={user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80'}
-              alt={user?.name}
-              className="w-9 h-9 rounded-full ring-2 ring-cyan-500/40 object-cover"
-            />
+            <div className="w-9 h-9 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 font-bold text-sm">
+              {user?.name ? user.name.charAt(0).toUpperCase() : 'B'}
+            </div>
             <div className="overflow-hidden">
-              <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{user?.name || 'Vikram Shah'}</p>
+              <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{user?.name || 'Business User'}</p>
+              <p className="text-[10px] text-slate-400 truncate">{user?.email || 'Commercial Account'}</p>
               <span className="inline-block text-[10px] font-medium px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 mt-0.5">
                 Commercial Investor
               </span>
@@ -196,13 +194,11 @@ const BusinessDashboardLayout = () => {
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex items-center space-x-2 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
               >
-                <img
-                  src={user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80'}
-                  alt="User"
-                  className="w-8 h-8 rounded-full object-cover ring-2 ring-cyan-500/30"
-                />
+                <div className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 font-bold text-xs">
+                  {user?.name ? user.name.charAt(0).toUpperCase() : 'B'}
+                </div>
                 <span className="hidden sm:inline-block text-xs font-semibold text-slate-800 dark:text-slate-200">
-                  {user?.name || 'Vikram Shah'}
+                  {user?.name || 'Business User'}
                 </span>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
               </button>
@@ -210,7 +206,8 @@ const BusinessDashboardLayout = () => {
               {isProfileOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-2 z-50">
                   <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
-                    <p className="text-xs font-bold text-slate-900 dark:text-slate-100">{user?.name || 'Vikram Shah'}</p>
+                    <p className="text-xs font-bold text-slate-900 dark:text-slate-100">{user?.name || 'Business User'}</p>
+                    <p className="text-[10px] text-slate-400 truncate">{user?.email}</p>
                     <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-semibold">Business Investor</span>
                   </div>
                   <button

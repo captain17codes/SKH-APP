@@ -97,7 +97,6 @@ const BusinessDashboardPage = () => {
 
   const handleLogout = () => {
     logout();
-    toast.success('Logged out successfully');
     navigate('/');
   };
 
