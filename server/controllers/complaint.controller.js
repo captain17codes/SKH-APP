@@ -204,6 +204,7 @@ export const createComplaint = async (req, res) => {
       return res.status(400).json({ error: 'title, category, location, and GPS coordinates are strictly required' });
     }
 
+
     const lat = coordinates[0];
     const lng = coordinates[1];
 
