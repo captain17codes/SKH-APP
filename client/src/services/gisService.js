@@ -5,6 +5,7 @@ import INFRASTRUCTURE_GIS_DATA from '../data/gis/infrastructure';
 import ROADS_GEOJSON from '../data/gis/roads';
 import BUILDINGS_GEOJSON from '../data/gis/buildings';
 import { MOCK_PROJECTS } from '../data/mockData';
+import { projectService } from './api';
 
 // Reusable GeoJSON Schema Validation Helper
 const validateGeoJSON = (geojson, typeName) => {
@@ -109,12 +110,7 @@ export const gisService = {
   },
 
   getProjects: async () => {
-    try {
-      const res = await apiClient.get('/gis/projects');
-      return res.data;
-    } catch {
-      return MOCK_PROJECTS;
-    }
+    return projectService.getAll();
   },
 
   // --------------------------------------------------

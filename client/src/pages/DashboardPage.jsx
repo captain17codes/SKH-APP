@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import toast from 'react-hot-toast';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -29,6 +32,7 @@ const DashboardPage = () => {
   const [isComplaintModalOpen, setIsComplaintModalOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
   const [isComplaintDetailOpen, setIsComplaintDetailOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     projectService.getAll().then(setProjects);
@@ -64,6 +68,66 @@ const DashboardPage = () => {
     setComplaints(prev => prev.map(c => c.id === id ? { ...c, status } : c));
   };
 
+  const handleExportReport = () => {
+    setIsExporting(true);
+    try {
+      const doc = new jsPDF();
+      
+      // Title
+      doc.setFontSize(20);
+      doc.text("Kopargaon Smart City - Dashboard Report", 14, 22);
+      
+      doc.setFontSize(11);
+      doc.setTextColor(100);
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+      
+      // Overview stats
+      doc.setFontSize(14);
+      doc.setTextColor(0);
+      doc.text("Overview Statistics", 14, 45);
+      
+      const stats = [
+        ["Total Projects", totalProjects.toString()],
+        ["Ongoing Projects", ongoingProjects.toString()],
+        ["Delayed/Critical Projects", (delayedProjects + criticalRiskCount).toString()],
+        ["Total Complaints", complaints.length.toString()]
+      ];
+      
+      autoTable(doc, {
+        startY: 50,
+        head: [['Metric', 'Value']],
+        body: stats,
+        theme: 'grid',
+        headStyles: { fillColor: [30, 58, 138] }
+      });
+      
+      // Ward Development Data
+      doc.text("Projects by Ward Progress", 14, doc.lastAutoTable.finalY + 15);
+      
+      const wardDataStr = wardDevelopmentData.map(w => [
+        w.ward, 
+        `${w.progress}%`, 
+        `Rs ${w.budgetCr} Cr`
+      ]);
+      
+      autoTable(doc, {
+        startY: doc.lastAutoTable.finalY + 20,
+        head: [['Ward', 'Progress', 'Budget']],
+        body: wardDataStr,
+        theme: 'grid',
+        headStyles: { fillColor: [30, 58, 138] }
+      });
+      
+      doc.save("kopargaon_dashboard_report.pdf");
+      toast.success("Report exported successfully!");
+    } catch (error) {
+      console.error("Export failed:", error);
+      toast.error("Failed to export report.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-10">
       {/* Page Header */}
@@ -73,9 +137,17 @@ const DashboardPage = () => {
           <p className="font-body-md text-body-md text-on-surface-variant mt-1">Real-time civic data and project tracking for Kopargaon.</p>
         </div>
         <div className="flex gap-3">
-          <button className="bg-surface dark:bg-inverse-surface border border-outline-variant dark:border-outline text-primary dark:text-primary-fixed-dim font-label-md text-label-md px-4 py-2 rounded-lg hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors shadow-sm flex items-center gap-2">
-            <span className="material-symbols-outlined text-sm">download</span>
-            Export Report
+          <button 
+            onClick={handleExportReport}
+            disabled={isExporting}
+            className={`bg-surface dark:bg-inverse-surface border border-outline-variant dark:border-outline text-primary dark:text-primary-fixed-dim font-label-md text-label-md px-4 py-2 rounded-lg transition-colors shadow-sm flex items-center gap-2 ${isExporting ? 'opacity-70 cursor-not-allowed' : 'hover:bg-surface-container-low dark:hover:bg-surface-container-highest'}`}
+          >
+            {isExporting ? (
+              <span className="material-symbols-outlined text-sm animate-spin">sync</span>
+            ) : (
+              <span className="material-symbols-outlined text-sm">download</span>
+            )}
+            {isExporting ? 'Exporting...' : 'Export Report'}
           </button>
           <button 
             onClick={() => setIsProjectModalOpen(true)}

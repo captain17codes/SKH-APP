@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Modal from '../common/Modal';
 import { UploadCloud, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { documentService } from '../../services/api';
 
 const UploadDocumentModal = ({ isOpen, onClose, onUpload }) => {
   const [formData, setFormData] = useState({
@@ -11,24 +12,62 @@ const UploadDocumentModal = ({ isOpen, onClose, onUpload }) => {
     author: 'Kopargaon Town Planning Office',
     summary: ''
   });
+  const [selectedFile, setSelectedFile] = useState(null);
+  const fileInputRef = useRef(null);
 
-  const handleSubmit = (e) => {
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 500 * 1024 * 1024) {
+        toast.error('File exceeds 500MB limit.');
+        return;
+      }
+      setSelectedFile(file);
+      // Auto-set title if empty
+      if (!formData.title) {
+        setFormData(prev => ({ ...prev, title: file.name.split('.')[0] }));
+      }
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.title) {
       toast.error('Please enter document title');
       return;
     }
+    if (!selectedFile) {
+      toast.error('Please select a file to upload');
+      return;
+    }
 
-    onUpload({
-      id: `DOC-2026-${Math.floor(100 + Math.random() * 900)}`,
-      ...formData,
-      size: '12.4 MB',
-      date: new Date().toISOString().split('T')[0],
-      downloads: 0
-    });
-
-    toast.success('Document uploaded to Smart City vault successfully!');
-    onClose();
+    try {
+      const newDocData = {
+        id: `DOC-2026-${Math.floor(100 + Math.random() * 900)}`,
+        ...formData,
+        size: (selectedFile.size / (1024 * 1024)).toFixed(2) + ' MB',
+        date: new Date().toISOString().split('T')[0],
+        downloads: 0
+      };
+      
+      const createdDoc = await documentService.create(newDocData);
+      onUpload(createdDoc);
+      toast.success('Document uploaded to Smart City vault successfully!');
+      
+      // Reset state
+      setFormData({
+        title: '',
+        category: 'Development Plan',
+        fileType: 'PDF',
+        author: 'Kopargaon Town Planning Office',
+        summary: ''
+      });
+      setSelectedFile(null);
+      onClose();
+    } catch (err) {
+      console.error('Document upload failed:', err);
+      toast.error('Failed to upload document.');
+    }
   };
 
   return (
@@ -78,10 +117,30 @@ const UploadDocumentModal = ({ isOpen, onClose, onUpload }) => {
         </div>
 
         {/* Drag & drop box simulation */}
-        <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-6 text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-          <UploadCloud className="w-8 h-8 text-blue-500 mx-auto mb-2" />
-          <p className="font-semibold text-slate-800 dark:text-slate-200">Click to select or drag PDF file here</p>
-          <span className="text-[10px] text-slate-400">Supported files: PDF, GeoJSON, DWG, ZIP up to 500 MB</span>
+        <div 
+          onClick={() => fileInputRef.current?.click()}
+          className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-6 text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
+        >
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileChange} 
+            className="hidden" 
+            accept=".pdf,.geojson,.json,.dwg,.zip,.xlsx"
+          />
+          {selectedFile ? (
+            <div className="flex flex-col items-center">
+              <FileText className="w-8 h-8 text-green-500 mx-auto mb-2" />
+              <p className="font-semibold text-slate-800 dark:text-slate-200">{selectedFile.name}</p>
+              <span className="text-[10px] text-slate-400">{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</span>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center">
+              <UploadCloud className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+              <p className="font-semibold text-slate-800 dark:text-slate-200">Click to select or drag PDF file here</p>
+              <span className="text-[10px] text-slate-400">Supported files: PDF, GeoJSON, DWG, ZIP up to 500 MB</span>
+            </div>
+          )}
         </div>
 
         <div>
