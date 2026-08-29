@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kopargaon Smart City Admin - Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-tint": "#4059aa",
+                    "on-secondary": "#ffffff",
+                    "tertiary": "#00311f",
+                    "on-background": "#0d1c2f",
+                    "primary-container": "#1e3a8a",
+                    "surface-container-high": "#dde9ff",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed": "#6ffbbe",
+                    "secondary-container": "#57dffe",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-bright": "#f8f9ff",
+                    "secondary": "#00687a",
+                    "inverse-primary": "#b6c4ff",
+                    "secondary-fixed-dim": "#4cd7f6",
+                    "primary-fixed": "#dce1ff",
+                    "primary": "#00236f",
+                    "on-primary-fixed-variant": "#264191",
+                    "surface-container-highest": "#d5e3fd",
+                    "outline-variant": "#c5c5d3",
+                    "outline": "#757682",
+                    "on-surface": "#0d1c2f",
+                    "on-tertiary-container": "#27c38a",
+                    "on-primary": "#ffffff",
+                    "inverse-on-surface": "#ebf1ff",
+                    "tertiary-container": "#004a31",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "on-error": "#ffffff",
+                    "on-secondary-fixed": "#001f26",
+                    "surface-container-low": "#eff4ff",
+                    "on-primary-fixed": "#00164e",
+                    "background": "#f8f9ff",
+                    "on-primary-container": "#90a8ff",
+                    "primary-fixed-dim": "#b6c4ff",
+                    "on-error-container": "#93000a",
+                    "inverse-surface": "#233144",
+                    "on-tertiary-fixed": "#002113",
+                    "surface-variant": "#d5e3fd",
+                    "surface-container": "#e6eeff",
+                    "surface-dim": "#ccdbf4",
+                    "on-surface-variant": "#444651",
+                    "error": "#ba1a1a",
+                    "surface": "#f8f9ff",
+                    "on-secondary-fixed-variant": "#004e5c",
+                    "error-container": "#ffdad6",
+                    "on-secondary-container": "#006172",
+                    "on-tertiary-fixed-variant": "#005236",
+                    "secondary-fixed": "#acedff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-mobile": "1rem",
+                    "section-gap": "2.5rem",
+                    "stack-gap": "1rem",
+                    "sidebar-width": "260px",
+                    "gutter": "1.5rem",
+                    "margin-desktop": "2rem",
+                    "container-max-width": "1440px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Public Sans"],
+                    "headline-lg-mobile": ["Public Sans"],
+                    "headline-lg": ["Public Sans"],
+                    "body-lg": ["Public Sans"],
+                    "label-md": ["Public Sans"],
+                    "title-lg": ["Public Sans"],
+                    "label-sm": ["Public Sans"],
+                    "display-md": ["Public Sans"],
+                    "headline-md": ["Public Sans"],
+                    "body-md": ["Public Sans"],
+                    "body-sm": ["Public Sans"]
+            },
+            "fontSize": {
+                    "display-lg": ["48px", {"lineHeight": "60px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg": ["30px", {"lineHeight": "38px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "display-md": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+<link href="css/styles.css" rel="stylesheet"/>
+</head>
+<body>
+<div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div> class="bg-background text-on-background font-body-md antialiased h-screen overflow-hidden flex">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-[260px] bg-surface-container-lowest dark:bg-inverse-surface border-r border-outline-variant dark:border-outline shadow-sm dark:shadow-none flex flex-col h-full py-6 z-50 transition-transform md:translate-x-0 -translate-x-full" id="mobile-menu">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-on-primary font-bold text-xl">K</div>
+<div>
+<h1 class="text-title-lg font-title-lg font-bold text-primary dark:text-primary-fixed">Kopargaon Municipal</h1>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Smart City Admin</p>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto px-4">
+<ul class="space-y-1">
+<li><a class="flex items-center gap-3 text-on-surface-variant dark:text-surface-variant px-4 py-3 opacity-80 hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors duration-200 rounded-lg nav-link" href="dashboard.html"><span class="material-symbols-outlined text-lg nav-link" data-icon="dashboard">dashboard</span><span class="text-label-md font-label-md nav-link">Dashboard</span></a></li>
+<li><a class="flex items-center gap-3 text-on-surface-variant dark:text-surface-variant px-4 py-3 opacity-80 hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors duration-200 rounded-lg nav-link" href="gis-map.html"><span class="material-symbols-outlined text-lg nav-link" data-icon="map">map</span><span class="text-label-md font-label-md nav-link">GIS Map</span></a></li>
+<li><a class="flex items-center gap-3 text-on-surface-variant dark:text-surface-variant px-4 py-3 opacity-80 hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors duration-200 rounded-lg nav-link" href="projects.html"><span class="material-symbols-outlined text-lg nav-link" data-icon="assignment">assignment</span><span class="text-label-md font-label-md nav-link">Projects</span></a></li>
+<li><a class="flex items-center gap-3 text-on-surface-variant dark:text-surface-variant px-4 py-3 opacity-80 hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors duration-200 rounded-lg nav-link" href="land-use.html"><span class="material-symbols-outlined text-lg nav-link" data-icon="foundation">foundation</span><span class="text-label-md font-label-md nav-link">Land Use</span></a></li>
+<li><a class="flex items-center gap-3 text-on-surface-variant dark:text-surface-variant px-4 py-3 opacity-80 hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors duration-200 rounded-lg nav-link" href="complaints.html"><span class="material-symbols-outlined text-lg nav-link" data-icon="report_problem">report_problem</span><span class="text-label-md font-label-md nav-link">Complaints</span></a></li>
+<li><a class="flex items-center gap-3 text-on-surface-variant dark:text-surface-variant px-4 py-3 opacity-80 hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors duration-200 rounded-lg nav-link" href="analytics.html"><span class="material-symbols-outlined text-lg nav-link" data-icon="analytics">analytics</span><span class="text-label-md font-label-md nav-link">Analytics</span></a></li>
+<li><a class="flex items-center gap-3 text-on-surface-variant dark:text-surface-variant px-4 py-3 opacity-80 hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors duration-200 rounded-lg nav-link" href="ai-planner.html"><span class="material-symbols-outlined text-lg nav-link" data-icon="psychology">psychology</span><span class="text-label-md font-label-md nav-link">AI Planner</span></a></li>
+<li><a class="flex items-center gap-3 text-on-surface-variant dark:text-surface-variant px-4 py-3 opacity-80 hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors duration-200 rounded-lg nav-link" href="documents.html"><span class="material-symbols-outlined text-lg nav-link" data-icon="description">description</span><span class="text-label-md font-label-md nav-link">Documents</span></a></li>
+<li><a class="flex items-center gap-3 bg-primary-container/10 dark:bg-primary-container text-primary dark:text-on-primary-container border-l-4 border-primary font-bold px-4 py-3 rounded-r-lg opacity-90 transition-all duration-150 nav-link" href="settings.html"><span class="material-symbols-outlined text-lg nav-link" data-icon="settings">settings</span><span class="text-label-md font-label-md nav-link">Settings</span></a></li>
+</ul>
+</div>
+</nav>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-full md:w-[calc(100%-260px)] h-16 bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline shadow-sm dark:shadow-none flex justify-between items-center px-4 md:px-8 z-40">
+<div class="flex items-center gap-4">
+<button class="md:hidden text-on-surface p-2" onclick="document.getElementById('mobile-menu').classList.toggle('-translate-x-full')" onclick="toggleSidebar()">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<span class="text-headline-md font-headline-md font-extrabold text-primary dark:text-primary-fixed hidden md:block">Settings</span>
+</div>
+<div class="flex items-center gap-4 md:gap-6">
+<div class="hidden md:flex bg-surface-container-low rounded-full px-4 py-1 items-center border border-outline-variant">
+<span class="text-label-sm font-label-sm font-bold text-primary px-2">EN</span>
+<span class="text-outline mx-1">|</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant px-2 cursor-pointer hover:text-primary">HI</span>
+<span class="text-outline mx-1">|</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant px-2 cursor-pointer hover:text-primary">MR</span>
+</div>
+<button class="text-on-surface-variant hover:text-secondary dark:hover:text-secondary-fixed cursor-pointer transition-colors focus:ring-2 ring-secondary ring-opacity-50 rounded-full p-2">
+<span class="material-symbols-outlined text-xl" data-icon="translate">translate</span>
+</button>
+<button class="text-on-surface-variant hover:text-secondary dark:hover:text-secondary-fixed cursor-pointer transition-colors focus:ring-2 ring-secondary ring-opacity-50 rounded-full p-2 relative">
+<span class="material-symbols-outlined text-xl" data-icon="notifications">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="w-8 h-8 rounded-full bg-primary-container overflow-hidden border-2 border-primary">
+<img alt="Administrator Profile" class="w-full h-full object-cover" data-alt="Professional headshot of an Indian administrative officer in a modern light-filled civic office. Bright, professional lighting with a subtle blue tint in the background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvc-xCrc8KaiVaA9QFQS3AigUL4oi0zoDCjS2TtxMyH6OLk5ucYs5iJP5D1NHTG3f_Odjo75zgJYewFRIIpYnynSDMvPcPUP9L7zjG4-P4Ons1acZ85T0kEICfl8mbc0KHSvvnKOBmNmGGqp8STKCpUpz4pLEO6OeCt347S3my-F8nidKNIhiSV12MZzr1czp0FUNgzpOjhIYq3jZrTOFJY_htbI8D6e0TQ2zcdsY-Zx9QYcsCx1HV3A"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="w-full md:w-[calc(100%-260px)] md:ml-[260px] mt-16 p-4 md:p-margin-desktop h-[calc(100vh-64px)] overflow-y-auto bg-slate-50">
+<div class="max-w-container-max-width mx-auto">
+<!-- Page Header -->
+<div class="mb-8">
+<h2 class="text-display-md font-display-md text-on-background mb-2">Platform Settings</h2>
+<p class="text-body-lg font-body-lg text-on-surface-variant">Manage your account, administrative roles, and system preferences.</p>
+</div>
+<!-- Tabbed Interface -->
+<div class="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] border border-slate-200 overflow-hidden">
+<!-- Tab Navigation -->
+<div class="flex border-b border-slate-200 overflow-x-auto bg-surface-bright">
+<button class="tab-btn active flex-1 py-4 px-6 text-center text-label-md font-label-md font-bold text-primary border-b-2 border-primary whitespace-nowrap hover:bg-surface-container-low transition-colors" data-target="tab-profile">
+<span class="material-symbols-outlined align-middle mr-2 text-sm">person</span>Profile
+                    </button>
+<button class="tab-btn flex-1 py-4 px-6 text-center text-label-md font-label-md text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors whitespace-nowrap" data-target="tab-users">
+<span class="material-symbols-outlined align-middle mr-2 text-sm">group</span>Users &amp; Roles
+                    </button>
+<button class="tab-btn flex-1 py-4 px-6 text-center text-label-md font-label-md text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors whitespace-nowrap" data-target="tab-notifications">
+<span class="material-symbols-outlined align-middle mr-2 text-sm">notifications_active</span>Notifications
+                    </button>
+<button class="tab-btn flex-1 py-4 px-6 text-center text-label-md font-label-md text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors whitespace-nowrap" data-target="tab-map">
+<span class="material-symbols-outlined align-middle mr-2 text-sm">map</span>Map Settings
+                    </button>
+<button class="tab-btn flex-1 py-4 px-6 text-center text-label-md font-label-md text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors whitespace-nowrap" data-target="tab-theme">
+<span class="material-symbols-outlined align-middle mr-2 text-sm">palette</span>Theme &amp; UI
+                    </button>
+</div>
+<!-- Tab Contents -->
+<div class="p-6 md:p-8">
+<!-- Profile Tab -->
+<div class="tab-content active" id="tab-profile">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Avatar Column -->
+<div class="col-span-1 flex flex-col items-center border-r border-slate-200 pr-0 md:pr-8">
+<div class="w-32 h-32 rounded-full overflow-hidden border-4 border-surface-container-high mb-4 shadow-sm relative group cursor-pointer">
+<img class="w-full h-full object-cover" data-alt="Close up professional headshot of an administrative official in a modern office, bright natural lighting, crisp professional aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhD9Cd25FDjzFv573--waE4Qs9D6rvNS1iucsqW0O7mnt_3iu1zBoLg6yGO6_eF58AhB5SvHX20ryAmQdADne9Lr-FoRaIBV1UUVVYjm_AR4IgI9Kwo6Gow0xmDxhW6XdZqg9m85Rp5NPZL-Jx0SHjMIdHGPkCZgPPr1l0yklq76sGfPdCXddQY2RLuq5fhobAk2GRafP9cI40Q04pXxMg4ri5j0vjZgZTJ9U047LK473mG6GTEU2SHw"/>
+<div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-white">photo_camera</span>
+</div>
+</div>
+<h3 class="text-title-lg font-title-lg mb-1 text-center">Rajesh Kumar</h3>
+<div class="bg-blue-50 text-primary px-3 py-1 rounded-full text-label-sm font-label-sm font-bold flex items-center mb-6">
+<span class="material-symbols-outlined text-[14px] mr-1">verified_user</span> Administrator
+                                </div>
+<button class="w-full py-2 bg-surface-container-low text-primary border border-outline-variant rounded-lg text-label-md font-label-md hover:bg-surface-container transition-colors">
+                                    Change Photo
+                                </button>
+</div>
+<!-- Form Column -->
+<div class="col-span-1 md:col-span-2 space-y-6">
+<div>
+<h4 class="text-title-lg font-title-lg mb-4 text-primary border-b border-slate-100 pb-2">Personal Information</h4>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface-variant mb-1">Full Name</label>
+<input class="w-full border border-slate-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-secondary-container focus:border-secondary-container bg-white text-body-md" type="text" value="Rajesh Kumar"/>
+</div>
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface-variant mb-1">Email Address</label>
+<input class="w-full border border-slate-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-secondary-container focus:border-secondary-container bg-white text-body-md" type="email" value="rajesh.admin@kopargaon.gov.in"/>
+</div>
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface-variant mb-1">Department</label>
+<select class="w-full border border-slate-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-secondary-container focus:border-secondary-container bg-white text-body-md">
+<option>Urban Planning</option>
+<option>Public Works</option>
+<option selected="">Central Administration</option>
+</select>
+</div>
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface-variant mb-1">Phone Number</label>
+<input class="w-full border border-slate-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-secondary-container focus:border-secondary-container bg-white text-body-md" type="tel" value="+91 98765 43210"/>
+</div>
+</div>
+</div>
+<div class="flex justify-end mt-8">
+<button class="bg-primary text-white px-6 py-2 rounded-lg text-label-md font-label-md hover:bg-primary/90 transition-colors shadow-sm">
+                                        Save Changes
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Users & Roles Tab -->
+<div class="tab-content" id="tab-users">
+<div class="flex justify-between items-center mb-6">
+<div>
+<h4 class="text-title-lg font-title-lg text-primary">User Management</h4>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Manage platform access and role assignments.</p>
+</div>
+<button class="bg-primary text-white px-4 py-2 rounded-lg text-label-md font-label-md hover:bg-primary/90 transition-colors shadow-sm flex items-center">
+<span class="material-symbols-outlined text-sm mr-2">person_add</span> Invite User
+                            </button>
+</div>
+<div class="border border-slate-200 rounded-lg overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-bright text-label-sm font-label-sm text-on-surface-variant uppercase border-b border-slate-200">
+<tr>
+<th class="py-3 px-4">User</th>
+<th class="py-3 px-4">Department</th>
+<th class="py-3 px-4">Role</th>
+<th class="py-3 px-4">Status</th>
+<th class="py-3 px-4 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="text-body-md font-body-md">
+<tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+<td class="py-3 px-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-primary font-bold">A</div>
+<div>
+<p class="font-medium">Anita Desai</p>
+<p class="text-body-sm text-on-surface-variant">anita.d@kopargaon.gov</p>
+</div>
+</td>
+<td class="py-3 px-4">Urban Planning</td>
+<td class="py-3 px-4"><span class="bg-slate-100 text-slate-700 px-2 py-1 rounded text-label-sm font-label-sm border border-slate-200">Editor</span></td>
+<td class="py-3 px-4"><span class="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-label-sm font-label-sm">Active</span></td>
+<td class="py-3 px-4 text-right">
+<button class="text-outline hover:text-primary"><span class="material-symbols-outlined text-lg">more_vert</span></button>
+</td>
+</tr>
+<tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+<td class="py-3 px-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-primary font-bold">V</div>
+<div>
+<p class="font-medium">Vikram Singh</p>
+<p class="text-body-sm text-on-surface-variant">v.singh@kopargaon.gov</p>
+</div>
+</td>
+<td class="py-3 px-4">Public Works</td>
+<td class="py-3 px-4"><span class="bg-blue-50 text-primary px-2 py-1 rounded text-label-sm font-label-sm border border-blue-100">Administrator</span></td>
+<td class="py-3 px-4"><span class="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-label-sm font-label-sm">Active</span></td>
+<td class="py-3 px-4 text-right">
+<button class="text-outline hover:text-primary"><span class="material-symbols-outlined text-lg">more_vert</span></button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="py-3 px-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-primary font-bold">M</div>
+<div>
+<p class="font-medium">Meera Patel</p>
+<p class="text-body-sm text-on-surface-variant">m.patel@kopargaon.gov</p>
+</div>
+</td>
+<td class="py-3 px-4">Sanitation</td>
+<td class="py-3 px-4"><span class="bg-slate-100 text-slate-700 px-2 py-1 rounded text-label-sm font-label-sm border border-slate-200">Viewer</span></td>
+<td class="py-3 px-4"><span class="bg-red-50 text-red-700 px-2 py-1 rounded-full text-label-sm font-label-sm">Inactive</span></td>
+<td class="py-3 px-4 text-right">
+<button class="text-outline hover:text-primary"><span class="material-symbols-outlined text-lg">more_vert</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Theme & UI Tab -->
+<div class="tab-content" id="tab-theme">
+<div class="mb-6">
+<h4 class="text-title-lg font-title-lg text-primary">Appearance</h4>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Customize the visual presentation of the admin console.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl">
+<!-- Light Mode Card -->
+<div class="border-2 border-primary rounded-xl p-1 cursor-pointer">
+<div class="bg-white rounded-lg h-40 border border-slate-100 p-4 flex flex-col shadow-sm relative overflow-hidden">
+<div class="flex justify-between items-center mb-4">
+<div class="w-1/3 h-4 bg-slate-200 rounded"></div>
+<div class="w-8 h-8 bg-blue-100 rounded-full"></div>
+</div>
+<div class="flex-1 flex gap-4">
+<div class="w-1/4 h-full bg-slate-100 rounded"></div>
+<div class="w-3/4 h-full bg-slate-50 rounded border border-slate-200"></div>
+</div>
+<div class="absolute inset-0 bg-blue-500/10 flex items-center justify-center">
+<span class="bg-primary text-white px-3 py-1 rounded-full text-label-sm flex items-center"><span class="material-symbols-outlined text-sm mr-1">check_circle</span> Active</span>
+</div>
+</div>
+<div class="text-center py-3">
+<p class="font-label-md text-label-md font-bold text-on-background">Light Mode (Civic Standard)</p>
+</div>
+</div>
+<!-- Dark Mode Card -->
+<div class="border-2 border-transparent hover:border-slate-300 rounded-xl p-1 cursor-pointer transition-colors">
+<div class="bg-slate-900 rounded-lg h-40 border border-slate-800 p-4 flex flex-col shadow-sm">
+<div class="flex justify-between items-center mb-4">
+<div class="w-1/3 h-4 bg-slate-700 rounded"></div>
+<div class="w-8 h-8 bg-blue-900 rounded-full"></div>
+</div>
+<div class="flex-1 flex gap-4">
+<div class="w-1/4 h-full bg-slate-800 rounded"></div>
+<div class="w-3/4 h-full bg-slate-800/50 rounded border border-slate-700"></div>
+</div>
+</div>
+<div class="text-center py-3">
+<p class="font-label-md text-label-md text-on-surface-variant">Dark Mode (Low Light)</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Placeholder for other tabs -->
+<div class="tab-content text-center py-12 text-on-surface-variant" id="tab-notifications">Notification settings coming soon.</div>
+<div class="tab-content text-center py-12 text-on-surface-variant" id="tab-map">GIS Map configurations coming soon.</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Simple Tab Logic
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active classes
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    b.classList.remove('active', 'text-primary', 'border-b-2', 'border-primary', 'font-bold');
+                    b.classList.add('text-on-surface-variant');
+                });
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active classes to clicked
+                btn.classList.add('active', 'text-primary', 'border-b-2', 'border-primary', 'font-bold');
+                btn.classList.remove('text-on-surface-variant');
+                const target = btn.getAttribute('data-target');
+                document.getElementById(target).classList.add('active');
+            });
+        });
+    </script>
+<script src="js/app.js"></script>
+</body></html>

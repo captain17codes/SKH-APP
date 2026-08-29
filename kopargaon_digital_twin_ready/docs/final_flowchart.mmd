@@ -1,0 +1,50 @@
+flowchart TD
+    A[Real Kopargaon] --> B[Urban Data Collection]
+    B --> C[Open GIS + Municipal + Field + Citizen + Project Updates]
+    C --> D[Data Validation & Normalization]
+    D --> E[Provenance + Confidence + Data Gap Flags]
+    E --> F[Spatial Data Store / Master Dataset]
+    F --> G[GIS-Enabled Evolving Urban Digital Twin]
+
+    G --> H[AS-IS City Model]
+    H --> H1[Infrastructure + Land Use + Roads + Buildings]
+    H --> H2[Hospitals + Colleges + Public Facilities]
+    H --> H3[Water + Power + Railway + Existing Projects]
+    H --> H4[Citizen Issue Patterns]
+
+    H --> I[Identify Development / Resilience Need]
+    I --> J[Urban Planning Workspace]
+
+    J --> K{WHAT-IF Scenario}
+    K --> K1[Road / Drain / Water / Facility / Land-Use Scenario]
+    K --> K2[Godavari Flood Scenario]
+
+    K1 --> L1[GIS Spatial Analysis]
+    L1 --> M1[Building Impact + Utility Conflicts + Land-Use Impact]
+    M1 --> N[Structured GIS Evidence]
+
+    K2 --> L2[Godavari + Copernicus DEM + Hypothetical River Rise]
+    L2 --> M2[Terrain-Connected Inundation Screening]
+    M2 --> M3[Buildings + Roads + Facilities + Power + Rail Exposure]
+    M3 --> M4[Accessibility + Response + Recovery Priorities]
+    M4 --> N
+
+    N --> O[Scenario A / B Comparison]
+    O --> P[Metrics + Evidence + Confidence + Limitations]
+    P --> Q[AI Planning Assistant]
+    Q --> Q1[Explain Risks + Trade-Offs + Show Evidence]
+    Q1 --> R[Engineer Review]
+    R --> S[Town Planner Review]
+    S --> T{Authorized Human Decision}
+
+    T -->|Revise| J
+    T -->|Approve| U[Approved Project]
+    U --> V[Project Tracking]
+    V --> V1[Budget + Timeline + Milestones + Progress]
+    V1 --> W[Analytics Dashboard]
+    W --> X[Public Transparency]
+    X --> Y[Citizen Feedback]
+    Y --> G
+
+    V --> Z[AS-BUILT Update]
+    Z --> G

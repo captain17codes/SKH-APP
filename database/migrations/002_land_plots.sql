@@ -33,4 +33,3 @@ ON CONFLICT (id) DO NOTHING;
 UPDATE land_plots SET geom_utm = ST_Transform(geometry, 32643) WHERE geom_utm IS NULL;
 
 -- Analyze table to update query planner statistics
-VACUUM ANALYZE land_plots;

@@ -11,6 +11,7 @@ const DashboardLayout = () => {
 
   return (
     <div className="min-h-screen bg-background dark:bg-inverse-surface text-on-surface dark:text-inverse-on-surface font-body-md text-body-md flex flex-col antialiased">
+
       {/* Sidebar */}
       <Sidebar isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 

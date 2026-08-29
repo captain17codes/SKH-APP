@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Projects - Kopargaon Smart City</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed": "#002113",
+                      "secondary": "#00687a",
+                      "secondary-fixed-dim": "#4cd7f6",
+                      "surface-container-low": "#eff4ff",
+                      "surface-dim": "#ccdbf4",
+                      "on-surface-variant": "#444651",
+                      "on-primary-fixed": "#00164e",
+                      "on-secondary-fixed-variant": "#004e5c",
+                      "surface-tint": "#4059aa",
+                      "on-secondary": "#ffffff",
+                      "surface-container-highest": "#d5e3fd",
+                      "outline": "#757682",
+                      "on-primary-fixed-variant": "#264191",
+                      "on-tertiary": "#ffffff",
+                      "surface-bright": "#f8f9ff",
+                      "outline-variant": "#c5c5d3",
+                      "primary-container": "#1e3a8a",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "primary": "#00236f",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-container": "#27c38a",
+                      "on-primary-container": "#90a8ff",
+                      "inverse-on-surface": "#ebf1ff",
+                      "on-secondary-container": "#006172",
+                      "tertiary": "#00311f",
+                      "on-error-container": "#93000a",
+                      "secondary-container": "#57dffe",
+                      "secondary-fixed": "#acedff",
+                      "error": "#ba1a1a",
+                      "tertiary-container": "#004a31",
+                      "surface-container": "#e6eeff",
+                      "surface-variant": "#d5e3fd",
+                      "primary-fixed-dim": "#b6c4ff",
+                      "primary-fixed": "#dce1ff",
+                      "tertiary-fixed": "#6ffbbe",
+                      "inverse-primary": "#b6c4ff",
+                      "surface-container-high": "#dde9ff",
+                      "inverse-surface": "#233144",
+                      "background": "#f8f9ff",
+                      "on-background": "#0d1c2f",
+                      "on-secondary-fixed": "#001f26",
+                      "on-primary": "#ffffff",
+                      "surface": "#f8f9ff",
+                      "on-surface": "#0d1c2f",
+                      "on-error": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-gap": "1rem",
+                      "gutter": "1.5rem",
+                      "margin-mobile": "1rem",
+                      "sidebar-width": "260px",
+                      "section-gap": "2.5rem",
+                      "margin-desktop": "2rem",
+                      "container-max-width": "1440px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Public Sans"],
+                      "display-md": ["Public Sans"],
+                      "title-lg": ["Public Sans"],
+                      "label-sm": ["Public Sans"],
+                      "body-md": ["Public Sans"],
+                      "display-lg": ["Public Sans"],
+                      "label-md": ["Public Sans"],
+                      "body-lg": ["Public Sans"],
+                      "headline-lg": ["Public Sans"],
+                      "body-sm": ["Public Sans"],
+                      "headline-lg-mobile": ["Public Sans"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "display-md": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "display-lg": ["48px", {"lineHeight": "60px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "headline-lg": ["30px", {"lineHeight": "38px", "fontWeight": "600"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; background-color: theme('colors.slate.50'); }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .filled-icon { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        
+        /* Ambient shadows for cards */
+        .card-shadow { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); }
+        .dropdown-shadow { box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); }
+        
+        /* Table hover actions */
+        .table-row-group:hover .row-actions { opacity: 1; }
+        .row-actions { opacity: 0; transition: opacity 0.2s ease-in-out; }
+    </style>
+<link href="css/styles.css" rel="stylesheet"/>
+</head>
+<body>
+<div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div> class="bg-slate-50 text-on-background flex min-h-screen font-body-md overflow-x-hidden">
+<!-- SideNavBar (Shared Component) -->
+<nav class="bg-surface dark:bg-inverse-surface border-r border-outline-variant dark:border-outline fixed left-0 top-0 h-full w-[260px] flex flex-col py-6 px-4 z-40 hidden md:flex">
+<div class="mb-8 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary filled-icon">location_city</span>
+</div>
+<div>
+<h1 class="font-title-lg text-title-lg font-bold text-primary dark:text-primary-fixed-dim">Kopargaon Smart City</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Municipal Portal</p>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto">
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-lowest transition-all duration-200 ease-in-out font-label-md text-label-md nav-link" href="dashboard.html">
+<span class="material-symbols-outlined nav-link" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-lowest transition-all duration-200 ease-in-out font-label-md text-label-md nav-link" href="gis-map.html">
+<span class="material-symbols-outlined nav-link" data-icon="map">map</span>
+<span>GIS Map</span>
+</a>
+</li>
+<!-- Active Item: Projects -->
+<li>
+<a aria-current="page" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-50 text-primary border-l-4 border-primary font-bold transition-all duration-200 ease-in-out font-label-md text-label-md nav-link" href="projects.html">
+<span class="material-symbols-outlined filled-icon nav-link" data-icon="engineering">engineering</span>
+<span>Projects</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-lowest transition-all duration-200 ease-in-out font-label-md text-label-md nav-link" href="land-use.html">
+<span class="material-symbols-outlined nav-link" data-icon="layers">layers</span>
+<span>Land Use</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-lowest transition-all duration-200 ease-in-out font-label-md text-label-md nav-link" href="complaints.html">
+<span class="material-symbols-outlined nav-link" data-icon="forum">forum</span>
+<span>Complaints</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-lowest transition-all duration-200 ease-in-out font-label-md text-label-md nav-link" href="analytics.html">
+<span class="material-symbols-outlined nav-link" data-icon="monitoring">monitoring</span>
+<span>Analytics</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-lowest transition-all duration-200 ease-in-out font-label-md text-label-md nav-link" href="ai-planner.html">
+<span class="material-symbols-outlined nav-link" data-icon="psychology">psychology</span>
+<span>AI Planner</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-lowest transition-all duration-200 ease-in-out font-label-md text-label-md nav-link" href="documents.html">
+<span class="material-symbols-outlined nav-link" data-icon="description">description</span>
+<span>Documents</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-lowest transition-all duration-200 ease-in-out font-label-md text-label-md nav-link" href="settings.html">
+<span class="material-symbols-outlined nav-link" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</li>
+</ul>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant">
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-lowest transition-all duration-200 ease-in-out font-label-md text-label-md nav-link" href="#">
+<span class="material-symbols-outlined nav-link" data-icon="help">help</span>
+<span>Help Center</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-lowest transition-all duration-200 ease-in-out font-label-md text-label-md nav-link" href="index.html">
+<span class="material-symbols-outlined nav-link" data-icon="logout">logout</span>
+<span>Logout</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 md:ml-[260px] flex flex-col min-h-screen">
+<!-- TopNavBar (Shared Component) -->
+<header class="bg-surface dark:bg-inverse-surface border-b border-transparent shadow-sm docked full-width top-0 z-50 flex justify-between items-center px-gutter h-16 w-full sticky">
+<div class="flex-1 max-w-md hidden md:flex items-center bg-surface-container-low rounded-full px-4 py-2 focus-within:ring-2 focus-within:ring-cyan focus-within:ring-offset-1 transition-shadow">
+<span class="material-symbols-outlined text-outline mr-2" data-icon="search">search</span>
+<input class="w-full bg-transparent border-none outline-none font-body-sm text-body-sm placeholder:text-outline text-on-surface focus:ring-0" placeholder="Search projects, wards, or IDs..." type="text"/>
+</div>
+<div class="md:hidden flex items-center">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary ml-2">Kopargaon Smart City</h1>
+</div>
+<div class="flex items-center gap-2">
+<!-- Language Pill -->
+<div class="hidden lg:flex bg-surface-container-low rounded-full p-1 mr-4 border border-outline-variant">
+<button class="px-3 py-1 rounded-full bg-white shadow-sm font-label-sm text-primary font-bold transition-all">EN</button>
+<button class="px-3 py-1 rounded-full text-on-surface-variant hover:text-primary font-label-sm transition-all cursor-pointer">HI</button>
+<button class="px-3 py-1 rounded-full text-on-surface-variant hover:text-primary font-label-sm transition-all cursor-pointer">MR</button>
+</div>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors relative cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors cursor-pointer active:opacity-80 hidden sm:block">
+<span class="material-symbols-outlined" data-icon="translate">translate</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors cursor-pointer active:opacity-80 hidden sm:block">
+<span class="material-symbols-outlined" data-icon="dark_mode">dark_mode</span>
+</button>
+<div class="ml-2 flex items-center gap-2 pl-2 border-l border-outline-variant cursor-pointer active:opacity-80 hover:bg-surface-container-low p-1.5 rounded-lg transition-colors">
+<img alt="User avatar" class="w-8 h-8 rounded-full object-cover border border-outline-variant" data-alt="A small, professional circular avatar portrait of a civil servant in a modern office setting. Clear lighting, corporate style, neutral background. Used as a profile image icon." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAs8QCoyADyTIxnQr6M_PJUDcEcLppgW8xmrFYyVSji4XSZB0PTf87i2D6eBY38i2sTlF909DMFRzN6TM8s_T3yw8iNjAkKYF5IgdmGpf6Nv_sLIjNKgKMAKMSnlUqojZabpah_GsZcCqW_PRokO7V-xCNnaxy9A-c-Nt-Ca2F77cWXgPwz4F5V5_8ZwL19vs9fpAGbfMeQPJZxXQYZV3DQqh__380G217fnkQBIydnP_8d5Uto89oRdQ"/>
+<span class="font-label-sm text-label-sm text-on-surface hidden md:block">Admin Profile</span>
+<span class="material-symbols-outlined text-on-surface-variant hidden md:block text-[20px]" data-icon="arrow_drop_down">arrow_drop_down</span>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 p-margin-mobile md:p-margin-desktop max-w-container-max-width mx-auto w-full flex flex-col gap-section-gap">
+<!-- Header Section -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+<div>
+<h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface">Projects Directory</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Manage and track all active and planned municipal initiatives.</p>
+</div>
+<div class="flex flex-wrap items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-on-surface hover:bg-slate-50 transition-colors font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                        Export CSV
+                    </button>
+<button class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-container transition-colors shadow-sm font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                        New Project
+                    </button>
+</div>
+</div>
+<!-- Filters Section -->
+<div class="bg-white p-4 rounded-xl card-shadow border border-slate-100 flex flex-col gap-4">
+<div class="flex flex-col md:flex-row gap-4 items-start md:items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider w-20 shrink-0">Status</span>
+<div class="flex flex-wrap gap-2">
+<button class="px-3 py-1.5 rounded-full border border-primary bg-blue-50 text-primary font-label-sm text-label-sm transition-colors cursor-pointer hover:bg-blue-100">All Statuses</button>
+<button class="px-3 py-1.5 rounded-full border border-slate-200 bg-white text-on-surface-variant font-label-sm text-label-sm transition-colors cursor-pointer hover:border-blue-300 hover:text-blue-700">Approved</button>
+<button class="px-3 py-1.5 rounded-full border border-slate-200 bg-white text-on-surface-variant font-label-sm text-label-sm transition-colors cursor-pointer hover:border-cyan-300 hover:text-cyan-700">Ongoing</button>
+<button class="px-3 py-1.5 rounded-full border border-slate-200 bg-white text-on-surface-variant font-label-sm text-label-sm transition-colors cursor-pointer hover:border-green-300 hover:text-green-700">Completed</button>
+<button class="px-3 py-1.5 rounded-full border border-slate-200 bg-white text-on-surface-variant font-label-sm text-label-sm transition-colors cursor-pointer hover:border-red-300 hover:text-red-700">Delayed</button>
+<button class="px-3 py-1.5 rounded-full border border-slate-200 bg-white text-on-surface-variant font-label-sm text-label-sm transition-colors cursor-pointer hover:bg-slate-50">Cancelled</button>
+</div>
+</div>
+<hr class="border-slate-100"/>
+<div class="flex flex-col md:flex-row gap-4 items-start md:items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider w-20 shrink-0">Category</span>
+<div class="flex flex-wrap gap-2">
+<button class="px-3 py-1.5 rounded-full border border-primary bg-blue-50 text-primary font-label-sm text-label-sm transition-colors cursor-pointer hover:bg-blue-100">All Categories</button>
+<button class="px-3 py-1.5 rounded-full border border-slate-200 bg-white text-on-surface-variant font-label-sm text-label-sm transition-colors cursor-pointer hover:bg-slate-50">Infrastructure</button>
+<button class="px-3 py-1.5 rounded-full border border-slate-200 bg-white text-on-surface-variant font-label-sm text-label-sm transition-colors cursor-pointer hover:bg-slate-50">Healthcare</button>
+<button class="px-3 py-1.5 rounded-full border border-slate-200 bg-white text-on-surface-variant font-label-sm text-label-sm transition-colors cursor-pointer hover:bg-slate-50">Renewable Energy</button>
+<button class="px-3 py-1.5 rounded-full border border-slate-200 bg-white text-on-surface-variant font-label-sm text-label-sm transition-colors cursor-pointer hover:bg-slate-50">Town Planning</button>
+</div>
+<div class="ml-auto mt-2 md:mt-0 flex items-center gap-2 text-primary font-label-sm cursor-pointer hover:underline">
+<span class="material-symbols-outlined text-[16px]">filter_list</span>
+                        More Filters
+                    </div>
+</div>
+</div>
+<!-- Data Table Section -->
+<div class="bg-white rounded-xl card-shadow border border-slate-100 overflow-hidden flex flex-col">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50 border-b border-slate-200">
+<th class="py-4 px-6 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider whitespace-nowrap">ID</th>
+<th class="py-4 px-6 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider min-w-[250px]">Project Title</th>
+<th class="py-4 px-6 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider whitespace-nowrap">Dept / Ward</th>
+<th class="py-4 px-6 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider whitespace-nowrap">Status</th>
+<th class="py-4 px-6 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider min-w-[150px]">Progress</th>
+<th class="py-4 px-6 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider whitespace-nowrap text-right">Budget (₹)</th>
+<th class="py-4 px-6 w-16"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<!-- Row 1: Ongoing -->
+<tr class="table-row-group hover:bg-slate-50/80 transition-colors group">
+<td class="py-4 px-6 font-body-sm text-on-surface-variant">PRJ-24-081</td>
+<td class="py-4 px-6">
+<div class="font-label-md text-on-surface">Godavari Riverfront Development Phase 2</div>
+<div class="font-body-sm text-on-surface-variant text-xs mt-1">Infrastructure • Last updated 2d ago</div>
+</td>
+<td class="py-4 px-6">
+<div class="font-body-sm text-on-surface">Public Works</div>
+<div class="font-body-sm text-on-surface-variant text-xs mt-1">Ward 04, 05</div>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-cyan-50 text-cyan-700 font-label-sm text-xs border border-cyan-100">
+<span class="w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
+                                        Ongoing
+                                    </span>
+</td>
+<td class="py-4 px-6">
+<div class="flex items-center gap-2">
+<div class="w-full bg-slate-100 rounded-full h-2">
+<div class="bg-cyan-500 h-2 rounded-full" style="width: 65%"></div>
+</div>
+<span class="font-label-sm text-xs text-on-surface-variant">65%</span>
+</div>
+</td>
+<td class="py-4 px-6 font-body-sm text-on-surface text-right whitespace-nowrap">
+                                    ₹ 45.2 Cr
+                                </td>
+<td class="py-4 px-4 text-right">
+<div class="flex justify-end gap-2 row-actions">
+<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded transition-colors" title="View Details">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Approved -->
+<tr class="table-row-group hover:bg-slate-50/80 transition-colors group">
+<td class="py-4 px-6 font-body-sm text-on-surface-variant">PRJ-24-092</td>
+<td class="py-4 px-6">
+<div class="font-label-md text-on-surface">Smart LED Streetlight Installation</div>
+<div class="font-body-sm text-on-surface-variant text-xs mt-1">Renewable Energy • Last updated 5d ago</div>
+</td>
+<td class="py-4 px-6">
+<div class="font-body-sm text-on-surface">Electrical Dept</div>
+<div class="font-body-sm text-on-surface-variant text-xs mt-1">Citywide (All)</div>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 font-label-sm text-xs border border-blue-100">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                                        Approved
+                                    </span>
+</td>
+<td class="py-4 px-6">
+<div class="flex items-center gap-2">
+<div class="w-full bg-slate-100 rounded-full h-2">
+<div class="bg-blue-500 h-2 rounded-full" style="width: 5%"></div>
+</div>
+<span class="font-label-sm text-xs text-on-surface-variant">5%</span>
+</div>
+</td>
+<td class="py-4 px-6 font-body-sm text-on-surface text-right whitespace-nowrap">
+                                    ₹ 12.8 Cr
+                                </td>
+<td class="py-4 px-4 text-right">
+<div class="flex justify-end gap-2 row-actions">
+<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded transition-colors" title="View Details">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Delayed -->
+<tr class="table-row-group hover:bg-slate-50/80 transition-colors group">
+<td class="py-4 px-6 font-body-sm text-on-surface-variant">PRJ-23-114</td>
+<td class="py-4 px-6">
+<div class="font-label-md text-on-surface">New Municipal Hospital Wing</div>
+<div class="font-body-sm text-on-surface-variant text-xs mt-1">Healthcare • Last updated 1w ago</div>
+</td>
+<td class="py-4 px-6">
+<div class="font-body-sm text-on-surface">Health &amp; Welfare</div>
+<div class="font-body-sm text-on-surface-variant text-xs mt-1">Ward 02</div>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-red-50 text-red-700 font-label-sm text-xs border border-red-100">
+<span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                        Delayed
+                                    </span>
+</td>
+<td class="py-4 px-6">
+<div class="flex items-center gap-2">
+<div class="w-full bg-slate-100 rounded-full h-2">
+<div class="bg-red-500 h-2 rounded-full" style="width: 42%"></div>
+</div>
+<span class="font-label-sm text-xs text-on-surface-variant">42%</span>
+</div>
+</td>
+<td class="py-4 px-6 font-body-sm text-on-surface text-right whitespace-nowrap">
+                                    ₹ 85.0 Cr
+                                </td>
+<td class="py-4 px-4 text-right">
+<div class="flex justify-end gap-2 row-actions">
+<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded transition-colors" title="View Details">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Completed -->
+<tr class="table-row-group hover:bg-slate-50/80 transition-colors group">
+<td class="py-4 px-6 font-body-sm text-on-surface-variant">PRJ-23-045</td>
+<td class="py-4 px-6">
+<div class="font-label-md text-on-surface">Central Park Redevelopment</div>
+<div class="font-body-sm text-on-surface-variant text-xs mt-1">Town Planning • Last updated 2w ago</div>
+</td>
+<td class="py-4 px-6">
+<div class="font-body-sm text-on-surface">Parks &amp; Rec</div>
+<div class="font-body-sm text-on-surface-variant text-xs mt-1">Ward 08</div>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-green-50 text-green-700 font-label-sm text-xs border border-green-100">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                        Completed
+                                    </span>
+</td>
+<td class="py-4 px-6">
+<div class="flex items-center gap-2">
+<div class="w-full bg-slate-100 rounded-full h-2">
+<div class="bg-green-500 h-2 rounded-full" style="width: 100%"></div>
+</div>
+<span class="font-label-sm text-xs text-on-surface-variant">100%</span>
+</div>
+</td>
+<td class="py-4 px-6 font-body-sm text-on-surface text-right whitespace-nowrap">
+                                    ₹ 5.6 Cr
+                                </td>
+<td class="py-4 px-4 text-right">
+<div class="flex justify-end gap-2 row-actions">
+<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded transition-colors" title="View Details">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5: Ongoing -->
+<tr class="table-row-group hover:bg-slate-50/80 transition-colors group">
+<td class="py-4 px-6 font-body-sm text-on-surface-variant">PRJ-24-012</td>
+<td class="py-4 px-6">
+<div class="font-label-md text-on-surface">Underground Drainage System Ext.</div>
+<div class="font-body-sm text-on-surface-variant text-xs mt-1">Infrastructure • Last updated 1d ago</div>
+</td>
+<td class="py-4 px-6">
+<div class="font-body-sm text-on-surface">Water &amp; Sanitation</div>
+<div class="font-body-sm text-on-surface-variant text-xs mt-1">Ward 11, 12</div>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-cyan-50 text-cyan-700 font-label-sm text-xs border border-cyan-100">
+<span class="w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
+                                        Ongoing
+                                    </span>
+</td>
+<td class="py-4 px-6">
+<div class="flex items-center gap-2">
+<div class="w-full bg-slate-100 rounded-full h-2">
+<div class="bg-cyan-500 h-2 rounded-full" style="width: 82%"></div>
+</div>
+<span class="font-label-sm text-xs text-on-surface-variant">82%</span>
+</div>
+</td>
+<td class="py-4 px-6 font-body-sm text-on-surface text-right whitespace-nowrap">
+                                    ₹ 32.1 Cr
+                                </td>
+<td class="py-4 px-4 text-right">
+<div class="flex justify-end gap-2 row-actions">
+<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded transition-colors" title="View Details">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Pagination/Footer -->
+<div class="bg-white border-t border-slate-200 px-6 py-4 flex items-center justify-between">
+<span class="font-body-sm text-on-surface-variant">Showing 1 to 5 of 42 projects</span>
+<div class="flex items-center gap-2">
+<button class="p-1.5 border border-slate-200 rounded-md text-slate-400 hover:text-primary hover:bg-slate-50 transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<div class="flex gap-1">
+<button class="w-8 h-8 flex items-center justify-center rounded-md bg-primary text-white font-label-sm">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-slate-100 text-on-surface font-label-sm transition-colors">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-slate-100 text-on-surface font-label-sm transition-colors">3</button>
+<span class="w-8 h-8 flex items-center justify-center text-on-surface-variant font-label-sm">...</span>
+<button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-slate-100 text-on-surface font-label-sm transition-colors">9</button>
+</div>
+<button class="p-1.5 border border-slate-200 rounded-md text-slate-600 hover:text-primary hover:bg-slate-50 transition-colors">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+<script src="js/app.js"></script>
+</body></html>

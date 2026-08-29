@@ -7,7 +7,10 @@ import Map, {
   NavigationControl, 
   FullscreenControl 
 } from 'react-map-gl/maplibre';
+import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
+maplibregl.setWorkerUrl(maplibreWorkerUrl);
 import { KOPARGAON_CENTER, DEFAULT_ZOOM } from '../../data/mockData';
 import { gisService } from '../../services/gisService';
 import { projectService } from '../../services/api';
@@ -280,34 +283,31 @@ const MapView = ({
   };
 
   const mapStyleUrl = useMemo(() => {
-    const tileUrls = baseTileSource === 'satellite' 
-      ? ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}']
-      : [
-          'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
-        ];
+    if (baseTileSource === 'satellite') {
+      return {
+        version: 8,
+        sources: {
+          'basemap-raster': {
+            type: 'raster',
+            tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+            tileSize: 256,
+            attribution: '&copy; Esri'
+          }
+        },
+        layers: [
+          {
+            id: 'basemap-raster-layer',
+            type: 'raster',
+            source: 'basemap-raster',
+            minzoom: 0,
+            maxzoom: 19
+          }
+        ]
+      };
+    }
     
-    return {
-      version: 8,
-      sources: {
-        'basemap-raster': {
-          type: 'raster',
-          tiles: tileUrls,
-          tileSize: 256,
-          attribution: baseTileSource === 'satellite' ? '&copy; Esri' : '&copy; OpenStreetMap contributors'
-        }
-      },
-      layers: [
-        {
-          id: 'basemap-raster-layer',
-          type: 'raster',
-          source: 'basemap-raster',
-          minzoom: 0,
-          maxzoom: 19
-        }
-      ]
-    };
+    // Default street map using Carto Voyager (reliable vector style)
+    return 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json';
   }, [baseTileSource]);
 
   const displayHospitals = (osmData?.hospitals && osmData.hospitals.length > 0) ? osmData.hospitals : (infraData?.hospitals || []);
@@ -365,7 +365,7 @@ const MapView = ({
           onMouseMove={handleMapHover}
           interactiveLayerIds={['wards-fill', 'cadastral-fill']}
           mapStyle={mapStyleUrl}
-          style={{ width: '100%', height: '100%' }}
+          style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, width: '100%', height: '100%' }}
         >
           <FullscreenControl position="top-right" />
 

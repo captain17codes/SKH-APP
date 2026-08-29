@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
@@ -36,7 +36,7 @@ import BusinessUpcomingDevelopmentPage from './pages/BusinessUpcomingDevelopment
 import BusinessDashboardLayout from './layouts/BusinessDashboardLayout';
 
 import DashboardPage from './pages/DashboardPage';
-import GisPage from './pages/GisPage';
+const GisPage = lazy(() => import('./pages/GisPage'));
 import ProjectsPage from './pages/ProjectsPage';
 import ProjectDetailsPage from './pages/ProjectDetailsPage';
 import LandUsePage from './pages/LandUsePage';
@@ -45,7 +45,7 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import AiPlannerPage from './pages/AiPlannerPage';
 import DocumentsPage from './pages/DocumentsPage';
 import SettingsPage from './pages/SettingsPage';
-import ScenarioPage from './pages/ScenarioPage';
+const ScenarioPage = lazy(() => import('./pages/ScenarioPage'));
 import NotFoundPage from './pages/NotFoundPage';
 
 import ProtectedRoute from './components/common/ProtectedRoute';
@@ -108,10 +108,10 @@ function App() {
             }>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/administrator/dashboard" element={<DashboardPage />} />
-              <Route path="/gis" element={<GisPage />} />
+              <Route path="/gis" element={<Suspense fallback={<div className="p-10 text-center font-bold text-slate-500">Loading GIS Engine...</div>}><GisPage /></Suspense>} />
               <Route path="/projects" element={<ProjectsPage />} />
               <Route path="/projects/:id" element={<ProjectDetailsPage />} />
-              <Route path="/scenarios" element={<ScenarioPage />} />
+              <Route path="/scenarios" element={<Suspense fallback={<div className="p-10 text-center font-bold text-slate-500">Loading Scenario Engine...</div>}><ScenarioPage /></Suspense>} />
               <Route path="/land-use" element={<LandUsePage />} />
               <Route path="/complaints" element={<ComplaintsPage />} />
               <Route path="/analytics" element={<AnalyticsPage />} />
