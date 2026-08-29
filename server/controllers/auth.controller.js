@@ -6,6 +6,7 @@ import { query } from '../config/db.js';
 import { OAuth2Client } from 'google-auth-library';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
+console.log('Google Client ID loaded:', !!process.env.GOOGLE_CLIENT_ID, 'Value starts with:', process.env.GOOGLE_CLIENT_ID ? process.env.GOOGLE_CLIENT_ID.substring(0, 10) + '...' : 'undefined');
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'dummy-client-id');
 
 // Demo users for fallback mode (no DB required)
@@ -205,6 +206,7 @@ export const googleVerify = async (req, res) => {
   if (!credential) return res.status(400).json({ error: 'Google credential required' });
 
   try {
+    console.log('[Auth] Verify ID Token. Audience being checked:', process.env.GOOGLE_CLIENT_ID);
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID,

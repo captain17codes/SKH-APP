@@ -158,14 +158,14 @@ export const getLandPlotTiles = async (req, res, next) => {
     // We intersect it with our plots (EPSG:4326 geometry).
     const sqlQuery = `
       WITH bounds AS (
-          SELECT ST_Transform(ST_TileEnvelope($1, $2, $3), 4326) AS geom
+          SELECT ST_TileEnvelope($1, $2, $3) AS geom
       ),
       mvtgeom AS (
           SELECT 
-              id, category, area_sqm, ward,
-              ST_AsMVTGeom(land_plots.geometry, bounds.geom, 4096, 256, true) AS geom
-          FROM public.land_plots, bounds
-          WHERE ST_Intersects(land_plots.geometry, bounds.geom)
+              id, category, calculated_area_sqm, ward,
+              ST_AsMVTGeom(ST_Transform(v_land_plots_enhanced.geometry, 3857), bounds.geom, 4096, 256, true) AS geom
+          FROM public.v_land_plots_enhanced, bounds
+          WHERE ST_Intersects(ST_Transform(v_land_plots_enhanced.geometry, 3857), bounds.geom)
       )
       SELECT ST_AsMVT(mvtgeom, 'kopargaon_cadastral', 4096, 'geom') AS tile
       FROM mvtgeom;
@@ -177,6 +177,7 @@ export const getLandPlotTiles = async (req, res, next) => {
     if (tileData) {
       res.setHeader('Content-Type', 'application/x-protobuf');
       res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
       res.send(tileData);
     } else {
       res.status(204).send();
