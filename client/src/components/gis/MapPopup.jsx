@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Users, Activity, AlertCircle, Building, Shield, ChevronRight } from 'lucide-react';
-import { StatusBadge } from '../common/Badge';
+import { StatusBadge, RiskBadge } from '../common/Badge';
 
 const MapPopup = ({ data, type }) => {
   if (!data) return null;
@@ -118,7 +118,8 @@ const MapPopup = ({ data, type }) => {
         <h4 className="text-xs font-bold text-slate-900 dark:text-white leading-tight">Cadastral Plot (Mahabhunakasha)</h4>
 
         <div className="text-xs text-slate-700 dark:text-slate-300 space-y-1 mt-2">
-          <p><span className="text-slate-500 dark:text-slate-400">Area:</span> {p.area_sqm} sq m</p>
+          {/* Displaying the exact calculated area from PostGIS UTM transformation */}
+          <p><span className="text-slate-500 dark:text-slate-400">Exact Calc Area:</span> <span className="font-bold text-emerald-600 dark:text-emerald-400">{p.calculated_area_sqm} sq m</span></p>
           <p><span className="text-slate-500 dark:text-slate-400">Ward:</span> <span className="font-semibold text-blue-600 dark:text-blue-400">{p.ward}</span></p>
         </div>
       </div>
