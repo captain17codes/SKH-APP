@@ -153,8 +153,24 @@ const ScenarioPage = () => {
       setWaterFeatures(waterRes.data);
       setBuildingsData(buildingsRes.data);
     } catch (error) {
-      console.error('[FLOOD 3D] Failed to load flood data:', error);
-      toast.error('Failed to load 3D flood data. Backend may still be deploying.');
+      console.warn('[FLOOD 3D] Backend API failed, falling back to static offline data on Vercel.');
+      try {
+        const [scenariosRes, summaryRes, facilitiesRes, waterRes, buildingsRes] = await Promise.all([
+          fetch('/data/flood/scenarios.json').then(r => r.json()),
+          fetch('/data/flood/summary.json').then(r => r.json()),
+          fetch('/data/flood/facility-elevations.json').then(r => r.json()),
+          fetch('/data/flood/water-features.json').then(r => r.json()),
+          fetch('/data/flood/buildings.json').then(r => r.json())
+        ]);
+        setFloodScenarios(scenariosRes);
+        setFloodSummary(summaryRes);
+        setFloodFacilities(facilitiesRes);
+        setWaterFeatures(waterRes);
+        setBuildingsData(buildingsRes);
+      } catch (fallbackError) {
+        console.error('[FLOOD 3D] Failed to load static flood data:', fallbackError);
+        toast.error('Failed to load 3D flood data.');
+      }
     } finally {
       setIsFloodLoading(false);
     }

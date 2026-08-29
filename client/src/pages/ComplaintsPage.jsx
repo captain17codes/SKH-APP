@@ -109,6 +109,18 @@ const ComplaintsPage = () => {
           {c.description || 'No detailed description provided by the citizen.'}
         </p>
       )}
+      
+      {/* Photo Thumbnail */}
+      {!isResolved && ((c.photos && c.photos.length > 0) || c.photoUrl) && (
+        <div className="mb-3 overflow-hidden rounded border border-outline-variant/30">
+          <img 
+            src={c.photos?.[0] || c.photoUrl} 
+            alt="Evidence" 
+            className="w-full h-24 object-cover hover:scale-105 transition-transform" 
+          />
+        </div>
+      )}
+      
       <div className={`flex justify-between items-end border-t ${isResolved ? 'border-outline-variant/30 pt-3 mt-3' : 'border-outline-variant/50 pt-3 mt-auto'}`}>
         <div className={`flex flex-col gap-1.5 ${isResolved ? 'opacity-80' : ''}`}>
           <div className="flex items-center gap-1.5 text-on-surface-variant">

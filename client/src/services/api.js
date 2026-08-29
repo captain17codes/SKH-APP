@@ -7,6 +7,8 @@ import {
   KOPARGAON_WARDS_GEOJSON
 } from '../data/mockData';
 
+import toast from 'react-hot-toast';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 const apiClient = axios.create({
@@ -18,13 +20,16 @@ const apiClient = axios.create({
   timeout: 60000 // Increased for Render cold starts
 });
 
-// Centralized Session Data Store (in-memory sync for single-page session consistency)
+// Centralized Session Data Store
 let liveProjects = [...MOCK_PROJECTS];
 let liveComplaints = [...MOCK_COMPLAINTS];
 let liveLandPlots = [...MOCK_LAND_PLOTS];
 let liveDocuments = [...MOCK_DOCUMENTS];
 
-// Axios Request Interceptor for Auth Token
+// Track degraded mode to avoid spamming toasts
+let isDegraded = false;
+
+// Axios Interceptors
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('kopargaon-auth-token');
   if (token) {
@@ -32,6 +37,18 @@ apiClient.interceptors.request.use((config) => {
   }
   return config;
 }, (error) => Promise.reject(error));
+
+apiClient.interceptors.response.use(
+  (response) => {
+    isDegraded = false;
+    return response;
+  },
+  (error) => {
+    // If backend is unreachable entirely
+    isDegraded = true;
+    return Promise.reject(error);
+  }
+);
 
 // Centralized API Services with live fallback store
 export const calculateClientProjectRisk = (project, complaints = liveComplaints) => {
@@ -251,7 +268,7 @@ export const projectService = {
         photosCount: 2,
         coordinates: projectData.coordinates || [19.8917 + (Math.random() - 0.5) * 0.02, 74.4789 + (Math.random() - 0.5) * 0.02],
         timeline: projectData.timeline || [
-          { date: new Date().toISOString().split('T')[0], title: 'Project Registered', status: 'completed' }
+          { date: new Date().toISOString().split('T')[0], title: 'Project Registered (Offline)', status: 'completed' }
         ]
       };
       liveProjects = [newProj, ...liveProjects];
@@ -292,7 +309,6 @@ export const complaintService = {
   create: async (complaintData) => {
     try {
       const res = await apiClient.post('/complaints', complaintData);
-      // Sync into live store so other components see the new entry
       liveComplaints = [res.data, ...liveComplaints];
       return res.data;
     } catch {

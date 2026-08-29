@@ -9,7 +9,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from '../context/LanguageContext';
-import { complaintService, aiPlannerService } from '../services/api';
+import apiClient, { complaintService, aiPlannerService } from '../services/api';
 import CitizenAiAssistant from '../components/ai/CitizenAiAssistant';
 import toast from 'react-hot-toast';
 
@@ -55,10 +55,14 @@ const CitizenDashboardPage = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   // Form & Upload States
-  const fileInputRef = useRef(null);
-  const cameraInputRef = useRef(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+
+  // WebRTC Camera State
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const streamRef = useRef(null);
 
   const [complaintForm, setComplaintForm] = useState({
     category: 'Road / Pothole',
@@ -134,43 +138,61 @@ const CitizenDashboardPage = () => {
     );
   };
 
-  // Image Selection Handler (Validation & Previews)
-  const handleImageSelect = (e) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
-
-    if (complaintForm.photos.length + files.length > 5) {
-      toast.error('Maximum 5 images allowed per complaint submission');
-      return;
-    }
-
-    const validFiles = [];
-    for (const file of files) {
-      if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type)) {
-        toast.error(`Invalid file format for ${file.name}. Only JPG, JPEG, PNG, WEBP are accepted.`);
-        continue;
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' } 
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
       }
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error(`File ${file.name} exceeds 10MB limit.`);
-        continue;
-      }
-      const previewUrl = URL.createObjectURL(file);
-      validFiles.push({ file, previewUrl, name: file.name });
+      setIsCameraActive(true);
+    } catch (err) {
+      toast.error('Failed to access camera. Please allow camera permissions.');
+      console.error(err);
     }
+  };
 
-    if (validFiles.length > 0) {
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setIsCameraActive(false);
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      if (complaintForm.photos.length >= 5) {
+        toast.error('Maximum 5 images allowed');
+        stopCamera();
+        return;
+      }
+
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      
       setComplaintForm(prev => ({
         ...prev,
-        photos: [...prev.photos, ...validFiles]
+        photos: [...prev.photos, { previewUrl: dataUrl, name: `live_capture_${Date.now()}.jpg` }]
       }));
-      toast.success(`${validFiles.length} photo(s) added for preview`);
+      toast.success('Live photo captured!');
+      stopCamera();
     }
   };
 
   const handleRemovePhoto = (index) => {
     setComplaintForm(prev => {
       const updated = [...prev.photos];
-      URL.revokeObjectURL(updated[index].previewUrl);
+      if (updated[index].previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(updated[index].previewUrl);
+      }
       updated.splice(index, 1);
       return { ...prev, photos: updated };
     });
@@ -211,38 +233,42 @@ const CitizenDashboardPage = () => {
       aiObs = 'AI Visual Analysis: Damaged Luminaire & Overhead Fitting — Darkness Risk Rating: Medium.';
     }
 
-    const newTicket = {
-      id: `CMP-2026-${Math.floor(9000 + Math.random() * 999)}`,
-      userId: user?.id || null,
-      citizenName: user?.name || 'Citizen',
+    const payload = {
+      title: `${complaintForm.category} reported at ${complaintForm.ward}`,
       category: complaintForm.category,
       ward: complaintForm.ward,
       location: complaintForm.location,
-      address: complaintForm.address,
-      latitude: complaintForm.latitude,
-      longitude: complaintForm.longitude,
-      status: 'Submitted',
-      createdAt: new Date().toISOString(),
-      reportedDate: 'Just Now',
+      coordinates: [complaintForm.latitude, complaintForm.longitude],
       description: complaintForm.description,
+      reporterName: user?.name || 'Citizen',
+      reporterContact: user?.phone || '+91 9999900000',
+      imageBase64: finalPhotoUrls[0] && finalPhotoUrls[0].startsWith('data:image') ? finalPhotoUrls[0] : null,
+      
+      // Additional metadata for the frontend state
+      address: complaintForm.address,
       photos: finalPhotoUrls,
       aiObservation: aiObs,
       officer: 'Dispatching to Municipal Department Cell',
-      sla: '72 hrs SLA'
+      sla: '72 hrs SLA',
+      userId: user?.id || null,
+      citizenName: user?.name || 'Citizen'
     };
 
     try {
-      await complaintService.create(newTicket);
+      const res = await apiClient.post('/complaints', payload);
+      const savedTicket = res.data;
+      
+      setMyComplaints(prev => [savedTicket, ...prev]);
+      setLastSubmittedComplaint(savedTicket);
+      setIsSubmitting(false);
+      setUploadProgress(100);
+
+      toast.success(`Complaint Submitted! Ticket ID: ${savedTicket.id}`);
     } catch (err) {
       console.warn('Backend sync warning:', err);
+      toast.error('Failed to submit complaint. ' + (err.response?.data?.error || err.message));
+      setIsSubmitting(false);
     }
-
-    setMyComplaints(prev => [newTicket, ...prev]);
-    setLastSubmittedComplaint(newTicket);
-    setIsSubmitting(false);
-    setUploadProgress(100);
-
-    toast.success(`Complaint Submitted! Ticket ID: ${newTicket.id}`);
   };
 
   const handleAiSend = async (e) => {
@@ -550,52 +576,47 @@ const CitizenDashboardPage = () => {
                       />
                     </div>
 
-                    {/* 3. Upload Photo */}
+                    {/* 3. Live Capture Photo */}
                     <div className="space-y-2">
                       <label className="block font-bold text-slate-800 dark:text-slate-200">
-                        3. {t('uploadPhotos')}
+                        3. Live Ground Photos (Max 5 Images)
                       </label>
 
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleImageSelect}
-                        accept="image/jpeg,image/jpg,image/png,image/webp"
-                        multiple
-                        className="hidden"
-                      />
-                      <input
-                        type="file"
-                        ref={cameraInputRef}
-                        onChange={handleImageSelect}
-                        accept="image/jpeg,image/jpg,image/png,image/webp"
-                        capture="environment"
-                        className="hidden"
-                      />
-
-                      <div className="border-2 border-dashed border-slate-300 dark:border-slate-800 hover:border-emerald-500 rounded-xl p-5 text-center bg-slate-50 dark:bg-slate-950 transition-colors">
-                        <div className="flex justify-center items-center space-x-3 mb-2">
+                      <div className={`border-2 transition-colors rounded-xl p-5 text-center ${isCameraActive ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-dashed border-slate-300 dark:border-slate-800 hover:border-emerald-500 bg-slate-50 dark:bg-slate-950'}`}>
+                        {/* Camera View */}
+                        <div className={`relative w-full rounded-lg overflow-hidden bg-black flex items-center justify-center mb-4 ${isCameraActive ? 'aspect-video' : 'hidden'}`}>
+                          <video 
+                            ref={videoRef} 
+                            autoPlay 
+                            playsInline 
+                            className="w-full h-full object-cover"
+                          />
+                          <canvas ref={canvasRef} className="hidden" />
                           <button
                             type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold flex items-center space-x-1.5 shadow-sm"
+                            onClick={capturePhoto}
+                            className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white text-black px-6 py-2 rounded-full font-bold shadow-lg hover:scale-105 active:scale-95 transition-transform flex items-center gap-2"
                           >
-                            <ImageIcon className="w-4 h-4" />
-                            <span>{t('browseGallery')}</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => cameraInputRef.current?.click()}
-                            className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-bold flex items-center space-x-1.5 shadow-sm"
-                          >
-                            <Camera className="w-4 h-4" />
-                            <span>{t('takePhoto')}</span>
+                            <span className="w-4 h-4 rounded-full bg-red-500 animate-pulse"></span>
+                            SNAP PHOTO
                           </button>
                         </div>
 
+                        {!isCameraActive && complaintForm.photos.length < 5 && (
+                          <div className="flex justify-center items-center space-x-3 mb-2">
+                            <button
+                              type="button"
+                              onClick={startCamera}
+                              className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-bold flex items-center space-x-2 shadow-sm transition-all"
+                            >
+                              <Camera className="w-4 h-4" />
+                              <span>Start Live Photo Capture</span>
+                            </button>
+                          </div>
+                        )}
+
                         <p className="text-[11px] text-slate-500">
-                          {complaintForm.photos.length}/5 {t('photosAttached')}
+                          {complaintForm.photos.length}/5 photos captured
                         </p>
                       </div>
 
