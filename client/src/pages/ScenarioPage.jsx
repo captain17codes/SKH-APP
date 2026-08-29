@@ -153,14 +153,14 @@ const ScenarioPage = () => {
       setWaterFeatures(waterRes.data);
       setBuildingsData(buildingsRes.data);
     } catch (error) {
-      console.warn('[FLOOD 3D] Backend API failed, falling back to static offline data on Vercel.');
+      console.warn('[FLOOD 3D] Backend API failed, falling back to static offline data bundled in Vite.');
       try {
         const [scenariosRes, summaryRes, facilitiesRes, waterRes, buildingsRes] = await Promise.all([
-          fetch('/data/flood/scenarios.json').then(r => r.json()),
-          fetch('/data/flood/summary.json').then(r => r.json()),
-          fetch('/data/flood/facility-elevations.json').then(r => r.json()),
-          fetch('/data/flood/water-features.json').then(r => r.json()),
-          fetch('/data/flood/buildings.json').then(r => r.json())
+          import('../data/flood/scenarios.json').then(m => m.default),
+          import('../data/flood/summary.json').then(m => m.default),
+          import('../data/flood/facility-elevations.json').then(m => m.default),
+          import('../data/flood/water-features.json').then(m => m.default),
+          import('../data/flood/buildings.json').then(m => m.default)
         ]);
         setFloodScenarios(scenariosRes);
         setFloodSummary(summaryRes);
@@ -168,7 +168,7 @@ const ScenarioPage = () => {
         setWaterFeatures(waterRes);
         setBuildingsData(buildingsRes);
       } catch (fallbackError) {
-        console.error('[FLOOD 3D] Failed to load static flood data:', fallbackError);
+        console.error('[FLOOD 3D] Failed to load static bundled flood data:', fallbackError);
         toast.error('Failed to load 3D flood data.');
       }
     } finally {
