@@ -73,66 +73,26 @@ const CitizenDashboardPage = () => {
 
   const [lastSubmittedComplaint, setLastSubmittedComplaint] = useState(null);
 
-  // Live My Complaints List
-  const [myComplaints, setMyComplaints] = useState([
-    {
-      id: 'CMP-2026-8901',
-      userId: 'USR-CITIZEN-01',
-      citizenName: 'Aniket Sharma',
-      category: 'Road / Pothole',
-      ward: 'Ward 3 - Station Area',
-      location: 'Station Road, Kopargaon',
-      address: 'Station Road, opposite SBI ATM, Ward 3',
-      latitude: 19.8916,
-      longitude: 74.4789,
-      status: 'In Progress',
-      createdAt: '2026-08-10T09:30:00.000Z',
-      reportedDate: '10 Aug 2026',
-      description: 'Deep pothole causing severe traffic congestion and water logging during rains.',
-      photos: ['https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600&auto=format&fit=crop&q=80'],
-      aiObservation: 'AI Visual Analysis: Pothole & Road Base Fracture Detected — Estimated Depth: 15cm, Hazard Level: High.',
-      officer: 'Er. S. Deshmukh (PWD)',
-      sla: '24 hrs remaining'
-    },
-    {
-      id: 'CMP-2026-8902',
-      userId: 'USR-CITIZEN-01',
-      citizenName: 'Aniket Sharma',
-      category: 'Water Supply',
-      ward: 'Ward 2 - Tilak Road',
-      location: 'Tilak Road Lane 4',
-      address: 'Tilak Road Lane 4, Ward 2',
-      latitude: 19.8882,
-      longitude: 74.4741,
-      status: 'Submitted',
-      createdAt: '2026-08-11T14:15:00.000Z',
-      reportedDate: '11 Aug 2026',
-      description: 'Drinking water pipeline joint leak causing low pressure to surrounding houses.',
-      photos: ['https://images.unsplash.com/photo-1541888946425-d0fbb186a5b7?w=600&auto=format&fit=crop&q=80'],
-      aiObservation: 'AI Visual Analysis: Pressurized Water Main Leakage & Puddling Detected.',
-      officer: 'Water Supply Dept',
-      sla: '48 hrs remaining'
-    },
-    {
-      id: 'CMP-2026-8903',
-      userId: 'USR-CITIZEN-01',
-      citizenName: 'Aniket Sharma',
-      category: 'Garbage',
-      ward: 'Ward 1 - Market Yard',
-      location: 'Market Yard Gate #2',
-      address: 'Market Yard Entry, Ward 1',
-      latitude: 19.8942,
-      longitude: 74.4755,
-      status: 'Resolved',
-      createdAt: '2026-08-04T08:00:00.000Z',
-      reportedDate: '04 Aug 2026',
-      description: 'Commercial vegetable waste dump cleared by municipal sanitation team.',
-      photos: ['https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=600&auto=format&fit=crop&q=80'],
-      aiObservation: 'AI Visual Analysis: Organic Waste Accumulation — Resolved.',
-      officer: 'Sanitation Cell',
-      sla: 'Completed'
-    }
-  ]);
+  // Live My Complaints List (isolated per authenticated user)
+  const [myComplaints, setMyComplaints] = useState([]);
+
+  useEffect(() => {
+    const fetchUserComplaints = async () => {
+      if (!user) {
+        setMyComplaints([]);
+        return;
+      }
+      try {
+        const data = await complaintService.getMyComplaints();
+        if (Array.isArray(data) && data.length > 0) {
+          setMyComplaints(data);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch user complaints:', err);
+      }
+    };
+    fetchUserComplaints();
+  }, [user]);
 
   // AI Assistant Chat State
   const [aiPrompt, setAiPrompt] = useState('');
@@ -253,8 +213,8 @@ const CitizenDashboardPage = () => {
 
     const newTicket = {
       id: `CMP-2026-${Math.floor(9000 + Math.random() * 999)}`,
-      userId: user?.id || 'USR-CITIZEN-01',
-      citizenName: user?.name || 'Aniket Sharma',
+      userId: user?.id || null,
+      citizenName: user?.name || 'Citizen',
       category: complaintForm.category,
       ward: complaintForm.ward,
       location: complaintForm.location,

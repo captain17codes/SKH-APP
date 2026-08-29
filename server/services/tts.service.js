@@ -199,10 +199,10 @@ class TtsService {
       fallbacks = ['hi-IN-Wavenet-A', 'hi-IN-Wavenet-B', 'hi-IN-Standard-A'];
       ssmlGender = 'FEMALE';
     } else {
-      // English Male Voice
-      primaryVoice = 'en-IN-Neural2-B';
-      fallbacks = ['en-IN-Wavenet-B', 'en-IN-Standard-B', 'en-IN-Neural2-A'];
-      ssmlGender = 'MALE';
+      // English Female Voice
+      primaryVoice = 'en-IN-Neural2-A';
+      fallbacks = ['en-IN-Wavenet-A', 'en-IN-Standard-A', 'en-US-Neural2-F', 'en-US-Wavenet-F'];
+      ssmlGender = 'FEMALE';
     }
 
     const voicesToTry = [primaryVoice, ...fallbacks];

@@ -584,13 +584,13 @@ export const MOCK_DOCUMENTS = [
   }
 ];
 
-// AI Suggested Prompts & Responses
+// AI Suggested Prompts & Responses (Derived from Kopargaon CSV Knowledge Base)
 export const AI_SUGGESTED_PROMPTS = [
-  "Find suitable hospital location in Ward 3",
-  "Optimize road network to reduce Sangamner Naka traffic congestion",
-  "Analyze unused land along Godavari River bank",
-  "Suggest green zones and eco-parks for Kopargaon",
-  "Prioritize development projects based on budget efficiency"
+  "What is the population of Kopargaon?",
+  "Which ward needs the most development?",
+  "Which wards have water supply problems?",
+  "How many streetlights are mapped?",
+  "How many smart city projects are active?"
 ];
 
 export const AI_MOCK_RESPONSES = {

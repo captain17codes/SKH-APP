@@ -20,10 +20,16 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Normalize: DB stores 'Admin' but frontend routes use 'Administrator'
-  const normalizedRole = user.role === 'Admin' ? 'Administrator' : user.role;
+  // Normalize role matching (Admin <-> Administrator)
+  const userRole = user.role || '';
+  const normalizedUserRole = userRole === 'Admin' ? 'Administrator' : userRole;
 
-  if (allowedRoles && !allowedRoles.includes(normalizedRole)) {
+  const hasPermission = !allowedRoles || allowedRoles.some(role => {
+    const normalizedAllowed = role === 'Admin' ? 'Administrator' : role;
+    return userRole === role || normalizedUserRole === normalizedAllowed;
+  });
+
+  if (!hasPermission) {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center text-white">
         <ShieldAlert className="w-16 h-16 text-rose-500 mb-4" />

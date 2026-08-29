@@ -79,6 +79,7 @@ const BusinessAiAssistant = () => {
 
   const chatEndRef = useRef(null);
   const audioRef = useRef(null);
+  const recognitionRef = useRef(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -150,15 +151,34 @@ const BusinessAiAssistant = () => {
           utterance.rate = 0.95;
           utterance.pitch = 1;
 
+          const femaleKeywords = ['female', 'zira', 'heera', 'jenny', 'samantha', 'veena', 'kalpana', 'hazel', 'aria', 'natasha', 'victoria', 'karen', 'google us english', 'google uk english female', 'microsoft zira'];
+          const maleKeywords = ['male', 'ravi', 'david', 'mark', 'george', 'james', 'richard'];
+
           const voices = window.speechSynthesis.getVoices();
           if (voices && voices.length > 0) {
-            let match = voices.find(v => v.lang === cleanLang || v.lang.replace('_', '-').toLowerCase() === cleanLang.toLowerCase());
-            if (!match && isMarathi) match = voices.find(v => v.lang.toLowerCase().startsWith('mr'));
+            let match = voices.find(v => {
+              const langMatch = (v.lang === cleanLang || v.lang.replace('_', '-').toLowerCase() === cleanLang.toLowerCase());
+              const nameLower = v.name.toLowerCase();
+              const isFemale = femaleKeywords.some(kw => nameLower.includes(kw));
+              const isMale = maleKeywords.some(kw => nameLower.includes(kw));
+              return langMatch && (isFemale || !isMale);
+            });
+
             if (!match && isMarathi) {
-              match = voices.find(v => v.lang.toLowerCase().startsWith('hi')) || 
-                      voices.find(v => v.name.toLowerCase().includes('hindi') || v.name.toLowerCase().includes('heera'));
+              match = voices.find(v => v.lang.toLowerCase().startsWith('mr') || v.lang.toLowerCase().startsWith('hi'));
             }
-            if (!match) match = voices.find(v => v.lang.toLowerCase().startsWith('en-in') || v.name.toLowerCase().includes('india'));
+
+            if (!match) {
+              match = voices.find(v => {
+                const nameLower = v.name.toLowerCase();
+                return femaleKeywords.some(kw => nameLower.includes(kw)) && !maleKeywords.some(kw => nameLower.includes(kw));
+              });
+            }
+
+            if (!match) {
+              match = voices.find(v => !maleKeywords.some(kw => v.name.toLowerCase().includes(kw)));
+            }
+
             if (match) utterance.voice = match;
           }
 
@@ -263,11 +283,11 @@ const BusinessAiAssistant = () => {
   };
 
   const suggestedQueries = [
-    "Where is the best commercial plot for a warehouse?",
-    "वॉर्ड 4 मध्ये दुकानासाठी मोकळी जागा कुठे आहे?",
-    "Find plots with high footfall in Kopargaon",
-    "Commercial land availability near Bypass road",
-    "Show upcoming commercial projects"
+    "Where should commercial development be encouraged?",
+    "Which ward has the highest population?",
+    "What is the solar potential of Kopargaon?",
+    "Where is mixed-use development suitable?",
+    "How many smart city projects are active?"
   ];
 
   const handleSend = async (queryText, overrideLang) => {
@@ -317,64 +337,85 @@ const BusinessAiAssistant = () => {
 
   const handleVoiceInput = () => {
     unlockAudioEngine();
+
+    // Stop listening if mic button clicked while already listening
+    if (isListening && recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {}
+      setIsListening(false);
+      toast.dismiss('voice-toast');
+      return;
+    }
+
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      toast.error('Voice input is not supported in this browser.');
+      toast.error('Voice input is not supported in this browser.', { id: 'voice-toast' });
       return;
     }
 
     stopSpeaking();
 
-    const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    
-    // Determine recognition language: Default to en-IN for universal English & civic term recognition
-    // If the active language is explicitly Marathi or Hindi, use that specific locale
-    let sttLang = 'en-IN';
-    if (language === 'mr' || language === 'mr-IN') {
-      sttLang = 'mr-IN';
-    } else if (language === 'hi' || language === 'hi-IN') {
-      sttLang = 'hi-IN';
-    }
+    try {
+      const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
+      recognition.continuous = false;
+      recognition.interimResults = false;
 
-    recognition.lang = sttLang;
-    recognition.interimResults = false;
-
-    recognition.onstart = () => {
-      setIsListening(true);
-      const displayLang = sttLang === 'mr-IN' ? 'मराठी' : (sttLang === 'hi-IN' ? 'हिंदी' : 'English');
-      toast.loading(`🎤 Listening... (${displayLang})`, { id: 'voice-toast' });
-    };
-
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      if (!transcript.trim()) {
-        toast.error('No speech detected.', { id: 'voice-toast' });
-        return;
+      let sttLang = 'en-IN';
+      if (language === 'mr' || language === 'mr-IN') {
+        sttLang = 'mr-IN';
+      } else if (language === 'hi' || language === 'hi-IN') {
+        sttLang = 'hi-IN';
       }
 
-      // Detect language from the actual recognized text without translating
-      const detectedLang = detectLanguageFromText(transcript);
-      console.log(`🎤 [STT TRANSCRIPT]: "${transcript}" | Detected Language: ${detectedLang}`);
-      setLanguage(detectedLang);
-      setInput(transcript);
+      recognition.lang = sttLang;
 
-      toast.success(`✅ "${transcript}"`, { id: 'voice-toast' });
-      // Pass the raw recognized text as-is to the existing AI query function
-      setTimeout(() => handleSend(transcript, detectedLang), 200);
-    };
+      recognition.onstart = () => {
+        setIsListening(true);
+        const displayLang = sttLang === 'mr-IN' ? 'मराठी' : (sttLang === 'hi-IN' ? 'हिंदी' : 'English');
+        toast.loading(`🎤 Listening... (${displayLang})`, { id: 'voice-toast' });
+      };
 
-    recognition.onerror = (event) => {
-      console.error('Speech recognition error:', event.error);
-      toast.error(`Speech recognition failed: ${event.error}`, { id: 'voice-toast' });
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        if (!transcript || !transcript.trim()) {
+          toast.error("Sorry, I couldn't hear that. Please try again.", { id: 'voice-toast' });
+          return;
+        }
+
+        const detectedLang = detectLanguageFromText(transcript);
+        console.log(`🎤 [STT TRANSCRIPT]: "${transcript}" | Detected Language: ${detectedLang}`);
+        setLanguage(detectedLang);
+        setInput(transcript);
+
+        toast.success(`✅ Speech captured! Review text in input box and click Send.`, { id: 'voice-toast', duration: 4000 });
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+          toast.error('Microphone permission is required for voice input.', { id: 'voice-toast' });
+        } else if (event.error === 'no-speech') {
+          toast.error("Sorry, I couldn't hear that. Please try again.", { id: 'voice-toast' });
+        } else if (event.error === 'audio-capture') {
+          toast.error('No microphone was found on your device.', { id: 'voice-toast' });
+        } else {
+          toast.error(`Voice input error: ${event.error}`, { id: 'voice-toast' });
+        }
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognition.start();
+    } catch (err) {
+      console.error('Failed to start speech recognition:', err);
       setIsListening(false);
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognition.start();
+      toast.error(`Failed to access microphone: ${err.message}`, { id: 'voice-toast' });
+    }
   };
 
   const handleClearHistory = () => {

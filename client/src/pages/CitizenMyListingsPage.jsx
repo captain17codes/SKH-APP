@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 
 const CitizenMyListingsPage = () => {
   const auth = useAuth() || {};
-  const user = auth.user || { name: 'Aniket Sharma', id: 'USR-CITIZEN-01' };
+  const user = auth.user;
   const navigate = useNavigate();
 
   const [myProperties, setMyProperties] = useState([]);
@@ -19,9 +19,14 @@ const CitizenMyListingsPage = () => {
   const fetchMyProperties = async () => {
     setLoading(true);
     try {
-      const sellerId = user?.id || 'USR-CITIZEN-01';
+      const sellerId = user?.id || null;
+      if (!sellerId) {
+        setMyProperties([]);
+        setLoading(false);
+        return;
+      }
       const data = await propertyService.getMyListings(sellerId);
-      setMyProperties(data);
+      setMyProperties(data || []);
     } catch (e) {
       console.error('Failed to load citizen properties:', e);
     } finally {
