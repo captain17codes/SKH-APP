@@ -8,6 +8,9 @@ export default defineConfig({
     react(),
     tailwindcss()
   ],
+  resolve: {
+    dedupe: ['react', 'react-dom']
+  },
   optimizeDeps: {
     include: ['react-map-gl/maplibre', 'maplibre-gl']
   }

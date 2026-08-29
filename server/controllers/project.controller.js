@@ -108,14 +108,39 @@ let fallbackProjects = [
   }
 ];
 
-const fetchRawProjects = async () => {
+// Keep a copy of the default projects for recovery
+const defaultProjects = JSON.parse(JSON.stringify(fallbackProjects));
+
+export const projectStoreController = {
+  getHealth: () => {
+    return {
+      store: 'projects',
+      count: fallbackProjects.length,
+      status: fallbackProjects.length === 0 ? 'wiped' : 'healthy'
+    };
+  },
+  wipe: () => {
+    fallbackProjects = [];
+    return true;
+  },
+  restore: () => {
+    fallbackProjects = JSON.parse(JSON.stringify(defaultProjects));
+    return true;
+  }
+};
+
+const fetchRawProjects = async (res) => {
   try {
     const isDb = await postgresService.isDatabaseAvailable();
     if (isDb) {
       const dbProjects = await postgresService.getProjects();
-      if (dbProjects && dbProjects.length > 0) return dbProjects;
+      if (dbProjects && dbProjects.length > 0) {
+        if (res) res.setHeader('X-Data-Source', 'postgres');
+        return dbProjects;
+      }
     }
   } catch {}
+  if (res) res.setHeader('X-Data-Source', 'fallback-memory');
   return fallbackProjects;
 };
 
@@ -123,7 +148,7 @@ export const projectController = {
   // Get all projects enriched with AI Risk analysis
   getAllProjects: async (req, res) => {
     try {
-      const rawList = await fetchRawProjects();
+      const rawList = await fetchRawProjects(res);
       const enriched = await Promise.all(
         rawList.map(async (p) => {
           const riskAnalysis = await projectRiskService.calculateRisk(p);
@@ -145,7 +170,7 @@ export const projectController = {
   getProjectById: async (req, res) => {
     try {
       const { id } = req.params;
-      const rawList = await fetchRawProjects();
+      const rawList = await fetchRawProjects(res);
       const project = rawList.find(p => p.id.toLowerCase() === id.toLowerCase());
 
       if (!project) {

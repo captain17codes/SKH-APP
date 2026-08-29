@@ -1,5 +1,6 @@
 import { complaintPriorityService } from '../services/complaintPriorityService.js';
 import { smsService } from '../services/sms.service.js';
+import { verificationService } from '../services/verification.service.js';
 
 // In-memory store (no DB required; swapped with PostGIS queries when available)
 let complaints = [
@@ -113,6 +114,27 @@ let complaints = [
   }
 ];
 
+// Keep a copy of the default complaints for recovery
+const defaultComplaints = JSON.parse(JSON.stringify(complaints));
+
+export const complaintStoreController = {
+  getHealth: () => {
+    return {
+      store: 'complaints',
+      count: complaints.length,
+      status: complaints.length === 0 ? 'wiped' : 'healthy'
+    };
+  },
+  wipe: () => {
+    complaints = [];
+    return true;
+  },
+  restore: () => {
+    complaints = JSON.parse(JSON.stringify(defaultComplaints));
+    return true;
+  }
+};
+
 // Secure storage for sensitive contact info, keyed by complaint ID
 const secureContacts = new Map();
 // Pre-populate secureContacts for dummy data
@@ -149,6 +171,7 @@ export const getAllComplaints = (req, res) => {
   if (ward) filtered = filtered.filter(c => c.ward && c.ward.includes(ward));
   if (priority) filtered = filtered.filter(c => c.priority === priority.toUpperCase());
 
+  res.setHeader('X-Data-Source', 'fallback-memory');
   res.json(filtered.map(sanitizeComplaint));
 };
 
@@ -174,11 +197,19 @@ export const createComplaint = async (req, res) => {
   try {
     const {
       title, category, ward, location, coordinates, description,
-      reporterName, reporterContact, isAnonymous, verificationToken
+      reporterName, reporterContact, isAnonymous, verificationToken, imageBase64
     } = req.body;
 
-    if (!title || !category || !location) {
-      return res.status(400).json({ error: 'title, category, and location are required' });
+    if (!title || !category || !location || !coordinates) {
+      return res.status(400).json({ error: 'title, category, location, and GPS coordinates are strictly required' });
+    }
+
+    const lat = coordinates[0];
+    const lng = coordinates[1];
+
+    // 1. GIS Sanity Check
+    if (!verificationService.checkGisSanity(lat, lng)) {
+      return res.status(403).json({ error: 'Complaint rejected: GPS coordinates are outside Kopargaon municipal limits.' });
     }
 
     let verifiedPhone = null;
@@ -188,12 +219,29 @@ export const createComplaint = async (req, res) => {
     } else if (!req.user && verificationToken) {
       return res.status(401).json({ error: 'Invalid or missing OTP verification token. Please verify your mobile number.' });
     }
+    
+    const contact = verifiedPhone || (req.user ? req.user.phone : reporterContact);
+    const ip = req.ip || req.connection.remoteAddress;
+
+    // 2. Burst Clustering Check
+    const isBurst = verificationService.checkBurstClustering(contact, ip);
+
+    // 3. pHash Image Check
+    let pHash = null;
+    if (imageBase64) {
+      pHash = await verificationService.generatePHash(imageBase64);
+      if (verificationService.checkDuplicateImage(pHash)) {
+        return res.status(409).json({ error: 'Complaint rejected: Duplicate image detected in our database.' });
+      }
+    }
+
+    // 4. Corroboration Check
+    const isCorroborated = verificationService.checkCorroboration(lat, lng);
+
+    let verificationStatus = isCorroborated ? 'Corroborated' : (isBurst ? 'Suspicious' : 'Pending');
 
     // Run AI priority scoring
-    const lat = coordinates ? coordinates[0] : null;
-    const lng = coordinates ? coordinates[1] : null;
-
-    let aiResult = { priority: 'MEDIUM', score: 50, reasons: ['Default scoring applied — coordinates not provided'] };
+    let aiResult = { priority: 'MEDIUM', score: 50, reasons: [] };
     if (lat !== null && lng !== null) {
       try {
         aiResult = await complaintPriorityService.calculatePriority(category, description || '', lat, lng);
@@ -213,26 +261,33 @@ export const createComplaint = async (req, res) => {
       ward: ward || 'Unknown Ward',
       location,
       coordinates: coordinates || null,
-      reportedDate: new Date().toISOString().split('T')[0],
+      reportedDate: new Date().toISOString(), // Strictly enforced server timestamp
       status: 'Pending',
+      verification_status: verificationStatus,
       priority: aiResult.priority,
       aiScore: aiResult.score,
       aiReasons: aiResult.reasons,
       reporterName: isAnonymous ? 'Anonymous Citizen' : (authenticatedUser ? authenticatedUser.name : (reporterName || 'Anonymous')),
-      reporterContact: isAnonymous ? '[REDACTED]' : (verifiedPhone || (authenticatedUser ? authenticatedUser.phone : null) || reporterContact || 'N/A'),
+      reporterContact: isAnonymous ? '[REDACTED]' : (contact || 'N/A'),
       isAnonymous: !!isAnonymous,
       description: description || '',
       assignedDept: resolveDept(category),
+      photos: imageBase64 ? [imageBase64] : [], // Fix: Ensure image is persisted to memory DB
       upvotes: 1
     };
 
-    // Store actual secure data separately
+    complaints.unshift(complaint);
+    
+    // 5. Log for future checks and store hash
+    verificationService.logComplaint(contact, ip, lat, lng);
+    if (pHash) {
+      verificationService.storeHash(newId, pHash);
+    }
     secureContacts.set(newId, {
       reporterContact: verifiedPhone || (authenticatedUser ? authenticatedUser.phone : null) || reporterContact || 'N/A',
       isAnonymous: !!isAnonymous
     });
 
-    complaints.unshift(complaint);
     res.status(201).json(sanitizeComplaint(complaint));
   } catch (e) {
     console.error('[Complaint Controller] createComplaint error:', e);

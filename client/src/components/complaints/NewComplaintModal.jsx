@@ -39,6 +39,14 @@ const NewComplaintModal = ({ isOpen, onClose, onSubmit }) => {
     isAnonymous: false
   });
   const [coordinates, setCoordinates] = useState(null);
+  const [imageBase64, setImageBase64] = useState(null);
+  
+  // WebRTC Camera State
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const streamRef = useRef(null);
+
   const [locating, setLocating] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [aiResult, setAiResult] = useState(null); // { priority, aiScore, aiReasons }
@@ -63,16 +71,51 @@ const NewComplaintModal = ({ isOpen, onClose, onSubmit }) => {
         toast.success(`📍 Location captured: ${lat.toFixed(5)}, ${lng.toFixed(5)}`);
         setLocating(false);
       },
-      () => {
-        // Fallback to Kopargaon center with slight random offset for demo
-        const lat = 19.8917 + (Math.random() - 0.5) * 0.02;
-        const lng = 74.4789 + (Math.random() - 0.5) * 0.02;
-        setCoordinates([lat, lng]);
-        toast('Using approximate Kopargaon location (GPS unavailable)', { icon: '⚠️' });
+      (err) => {
+        toast.error('Failed to get GPS. Make sure location is allowed in browser settings.');
         setLocating(false);
       },
-      { timeout: 8000 }
+      { timeout: 8000, enableHighAccuracy: true }
     );
+  };
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' } 
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      setIsCameraActive(true);
+      setImageBase64(null); // Clear previous if any
+    } catch (err) {
+      toast.error('Failed to access camera. Please allow camera permissions.');
+      console.error(err);
+    }
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setIsCameraActive(false);
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      setImageBase64(dataUrl);
+      stopCamera();
+    }
   };
 
   const handleSendOtp = async (e) => {
@@ -107,13 +150,18 @@ const NewComplaintModal = ({ isOpen, onClose, onSubmit }) => {
         throw new Error('Invalid OTP');
       }
 
+      if (!coordinates) {
+        throw new Error('Mandatory GPS coordinates missing. Please capture your location.');
+      }
+      if (!imageBase64) {
+        throw new Error('Mandatory live photo missing. Please capture a photo of the issue.');
+      }
+
       const payload = {
         ...formData,
         verificationToken: verifyRes.verificationToken,
-        coordinates: coordinates || [
-          19.8917 + (Math.random() - 0.5) * 0.02,
-          74.4789 + (Math.random() - 0.5) * 0.02
-        ]
+        coordinates: coordinates,
+        imageBase64: imageBase64
       };
       const result = await onSubmit(payload);
       // Show AI result if available
@@ -132,8 +180,10 @@ const NewComplaintModal = ({ isOpen, onClose, onSubmit }) => {
   };
 
   const handleClose = () => {
+    stopCamera();
     setFormData({ title: '', category: 'Road Damage', ward: 'Ward 1 - Sangamner Naka', location: '', description: '', reporterName: '', reporterContact: '', isAnonymous: false });
     setCoordinates(null);
+    setImageBase64(null);
     setAiResult(null);
     setOtpSent(false);
     setOtpCode('');
@@ -236,22 +286,72 @@ const NewComplaintModal = ({ isOpen, onClose, onSubmit }) => {
           </div>
 
           {/* GPS Pin */}
-          <div className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-colors ${coordinates ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20' : 'border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40'}`}>
+          <div className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-colors ${coordinates ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20' : 'border-dashed border-rose-300 dark:border-rose-700 bg-rose-50 dark:bg-rose-900/20'}`}>
             <button
               type="button"
               onClick={handleLocate}
               disabled={locating}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold transition-colors shrink-0"
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg disabled:opacity-60 text-white font-semibold transition-colors shrink-0 ${coordinates ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'}`}
             >
               <Crosshair className={`w-3.5 h-3.5 ${locating ? 'animate-spin' : ''}`} />
-              {locating ? 'Locating...' : coordinates ? 'Re-capture GPS' : 'Use My Location'}
+              {locating ? 'Locating...' : coordinates ? 'Re-capture GPS' : 'Capture Exact GPS *'}
             </button>
             <span className="text-slate-600 dark:text-slate-400">
               {coordinates
-                ? <><span className="text-emerald-600 dark:text-emerald-400 font-semibold">📍 GPS Captured</span> {coordinates[0].toFixed(5)}, {coordinates[1].toFixed(5)}</>
-                : <span className="text-slate-400">No GPS — a Kopargaon default will be used</span>
+                ? <><span className="text-emerald-600 dark:text-emerald-400 font-semibold">📍 Verified</span> {coordinates[0].toFixed(5)}, {coordinates[1].toFixed(5)}</>
+                : <span className="text-rose-500 font-semibold text-[11px]">GPS coordinates are mandatory to prevent fake submissions</span>
               }
             </span>
+          </div>
+
+          {/* Live Capture via WebRTC */}
+          <div className={`flex flex-col gap-3 p-3 rounded-xl border-2 transition-colors ${imageBase64 ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20' : (isCameraActive ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-dashed border-rose-300 dark:border-rose-700 bg-rose-50 dark:bg-rose-900/20')}`}>
+            
+            {/* Camera View */}
+            <div className={`relative w-full rounded-lg overflow-hidden bg-black flex items-center justify-center ${isCameraActive ? 'aspect-video' : 'hidden'}`}>
+              <video 
+                ref={videoRef} 
+                autoPlay 
+                playsInline 
+                className="w-full h-full object-cover"
+              />
+              <canvas ref={canvasRef} className="hidden" />
+              <button
+                type="button"
+                onClick={capturePhoto}
+                className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white text-black px-6 py-2 rounded-full font-bold shadow-lg hover:scale-105 active:scale-95 transition-transform flex items-center gap-2"
+              >
+                <span className="w-4 h-4 rounded-full bg-red-500 animate-pulse"></span>
+                SNAP PHOTO
+              </button>
+            </div>
+
+            {/* Controls */}
+            {!isCameraActive && (
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={startCamera}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-white font-semibold transition-colors shrink-0 ${imageBase64 ? 'bg-slate-600 hover:bg-slate-700' : 'bg-rose-600 hover:bg-rose-700'}`}
+                >
+                  <span className="material-symbols-outlined text-[16px]">videocam</span>
+                  {imageBase64 ? 'Retake Live Photo' : 'Start Camera *'}
+                </button>
+                <div className="text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                  {imageBase64
+                    ? <><span className="text-emerald-600 dark:text-emerald-400 font-semibold">📸 Live image captured & hashed</span></>
+                    : <span className="text-rose-500 font-semibold text-[11px]">In-app camera capture required</span>
+                  }
+                </div>
+              </div>
+            )}
+            
+            {/* Preview */}
+            {imageBase64 && !isCameraActive && (
+              <div className="mt-2 w-32 h-32 rounded-lg overflow-hidden border-2 border-emerald-400">
+                <img src={imageBase64} alt="Captured" className="w-full h-full object-cover" />
+              </div>
+            )}
           </div>
 
           {/* Description */}
@@ -332,7 +432,7 @@ const NewComplaintModal = ({ isOpen, onClose, onSubmit }) => {
             {!otpSent ? (
               <button
                 type="submit"
-                disabled={otpLoading}
+                disabled={otpLoading || !coordinates || !imageBase64}
                 className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold shadow-md transition-colors flex items-center gap-2"
               >
                 {otpLoading ? (

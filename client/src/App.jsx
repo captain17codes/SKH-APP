@@ -50,6 +50,7 @@ import NotFoundPage from './pages/NotFoundPage';
 
 import ProtectedRoute from './components/common/ProtectedRoute';
 
+
 function App() {
   return (
     <LanguageProvider>
@@ -62,6 +63,7 @@ function App() {
               duration: 3500
             }} 
           />
+
           <BrowserRouter>
             <ToastManager />
           <Routes>

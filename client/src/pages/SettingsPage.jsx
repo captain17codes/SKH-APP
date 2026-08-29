@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import toast from 'react-hot-toast';
+import BlackoutPanel from '../components/common/BlackoutPanel';
 
 const SETTINGS_TABS = [
   { id: 'Profile', icon: 'person' },
   { id: 'Users & Roles', icon: 'group' },
   { id: 'Notifications', icon: 'notifications_active' },
   { id: 'Map Settings', icon: 'map' },
-  { id: 'Theme & UI', icon: 'palette' }
+  { id: 'Theme & UI', icon: 'palette' },
+  { id: 'Data Recovery', icon: 'database' }
 ];
 
 const SettingsPage = () => {
@@ -323,6 +325,12 @@ const SettingsPage = () => {
                   <span className="material-symbols-outlined text-[48px] opacity-50 mb-4 block">map</span>
                   <p>GIS Map configurations coming soon.</p>
                 </div>
+              </div>
+            )}
+
+            {activeTab === 'Data Recovery' && (
+              <div className="max-w-4xl">
+                <BlackoutPanel />
               </div>
             )}
           </div>
