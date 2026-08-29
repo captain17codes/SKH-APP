@@ -119,7 +119,7 @@ const ProjectsPage = () => {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface dark:text-inverse-on-surface">Projects Directory</h2>
-          <p className="font-body-md text-body-md text-on-surface-variant dark:text-on-surface-variant mt-1">Manage and track all active and planned municipal initiatives.</p>
+          <p className="font-body-md text-body-md text-on-surface-variant dark:text-inverse-on-surface mt-1">Manage and track all active and planned municipal initiatives.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <button

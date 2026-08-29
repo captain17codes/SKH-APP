@@ -49,7 +49,7 @@ const Sidebar = ({ isOpen, onClose }) => {
               <h1 className="font-title-lg text-title-lg font-bold text-primary dark:text-primary-fixed-dim leading-tight">
                 Kopargaon Smart City
               </h1>
-              <p className="font-label-sm text-label-sm text-on-surface-variant dark:text-on-surface-variant">
+              <p className="font-label-sm text-label-sm text-on-surface-variant dark:text-inverse-on-surface">
                 Municipal Portal
               </p>
             </div>
@@ -75,7 +75,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                   `flex items-center justify-between px-3 py-2 rounded-r-lg border-l-4 transition-all duration-200 ease-in-out nav-link ${
                     isActive
                       ? 'bg-surface-container-low text-primary border-primary font-bold dark:bg-primary-container dark:text-on-primary-container'
-                      : 'border-transparent text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest'
+                      : 'border-transparent text-on-surface-variant dark:text-inverse-on-surface hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest'
                   }`
                 }
               >
@@ -101,7 +101,7 @@ const Sidebar = ({ isOpen, onClose }) => {
 
         {/* Footer info */}
         <div className="mt-auto pt-4 border-t border-outline-variant dark:border-outline flex flex-col gap-1">
-          <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest transition-all duration-200 ease-in-out">
+          <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-inverse-on-surface hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-lowest dark:hover:bg-surface-container-highest transition-all duration-200 ease-in-out">
             <span className="material-symbols-outlined">help</span>
             <span>Help Center</span>
           </button>
@@ -110,7 +110,7 @@ const Sidebar = ({ isOpen, onClose }) => {
               logout();
               onClose();
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:text-error hover:bg-error-container transition-all duration-200 ease-in-out"
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-inverse-on-surface hover:text-error hover:bg-error-container transition-all duration-200 ease-in-out"
           >
             <span className="material-symbols-outlined">logout</span>
             <span>Logout</span>

@@ -211,7 +211,7 @@ const DashboardPage = () => {
                       {p.aiRisk || p.riskAnalysis?.risk || 'High Risk'}
                     </span>
                   </div>
-                  <p className="font-body-sm text-body-sm text-on-surface-variant dark:text-on-surface-variant line-clamp-2">
+                  <p className="font-body-sm text-body-sm text-on-surface-variant dark:text-inverse-on-surface line-clamp-2">
                     {p.riskAnalysis?.reasons?.[0] || 'AI detected potential schedule or budget variance.'}
                   </p>
                   <button onClick={() => navigate(`/projects/${p.id}`)} className="text-primary dark:text-primary-fixed-dim font-label-sm text-label-sm hover:underline self-start mt-1">Review Project</button>

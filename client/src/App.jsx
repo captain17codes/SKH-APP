@@ -1,9 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
-import { Toaster } from 'react-hot-toast';
+import { Toaster, toast, useToasterStore } from 'react-hot-toast';
+import { useLocation } from 'react-router-dom';
+
+const ToastManager = () => {
+  const location = useLocation();
+  const { toasts } = useToasterStore();
+
+  useEffect(() => {
+    // Clear toasts on route change
+    toast.remove();
+  }, [location.pathname]);
+
+  return null;
+};
 
 import DashboardLayout from './layouts/DashboardLayout';
 import CitizenDashboardLayout from './layouts/CitizenDashboardLayout';
@@ -42,8 +55,15 @@ function App() {
     <LanguageProvider>
       <ThemeProvider>
         <AuthProvider>
-          <Toaster position="top-right" />
+          <Toaster 
+            position="top-right" 
+            toastOptions={{
+              className: 'dark:bg-inverse-surface dark:text-inverse-on-surface border border-outline-variant text-sm font-medium shadow-ambient-lvl2',
+              duration: 3500
+            }} 
+          />
           <BrowserRouter>
+            <ToastManager />
           <Routes>
             {/* Public Entry Routes */}
             <Route path="/" element={<LandingPage />} />

@@ -39,7 +39,6 @@ const BusinessDashboardLayout = () => {
 
   const handleLogout = () => {
     logout();
-    toast.success('Logged out successfully');
     navigate('/');
   };
 
