@@ -87,6 +87,7 @@ const MapView = ({
   const [isLayerMenuOpen, setIsLayerMenuOpen] = useState(false);
   const [isLegendOpen, setIsLegendOpen] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [mapError, setMapError] = useState(null);
 
   const [activeLayers, setActiveLayers] = useState({
     wards: true,
@@ -124,26 +125,18 @@ const MapView = ({
     gisService.getInfrastructure().then(setInfraData);
   }, []);
 
-  // FlyTo effect for selected feature or center prop
+  // FlyTo effect for selected feature only
   useEffect(() => {
-    if (mapRef.current) {
-      if (selectedFeature && selectedFeature.coordinates) {
-        mapRef.current.flyTo({
-          center: [selectedFeature.coordinates[1], selectedFeature.coordinates[0]], // [lng, lat]
-          zoom: 16,
-          pitch: 65,
-          bearing: -20,
-          duration: 2000
-        });
-      } else if (center && center.length === 2) {
-        mapRef.current.flyTo({
-          center: [center[1], center[0]],
-          zoom: zoom || 13,
-          duration: 1000
-        });
-      }
+    if (mapRef.current && selectedFeature && selectedFeature.coordinates) {
+      mapRef.current.flyTo({
+        center: [selectedFeature.coordinates[1], selectedFeature.coordinates[0]], // [lng, lat]
+        zoom: 16,
+        pitch: 65,
+        bearing: -20,
+        duration: 2000
+      });
     }
-  }, [selectedFeature, center, zoom]);
+  }, [selectedFeature]);
 
   // Fullscreen support
   const handleToggleFullscreen = useCallback(() => {
@@ -328,8 +321,32 @@ const MapView = ({
       };
     }
     
-    // Default street map using Carto Voyager (reliable vector style)
-    return 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json';
+    // Default street map using OSM raster tiles (since 'osm' is explicitly requested by state)
+    // CartoCDN Voyager now requires an API key and returns 403, causing white map.
+    return {
+      version: 8,
+      sources: {
+        'osm': {
+          type: 'raster',
+          tiles: [
+            'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
+          ],
+          tileSize: 256,
+          attribution: '&copy; OpenStreetMap Contributors'
+        }
+      },
+      layers: [
+        {
+          id: 'osm-layer',
+          type: 'raster',
+          source: 'osm',
+          minzoom: 0,
+          maxzoom: 19
+        }
+      ]
+    };
   }, [baseTileSource]);
 
   const displayHospitals = (osmData?.hospitals && osmData.hospitals.length > 0) ? osmData.hospitals : (infraData?.hospitals || []);
@@ -374,7 +391,24 @@ const MapView = ({
       )}
 
       {/* Actual Map Container */}
-      <div className="flex-1 relative w-full h-full min-h-[400px]">
+      <div className="flex-1 relative w-full h-full min-h-[600px]">
+        {mapError && (
+          <div className="absolute inset-0 z-[500] flex items-center justify-center bg-surface/90 backdrop-blur-sm">
+            <div className="bg-error-container text-on-error-container p-6 rounded-xl shadow-lg max-w-md text-center border border-error/20">
+              <span className="material-symbols-outlined text-[40px] mb-2 text-error">broken_image</span>
+              <h3 className="font-title-lg mb-2">3D Map Engine Error</h3>
+              <p className="font-body-md text-on-error-container/80 mb-4">
+                {mapError.message || String(mapError)}
+              </p>
+              <button 
+                onClick={() => setMapError(null)} 
+                className="px-4 py-2 bg-error text-on-error rounded hover:opacity-90 font-label-md"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        )}
         <Map
           ref={mapRef}
           {...viewState}
@@ -385,9 +419,13 @@ const MapView = ({
           }}
           onClick={handleMapClick}
           onMouseMove={handleMapHover}
+          onError={e => {
+            console.error('[MapLibre Error]', e);
+            if (e.error) setMapError(e.error);
+          }}
           interactiveLayerIds={['wards-fill', 'cadastral-fill']}
           mapStyle={mapStyleUrl}
-          style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, width: '100%', height: '100%' }}
+          style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, width: '100%', height: '100%', minHeight: '600px' }}
         >
           <FullscreenControl position="top-right" />
 

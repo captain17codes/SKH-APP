@@ -12,7 +12,7 @@ const GisPage = () => {
   const [searchParams] = useSearchParams();
   const [selectedWardId, setSelectedWardId] = useState(null);
   const [mapCenter, setMapCenter] = useState(KOPARGAON_CENTER);
-  const [mapZoom, setMapZoom] = useState(14);
+  const [mapZoom, setMapZoom] = useState(13);
   const [selectedFeature, setSelectedFeature] = useState(null);
   const [allProjects, setAllProjects] = useState([]);
   const [candidateLocations, setCandidateLocations] = useState([]);

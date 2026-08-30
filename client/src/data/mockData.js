@@ -1,6 +1,6 @@
 // Kopargaon Geographical Center
 export const KOPARGAON_CENTER = [19.8917, 74.4789];
-export const DEFAULT_ZOOM = 14;
+export const DEFAULT_ZOOM = 13;
 
 // Kopargaon Wards GeoJSON Mock Data
 export const KOPARGAON_WARDS_GEOJSON = {
