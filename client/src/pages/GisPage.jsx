@@ -243,6 +243,7 @@ const GisPage = () => {
           selectedWardId={selectedWardId}
           candidateLocations={candidateLocations}
           complaintHotspots={complaintHotspots}
+          flat={true}
           onSelectFeature={(feat, type) => {
             setSelectedFeature({ feat, type });
             if (feat.coordinates && type === 'project') {

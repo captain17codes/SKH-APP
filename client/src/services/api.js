@@ -306,6 +306,14 @@ export const complaintService = {
       return liveComplaints;
     }
   },
+  getMyComplaints: async () => {
+    try {
+      const res = await apiClient.get('/complaints/my');
+      return res.data;
+    } catch {
+      return liveComplaints.filter(c => c.reporterName === 'Anonymous Citizen' || c.reporterContact); 
+    }
+  },
   create: async (complaintData) => {
     try {
       const res = await apiClient.post('/complaints', complaintData);

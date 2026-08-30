@@ -59,7 +59,8 @@ const MapView = ({
   onCenterChange = null,
   osmData = null,
   candidateLocations = [],
-  complaintHotspots = null
+  complaintHotspots = null,
+  flat = false  // flat=true → 2D top-down view (GIS page); flat=false → 3D pitched view (Scenario page)
 }) => {
   const mapRef = useRef(null);
   const containerRef = useRef(null);
@@ -67,7 +68,7 @@ const MapView = ({
     longitude: center[1] || 74.4760,
     latitude: center[0] || 19.8820,
     zoom: zoom || 13,
-    pitch: 60,
+    pitch: flat ? 0 : 60,  // 0° = flat 2D top-down; 60° = 3D tilted
     bearing: 0
   });
 
@@ -183,35 +184,55 @@ const MapView = ({
   }, [overlayMode]);
 
   // MapLibre Layer Definitions
-  const wardLayerStyle = useMemo(() => ({
-    id: 'wards-fill',
-    type: 'fill-extrusion',
-    paint: {
-      'fill-extrusion-color': selectedWardId 
-        ? [
-            'case',
-            ['==', ['get', 'id'], selectedWardId], '#60a5fa',
-            wardFillColor
-          ]
-        : wardFillColor,
-      'fill-extrusion-height': [
-        'interpolate', ['linear'], 
-        ['coalesce', ['get', 'population'], 5000],
-        0, 50,
-        5000, 150,
-        10000, 300,
-        20000, 500
-      ],
-      'fill-extrusion-base': 0,
-      'fill-extrusion-opacity': hoveredWardId
-        ? [
-            'case',
-            ['==', ['get', 'id'], hoveredWardId], 0.85,
-            0.6
-          ]
-        : 0.6
+  // flat=true → flat 2D fill; flat=false → 3D fill-extrusion
+  const wardLayerStyle = useMemo(() => {
+    if (flat) {
+      // 2D flat mode: simple fill polygon with hover/select highlights
+      return {
+        id: 'wards-fill',
+        type: 'fill',
+        paint: {
+          'fill-color': selectedWardId
+            ? ['case', ['==', ['get', 'id'], selectedWardId], '#60a5fa', wardFillColor]
+            : wardFillColor,
+          'fill-opacity': hoveredWardId
+            ? ['case', ['==', ['get', 'id'], hoveredWardId], 0.75, 0.45]
+            : 0.45,
+          'fill-outline-color': '#94a3b8'
+        }
+      };
     }
-  }), [selectedWardId, hoveredWardId, wardFillColor]);
+    // 3D extrusion mode (default for Scenario page)
+    return {
+      id: 'wards-fill',
+      type: 'fill-extrusion',
+      paint: {
+        'fill-extrusion-color': selectedWardId 
+          ? [
+              'case',
+              ['==', ['get', 'id'], selectedWardId], '#60a5fa',
+              wardFillColor
+            ]
+          : wardFillColor,
+        'fill-extrusion-height': [
+          'interpolate', ['linear'], 
+          ['coalesce', ['get', 'population'], 5000],
+          0, 50,
+          5000, 150,
+          10000, 300,
+          20000, 500
+        ],
+        'fill-extrusion-base': 0,
+        'fill-extrusion-opacity': hoveredWardId
+          ? [
+              'case',
+              ['==', ['get', 'id'], hoveredWardId], 0.85,
+              0.6
+            ]
+          : 0.6
+      }
+    };
+  }, [flat, selectedWardId, hoveredWardId, wardFillColor]);
 
   const landUseLayerStyle = {
     id: 'land-use-fill',
