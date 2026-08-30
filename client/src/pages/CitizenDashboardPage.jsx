@@ -661,8 +661,16 @@ const CitizenDashboardPage = () => {
 
                         <button
                           type="button"
-                          onClick={() => navigate('/citizen/gis')}
-                          className="px-3.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-slate-800 dark:text-slate-200 font-bold flex items-center space-x-1.5"
+                          onClick={() => {
+                            const lat = complaintForm.latitude;
+                            const lng = complaintForm.longitude;
+                            if (lat && lng) {
+                              navigate(`/citizen/gis?lat=${lat}&lng=${lng}`);
+                            } else {
+                              navigate('/citizen/gis');
+                            }
+                          }}
+                          className="px-3.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-slate-800 dark:text-slate-200 font-bold flex items-center space-x-1.5 cursor-pointer"
                         >
                           <MapPin className="w-3.5 h-3.5 text-emerald-500" />
                           <span>{t('selectOnGis')}</span>

@@ -377,6 +377,7 @@ export const MOCK_COMPLAINTS = [
     reporterContact: "+91 98220 *****",
     description: "Large 2-foot wide pothole causing severe traffic slowdowns and two-wheeler accidents during monsoon rains.",
     assignedDept: "Public Works Department",
+    photos: ["https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600&auto=format&fit=crop&q=80"],
     upvotes: 42
   },
   {
@@ -393,6 +394,7 @@ export const MOCK_COMPLAINTS = [
     reporterContact: "+91 94231 *****",
     description: "Clean water leaking onto public road for 3 consecutive days. Surrounding households receiving low pressure.",
     assignedDept: "Water Supply Dept",
+    photos: ["https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=600&auto=format&fit=crop&q=80"],
     upvotes: 19
   },
   {
@@ -409,6 +411,7 @@ export const MOCK_COMPLAINTS = [
     reporterContact: "+91 97630 *****",
     description: "Vegetable waste pile accumulation causing bad odor and pest breeding.",
     assignedDept: "Solid Waste Management",
+    photos: ["https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=600&auto=format&fit=crop&q=80"],
     upvotes: 35
   },
   {
@@ -425,6 +428,7 @@ export const MOCK_COMPLAINTS = [
     reporterContact: "+91 98902 *****",
     description: "Dark stretch of 800 meters leading to safety hazards for night commuters.",
     assignedDept: "Electrical Department",
+    photos: ["https://images.unsplash.com/photo-1509391366360-2e959784a276?w=600&auto=format&fit=crop&q=80"],
     upvotes: 28
   },
   {
@@ -441,6 +445,7 @@ export const MOCK_COMPLAINTS = [
     reporterContact: "+91 91580 *****",
     description: "Concrete cover broken off drain box near primary school entrance. Immediate hazard for children.",
     assignedDept: "Drainage Maintenance",
+    photos: ["https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=600&auto=format&fit=crop&q=80"],
     upvotes: 56
   },
   {
@@ -457,6 +462,7 @@ export const MOCK_COMPLAINTS = [
     reporterContact: "+91 94222 *****",
     description: "Commercial shop extension extending 6 feet onto municipal sidewalk blockading pedestrian movement.",
     assignedDept: "Anti-Encroachment Cell",
+    photos: [],
     upvotes: 14
   }
 ];

@@ -88,7 +88,7 @@ export const createComplaint = async (req, res) => {
   try {
     const {
       title, category, ward, location, coordinates, description,
-      reporterName, reporterContact, isAnonymous, verificationToken, imageBase64
+      reporterName, reporterContact, isAnonymous, verificationToken, imageBase64, photos, photoUrls, photoUrl
     } = req.body;
 
     if (!title || !category || !location || !coordinates) {
@@ -143,6 +143,12 @@ export const createComplaint = async (req, res) => {
 
     const authenticatedUser = req.user || null;
     const newId = `CMP-2026-${Math.floor(9000 + Math.random() * 999)}`;
+    const complaintPhotos = (Array.isArray(photos) && photos.length > 0)
+      ? photos
+      : (Array.isArray(photoUrls) && photoUrls.length > 0)
+        ? photoUrls
+        : (imageBase64 ? [imageBase64] : (photoUrl ? [photoUrl] : []));
+
     const complaintData = {
       id: newId,
       userId: authenticatedUser ? authenticatedUser.id : (req.body.userId || null),
@@ -163,7 +169,7 @@ export const createComplaint = async (req, res) => {
       isAnonymous: !!isAnonymous,
       description: description || '',
       assignedDept: resolveDept(category),
-      photos: imageBase64 ? [imageBase64] : [],
+      photos: complaintPhotos,
       upvotes: 1
     };
 

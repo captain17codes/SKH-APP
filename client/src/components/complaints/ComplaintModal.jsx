@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import Modal from '../common/Modal';
 import { StatusBadge } from '../common/Badge';
-import { MapPin, User, Calendar, Phone, CheckCircle2, Shield, Cpu, BarChart3, Info } from 'lucide-react';
+import { MapPin, User, Calendar, Phone, CheckCircle2, Shield, Cpu, BarChart3, Info, Camera, Image as ImageIcon, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from '../../context/LanguageContext';
+import { maskPhoneNumber, getComplaintPhotos } from '../../utils/complaintUtils';
 
 const PRIORITY_CONFIG = {
   CRITICAL: { color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-100 dark:bg-rose-900/30', bar: 'bg-rose-500', label: '🚨 CRITICAL' },
@@ -20,12 +21,14 @@ const ComplaintModal = ({ isOpen, onClose, complaint, onUpdateStatus }) => {
   const { t } = useTranslation();
   const [newStatus, setNewStatus] = useState('');
   const [overridePriority, setOverridePriority] = useState('');
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
 
   if (!complaint) return null;
 
   const pc = PRIORITY_CONFIG[complaint.priority] || PRIORITY_CONFIG.MEDIUM;
   const aiScore = complaint.aiScore || null;
   const aiReasons = complaint.aiReasons || [];
+  const complaintPhotos = getComplaintPhotos(complaint);
 
   const handleStatusChange = () => {
     if (!newStatus) return;
@@ -61,7 +64,7 @@ const ComplaintModal = ({ isOpen, onClose, complaint, onUpdateStatus }) => {
             <span className="text-slate-400 block text-[10px] uppercase font-bold">Reported By</span>
             <div className="flex items-center text-slate-800 dark:text-slate-200 font-medium mt-0.5">
               <User className="w-3.5 h-3.5 mr-1 text-slate-400" />
-              {complaint.reporterName || 'Anonymous'} {complaint.reporterContact ? (complaint.isAnonymous ? '(Contact Hidden)' : `(${complaint.reporterContact})`) : ''}
+              Anonymous Citizen
             </div>
           </div>
           <div>
@@ -87,23 +90,72 @@ const ComplaintModal = ({ isOpen, onClose, complaint, onUpdateStatus }) => {
           </p>
         </div>
 
-        {/* Uploaded Photos Proof */}
-        {((complaint.photos && complaint.photos.length > 0) || complaint.photoUrl) && (
-          <div>
-            <span className="text-slate-400 block text-[10px] uppercase font-bold mb-1.5">📷 Ground Photo Evidence</span>
+        {/* Ground Evidence Photos */}
+        <div>
+          <span className="text-slate-400 block text-[10px] uppercase font-bold mb-1.5 flex items-center gap-1.5">
+            <Camera className="w-3.5 h-3.5 text-slate-400" />
+            Ground Evidence Photos
+          </span>
+          {complaintPhotos.length > 0 ? (
             <div className="flex items-center gap-2 overflow-x-auto pb-1">
-              {(complaint.photos || [complaint.photoUrl]).map((url, i) => (
-                <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="relative group shrink-0">
+              {complaintPhotos.map((url, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setSelectedPhoto(url)}
+                  className="relative group shrink-0 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
+                  title="Click to view larger preview"
+                >
                   <img
                     src={url}
-                    alt={`Evidence ${i+1}`}
-                    className="w-20 h-20 rounded-lg object-cover border border-slate-200 dark:border-slate-700 group-hover:scale-105 transition-transform"
+                    alt={`Evidence ${i + 1}`}
+                    className="w-20 h-20 object-cover group-hover:scale-105 transition-transform"
                   />
                   <span className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center text-white text-[10px] font-bold">
                     View
                   </span>
-                </a>
+                  <span className="absolute bottom-1 right-1 px-1 py-0.2 rounded bg-black/70 text-white text-[8px] font-mono pointer-events-none">
+                    #{i + 1}
+                  </span>
+                </button>
               ))}
+            </div>
+          ) : (
+            <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 text-[11px] italic flex items-center gap-1.5">
+              <ImageIcon className="w-3.5 h-3.5 opacity-60" />
+              No ground photos attached.
+            </div>
+          )}
+        </div>
+
+        {/* Enlarged Photo Lightbox Modal */}
+        {selectedPhoto && (
+          <div 
+            className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
+            onClick={() => setSelectedPhoto(null)}
+          >
+            <div 
+              className="relative max-w-2xl max-h-[85vh] bg-slate-900 rounded-xl overflow-hidden shadow-2xl border border-slate-800 p-3 flex flex-col items-center"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="w-full flex justify-between items-center px-1 pb-2 text-slate-300 text-xs border-b border-slate-800 mb-2">
+                <span className="font-bold flex items-center gap-1.5">
+                  <Camera className="w-3.5 h-3.5 text-amber-500" />
+                  Ground Evidence Photo
+                </span>
+                <button
+                  onClick={() => setSelectedPhoto(null)}
+                  className="p-1 rounded-md hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                  title="Close preview"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <img 
+                src={selectedPhoto} 
+                alt="Ground Evidence Enlarged" 
+                className="max-h-[70vh] w-auto max-w-full rounded-lg object-contain" 
+              />
             </div>
           </div>
         )}

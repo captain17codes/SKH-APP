@@ -26,6 +26,7 @@ const CitizenGisPage = () => {
   const [allProjects, setAllProjects] = useState([]);
   const [candidateLocations, setCandidateLocations] = useState([]);
   const [complaintHotspots, setComplaintHotspots] = useState(null);
+  const [locationMarker, setLocationMarker] = useState(null);
 
   const [isNearMeOpen, setIsNearMeOpen] = useState(false);
   const [loadingNearMe, setLoadingNearMe] = useState(false);
@@ -99,6 +100,7 @@ const CitizenGisPage = () => {
       const coords = [parseFloat(latParam), parseFloat(lngParam)];
       setMapCenter(coords);
       setMapZoom(targetZoom);
+      setLocationMarker({ lat: coords[0], lng: coords[1], label: 'Complaint Location' });
       didFly = true;
     }
 
@@ -251,6 +253,7 @@ const CitizenGisPage = () => {
             zoom={mapZoom}
             selectedFeature={selectedFeature?.feat}
             candidateLocations={candidateLocations}
+            locationMarker={locationMarker}
             onSelectFeature={(feat, type) => setSelectedFeature({ feat, type: type || 'general' })}
             showAllControls={true}
             height="h-full"

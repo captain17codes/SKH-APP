@@ -323,6 +323,9 @@ export const complaintService = {
       const newComp = {
         id: `CMP-2026-${Math.floor(8000 + Math.random() * 900)}`,
         ...complaintData,
+        photos: (Array.isArray(complaintData.photos) && complaintData.photos.length > 0)
+          ? complaintData.photos
+          : (complaintData.imageBase64 ? [complaintData.imageBase64] : (complaintData.photoUrl ? [complaintData.photoUrl] : [])),
         reportedDate: new Date().toISOString().split('T')[0],
         status: 'Pending',
         priority: 'MEDIUM',

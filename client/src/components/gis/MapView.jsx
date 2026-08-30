@@ -60,13 +60,14 @@ const MapView = ({
   osmData = null,
   candidateLocations = [],
   complaintHotspots = null,
-  flat = false  // flat=true → 2D top-down view (GIS page); flat=false → 3D pitched view (Scenario page)
+  flat = false,  // flat=true → 2D top-down view (GIS page); flat=false → 3D pitched view (Scenario page)
+  locationMarker = null
 }) => {
   const mapRef = useRef(null);
   const containerRef = useRef(null);
   const [viewState, setViewState] = useState({
-    longitude: center[1] || 74.4760,
-    latitude: center[0] || 19.8820,
+    longitude: (locationMarker ? (locationMarker.lng ?? locationMarker.longitude ?? locationMarker[1]) : center[1]) || 74.4760,
+    latitude: (locationMarker ? (locationMarker.lat ?? locationMarker.latitude ?? locationMarker[0]) : center[0]) || 19.8820,
     zoom: zoom || 13,
     pitch: flat ? 0 : 60,  // 0° = flat 2D top-down; 60° = 3D tilted
     bearing: 0
@@ -202,6 +203,26 @@ const MapView = ({
       }
     }
   }, [selectedFeature]);
+
+  // Guarded camera navigation for locationMarker: executes ONLY ONCE when a location marker is set
+  const lastFlownLocationRef = useRef(null);
+  useEffect(() => {
+    if (!locationMarker) return;
+    const lat = locationMarker.lat ?? locationMarker.latitude ?? (Array.isArray(locationMarker) ? locationMarker[0] : null);
+    const lng = locationMarker.lng ?? locationMarker.longitude ?? (Array.isArray(locationMarker) ? locationMarker[1] : null);
+    if (lat === null || lat === undefined || lng === null || lng === undefined) return;
+    const locKey = `${lat}_${lng}`;
+    if (lastFlownLocationRef.current === locKey) return;
+    lastFlownLocationRef.current = locKey;
+
+    if (mapRef.current) {
+      mapRef.current.flyTo({
+        center: [lng, lat],
+        zoom: 16,
+        duration: 1200
+      });
+    }
+  }, [locationMarker]);
 
   // Fullscreen support
   const handleToggleFullscreen = useCallback(() => {
@@ -729,6 +750,45 @@ const MapView = ({
             />
           </Source>
         )}
+
+        {/* Custom Location Marker (e.g. Current Complaint Location) */}
+        {locationMarker && (() => {
+          const mLat = locationMarker.lat ?? locationMarker.latitude ?? (Array.isArray(locationMarker) ? locationMarker[0] : null);
+          const mLng = locationMarker.lng ?? locationMarker.longitude ?? (Array.isArray(locationMarker) ? locationMarker[1] : null);
+          if (mLat === null || mLat === undefined || mLng === null || mLng === undefined) return null;
+          return (
+            <Marker 
+              key={`loc-marker-${mLat}-${mLng}`}
+              longitude={mLng} 
+              latitude={mLat}
+              anchor="bottom"
+              onClick={e => {
+                e.originalEvent.stopPropagation();
+                setPopupInfo({
+                  type: 'complaint_location',
+                  data: {
+                    title: locationMarker.label || 'Complaint Location',
+                    lat: mLat,
+                    lng: mLng
+                  },
+                  lngLat: [mLng, mLat]
+                });
+              }}
+            >
+              <div className="relative flex flex-col items-center group cursor-pointer -translate-y-1">
+                <div className="relative flex items-center justify-center">
+                  <span className="absolute -inset-1.5 rounded-full bg-rose-500/40 animate-ping" />
+                  <div className="relative w-8 h-8 rounded-full bg-rose-600 text-white flex items-center justify-center shadow-lg ring-2 ring-white">
+                    <span className="material-symbols-outlined text-[20px]">location_on</span>
+                  </div>
+                </div>
+                <div className="mt-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-white text-[10px] font-bold shadow-md border border-white/20 whitespace-nowrap">
+                  {locationMarker.label || 'Complaint Location'}
+                </div>
+              </div>
+            </Marker>
+          );
+        })()}
 
         {/* Popups */}
         {popupInfo && (

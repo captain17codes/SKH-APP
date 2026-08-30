@@ -6,6 +6,7 @@ import EmptyState from '../components/common/EmptyState';
 import { complaintService } from '../services/api';
 import toast from 'react-hot-toast';
 import { useTranslation } from '../context/LanguageContext';
+import { getComplaintPhotos } from '../utils/complaintUtils';
 
 const ComplaintsPage = () => {
   const navigate = useNavigate();
@@ -111,15 +112,19 @@ const ComplaintsPage = () => {
       )}
       
       {/* Photo Thumbnail */}
-      {!isResolved && ((c.photos && c.photos.length > 0) || c.photoUrl) && (
-        <div className="mb-3 overflow-hidden rounded border border-outline-variant/30">
-          <img 
-            src={c.photos?.[0] || c.photoUrl} 
-            alt="Evidence" 
-            className="w-full h-24 object-cover hover:scale-105 transition-transform" 
-          />
-        </div>
-      )}
+      {!isResolved && (() => {
+        const cardPhotos = getComplaintPhotos(c);
+        if (cardPhotos.length === 0) return null;
+        return (
+          <div className="mb-3 overflow-hidden rounded border border-outline-variant/30">
+            <img 
+              src={cardPhotos[0]} 
+              alt="Evidence" 
+              className="w-full h-24 object-cover hover:scale-105 transition-transform" 
+            />
+          </div>
+        );
+      })()}
       
       <div className={`flex justify-between items-end border-t ${isResolved ? 'border-outline-variant/30 pt-3 mt-3' : 'border-outline-variant/50 pt-3 mt-auto'}`}>
         <div className={`flex flex-col gap-1.5 ${isResolved ? 'opacity-80' : ''}`}>
