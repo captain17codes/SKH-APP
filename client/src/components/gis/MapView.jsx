@@ -9,8 +9,9 @@ import Map, {
 } from 'react-map-gl/maplibre';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
-maplibregl.setWorkerUrl(maplibreWorkerUrl);
+// Use CDN worker URL to ensure reliable loading in Vercel production builds
+// where hashed chunk filenames from ?url imports can fail to resolve.
+maplibregl.setWorkerUrl('https://unpkg.com/maplibre-gl@6.6.0/dist/maplibre-gl-worker.js');
 import { KOPARGAON_CENTER, DEFAULT_ZOOM } from '../../data/mockData';
 import { gisService } from '../../services/gisService';
 import { projectService } from '../../services/api';
@@ -398,7 +399,7 @@ const MapView = ({
         )}
 
         {/* Cadastral Plots Layer (Vector Tiles from PostGIS) */}
-        {activeLayers.cadastralPlots && (
+        {activeLayers.cadastralPlots && (!!import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost')) && (
           <Source 
             id="cadastral-source" 
             type="vector" 

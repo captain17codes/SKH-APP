@@ -9,9 +9,9 @@ import toast from 'react-hot-toast';
 import api, { scenarioService } from '../services/api';
 import GodavariFloodPanel from '../components/gis/GodavariFloodPanel';
 import { KOPARGAON_CENTER } from '../data/mockData';
-import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
-
-maplibregl.setWorkerUrl(maplibreWorkerUrl);
+// Use CDN worker URL to ensure reliable loading in Vercel production builds
+// where hashed chunk filenames from ?url imports can fail to resolve.
+maplibregl.setWorkerUrl('https://unpkg.com/maplibre-gl@6.6.0/dist/maplibre-gl-worker.js');
 
 const BUILDINGS_3D_LAYER = {
   id: 'buildings-layer-f',
