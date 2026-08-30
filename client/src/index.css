@@ -103,7 +103,8 @@
 
 /* MapLibre GL / react-map-gl canvas customizations */
 .maplibregl-map,
-.mapboxgl-map {
+.mapboxgl-map,
+.leaflet-container {
   width: 100%;
   height: 100%;
   border-radius: 0.75rem;

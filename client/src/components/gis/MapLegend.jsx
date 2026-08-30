@@ -25,6 +25,14 @@ const MapLegend = () => {
           <div className="w-3 h-3 rounded-full bg-tertiary border-2 border-white ring-1 ring-tertiary"></div>
           <span className="font-body-sm text-body-sm text-on-surface">Complaint Hotspot</span>
         </div>
+        <div className="flex items-center gap-3">
+          <div className="w-4 h-4 rounded-sm bg-[#3b82f6] opacity-80 border border-[#2563eb]"></div>
+          <span className="font-body-sm text-body-sm text-on-surface">River Water</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="w-4 h-4 rounded-sm bg-[#0ea5e9] opacity-40 border border-[#0284c7]"></div>
+          <span className="font-body-sm text-body-sm text-on-surface">Flood Affected Water</span>
+        </div>
       </div>
     </div>
   );

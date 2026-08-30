@@ -78,6 +78,8 @@ const MapView = ({
   const [buildingsData, setBuildingsData] = useState(null);
   const [infraData, setInfraData] = useState(null);
   const [projectsList, setProjectsList] = useState([]);
+  const [floodFeatures, setFloodFeatures] = useState(null);
+  const [waterFeatures, setWaterFeatures] = useState(null);
   
   const [hoveredWardId, setHoveredWardId] = useState(null);
   const [popupInfo, setPopupInfo] = useState(null);
@@ -101,7 +103,7 @@ const MapView = ({
     waterPipeline: true,
     drainage: true,
     electricity: true,
-    floodRisk: true,
+    floodRisk: false,
     complaintHotspots: true,
     cadastralPlots: true
   });
@@ -123,18 +125,81 @@ const MapView = ({
     gisService.getRoads().then(setRoadsData);
     gisService.getBuildings().then(setBuildingsData);
     gisService.getInfrastructure().then(setInfraData);
+
+    import('../../data/flood/scenarios.json').then(m => {
+      const highest = m.default.features.find(f => Number(f.properties?.relative_rise_m) === 3);
+      if (highest) {
+        setFloodFeatures({ type: 'FeatureCollection', features: [highest] });
+      }
+    }).catch(console.error);
+
+    import('../../data/flood/water-features.json').then(m => {
+      setWaterFeatures(m.default);
+    }).catch(console.error);
   }, []);
 
-  // FlyTo effect for selected feature only
+  // Helper to extract bounds from any GeoJSON feature collection
+  const getGeoJSONBounds = useCallback((geojson) => {
+    if (!geojson) return null;
+    let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity;
+    const processCoords = (coords) => {
+      if (typeof coords[0] === 'number' && typeof coords[1] === 'number') {
+        const [lng, lat] = coords;
+        if (lng < minLng) minLng = lng;
+        if (lng > maxLng) maxLng = lng;
+        if (lat < minLat) minLat = lat;
+        if (lat > maxLat) maxLat = lat;
+      } else if (Array.isArray(coords)) {
+        coords.forEach(processCoords);
+      }
+    };
+    const features = geojson.features || (Array.isArray(geojson) ? geojson : [geojson]);
+    features.forEach(f => {
+      if (f.geometry && f.geometry.coordinates) {
+        processCoords(f.geometry.coordinates);
+      }
+    });
+    if (minLng === Infinity) return null;
+    return [[minLng, minLat], [maxLng, maxLat]];
+  }, []);
+
+  // Guarded camera navigation: executes ONLY ONCE when a new feature is explicitly selected
+  const lastFlownFeatureIdRef = useRef(null);
   useEffect(() => {
-    if (mapRef.current && selectedFeature && selectedFeature.coordinates) {
-      mapRef.current.flyTo({
-        center: [selectedFeature.coordinates[1], selectedFeature.coordinates[0]], // [lng, lat]
-        zoom: 16,
-        pitch: 65,
-        bearing: -20,
-        duration: 2000
-      });
+    if (!selectedFeature) return;
+    const feat = selectedFeature.feat || selectedFeature;
+    const featKey = `${feat.id || feat.name || ''}_${feat.lat || ''}_${feat.lng || ''}`;
+    if (!featKey || lastFlownFeatureIdRef.current === featKey) return;
+    lastFlownFeatureIdRef.current = featKey;
+
+    const featId = String(feat.id || '').toLowerCase();
+    const featName = String(feat.name || '').toLowerCase();
+    const featType = String(selectedFeature.type || feat.type || '').toLowerCase();
+
+    const isFlood = featId.includes('godavari') || 
+                    featName.includes('godavari') || 
+                    featName.includes('flood') || 
+                    featType.includes('flood') || 
+                    featId.includes('river');
+
+    if (isFlood) {
+      setActiveLayers(prev => ({ ...prev, floodRisk: true }));
+      if (mapRef.current) {
+        mapRef.current.flyTo({
+          center: [74.4835, 19.8764],
+          zoom: 15,
+          duration: 1200
+        });
+      }
+    } else {
+      const coords = feat.coordinates || (feat.lat && feat.lng ? [feat.lat, feat.lng] : null);
+      if (coords && mapRef.current) {
+        mapRef.current.flyTo({
+          center: [coords[1], coords[0]], // [lng, lat]
+          zoom: 16,
+          duration: 1200
+        });
+      }
     }
   }, [selectedFeature]);
 
@@ -443,14 +508,69 @@ const MapView = ({
           </Source>
         )}
 
-        {/* Roads Layer (Mock Data) */}
+        {/* River Water Bodies (Solid Natural Godavari River) */}
+        {waterFeatures?.water_bodies && (
+          <Source id="river-water-bodies-source" type="geojson" data={waterFeatures.water_bodies}>
+            <Layer
+              id="river-water-bodies-layer"
+              type="fill"
+              paint={{
+                'fill-color': '#1d4ed8', // Vibrant solid river blue
+                'fill-opacity': 0.85,
+                'fill-outline-color': '#1e40af'
+              }}
+            />
+          </Source>
+        )}
+
+        {/* River Waterways (Connected River Flowlines) */}
+        {waterFeatures?.waterways && (
+          <Source id="river-waterways-source" type="geojson" data={waterFeatures.waterways}>
+            <Layer
+              id="river-waterways-layer"
+              type="line"
+              paint={{
+                'line-color': '#2563eb',
+                'line-width': 3.5,
+                'line-opacity': 0.95
+              }}
+            />
+          </Source>
+        )}
+
+        {/* Flood Extent Overlay (Semi-transparent Blue extending from the river) */}
+        {activeLayers.floodRisk && floodFeatures && (
+          <Source id="flood-extent-source" type="geojson" data={floodFeatures}>
+            <Layer
+              id="flood-extent-layer"
+              type="fill"
+              paint={{
+                'fill-color': '#60a5fa', // Semi-transparent lighter water blue
+                'fill-opacity': 0.45,
+                'fill-outline-color': '#3b82f6'
+              }}
+            />
+            <Layer
+              id="flood-extent-outline"
+              type="line"
+              paint={{
+                'line-color': '#2563eb',
+                'line-width': 1.5,
+                'line-dasharray': [3, 2],
+                'line-opacity': 0.75
+              }}
+            />
+          </Source>
+        )}
+
+        {/* Roads Layer (Rendered Above Water) */}
         {activeLayers.roads && roadsData && (
           <Source id="roads-source" type="geojson" data={roadsData}>
             <Layer {...roadLayerStyle} />
           </Source>
         )}
 
-        {/* Buildings Layer */}
+        {/* Buildings Layer (Rendered Above Water) */}
         {activeLayers.buildings && buildingsData && (
           <Source id="buildings-source" type="geojson" data={buildingsData}>
             <Layer {...buildingLayerStyle} />

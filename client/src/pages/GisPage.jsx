@@ -79,6 +79,26 @@ const GisPage = () => {
     }
 
     if (featureId) {
+      const lowerFId = featureId.toLowerCase();
+      if (lowerFId.includes('godavari') || lowerFId.includes('river') || lowerFId.includes('flood') || searchParams.get('flood') === 'true') {
+        const targetLat = parseFloat(lat) || 19.8764;
+        const targetLng = parseFloat(lng) || 74.4835;
+        setSelectedFeature({
+          feat: {
+            id: 'Godavari_River',
+            name: 'Godavari River & Flood Inundation Zone',
+            type: 'flood_zone',
+            coordinates: [targetLat, targetLng],
+            lat: targetLat,
+            lng: targetLng
+          },
+          type: 'flood'
+        });
+        setMapCenter([targetLat, targetLng]);
+        setMapZoom(15);
+        return;
+      }
+
       gisService.getProjects().then(list => {
         const found = list.find(p => p.id === featureId || p.name.toLowerCase().includes(featureId.toLowerCase()));
         if (found) {
@@ -109,6 +129,7 @@ const GisPage = () => {
               id: featureId,
               name: featureId,
               type: featureType || 'GIS Feature',
+              coordinates: [parseFloat(lat), parseFloat(lng)],
               lat: parseFloat(lat),
               lng: parseFloat(lng)
             },

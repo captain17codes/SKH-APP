@@ -185,8 +185,16 @@ export const getScenarios = async (statusFilter) => {
   
   sql += ` ORDER BY created_at DESC`;
   
-  const result = await query(sql, params);
-  return result.rows;
+  try {
+    const result = await query(sql, params);
+    return result.rows;
+  } catch (error) {
+    if (error.code === '42P01' || error.message.includes('does not exist')) {
+      console.warn('[DB] Scenarios table does not exist. Returning empty array.');
+      return [];
+    }
+    throw error;
+  }
 };
 
 export const getScenarioById = async (id) => {

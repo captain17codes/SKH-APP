@@ -20,9 +20,44 @@ router.post('/urban-planner', async (req, res) => {
 
   try {
     const activeRole = role || userType || 'citizen';
-    const result = await aiService.processPlannerQuery(queryText.trim(), language, activeRole, req.body);
+    let result = await aiService.processPlannerQuery(queryText.trim(), language, activeRole, req.body);
     
-    const answer = result.answer || result.text || result.response || result.output || 'No description provided.';
+    let answer = result.answer || result.text || result.response || result.output || 'No description provided.';
+    
+    // Inject Godavari River mapping for flood-related keywords
+    const lowerQuery = queryText.toLowerCase();
+    const lowerAnswer = answer.toLowerCase();
+    const keywords = [
+      'river', 'godavari', 'flood', 'flood risk', 'flood-prone', 'flood prone',
+      'flood affected', 'flooding', 'water level', 'inundation', 'overflow',
+      'नदी', 'गोदावरी', 'पूर', 'पुराचा धोका', 'पूरग्रस्त', 'पाण्याची पातळी'
+    ];
+    if (keywords.some(kw => lowerQuery.includes(kw) || lowerAnswer.includes(kw))) {
+      result.mapAction = {
+        type: 'FLY_TO',
+        latitude: 19.8764,
+        longitude: 74.4835,
+        zoom: 15,
+        featureId: 'Godavari_River',
+        flood: true,
+        bounds: [
+          [74.4568, 19.8651],
+          [74.5101, 19.8876]
+        ]
+      };
+      
+      if (!result.recommendations) result.recommendations = [];
+      const hasGodavari = result.recommendations.find(r => r.name && r.name.toLowerCase().includes('godavari'));
+      if (!hasGodavari) {
+        result.recommendations.unshift({
+          name: "Godavari River & Flood Inundation Zone",
+          latitude: 19.8764,
+          longitude: 74.4835,
+          score: 100,
+          reasons: ["Primary Godavari Flood Inundation Extent", "Active River Corridor & Flood-Prone Banks"]
+        });
+      }
+    }
     
     const resolvedLang = result.language || (language && language !== 'auto' ? language : 'mr');
     res.json({
