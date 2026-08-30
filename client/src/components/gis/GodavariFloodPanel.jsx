@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 
 const levels = [0.5, 1.0, 2.0, 3.0];
 
-const GodavariFloodPanel = ({ selectedLevel, setSelectedLevel, summary, facilities }) => {
+const GodavariFloodPanel = ({ selectedLevel, setSelectedLevel, summary, facilities, onAiPlanGenerated, onGenerateAiClick }) => {
   const [currentSummary, setCurrentSummary] = useState(null);
   const [atRiskFacilities, setAtRiskFacilities] = useState([]);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -47,6 +47,9 @@ const GodavariFloodPanel = ({ selectedLevel, setSelectedLevel, summary, faciliti
 
   const handleGenerateAiPlan = async () => {
     if (!currentSummary) return;
+    if (onGenerateAiClick) {
+      onGenerateAiClick(atRiskFacilities);
+    }
     setIsAiLoading(true);
     setAiPlan(null);
     try {
@@ -54,6 +57,9 @@ const GodavariFloodPanel = ({ selectedLevel, setSelectedLevel, summary, faciliti
       
       const response = await aiPlannerService.queryAI(prompt, 'en-IN');
       setAiPlan(response.ai_analysis || response.text || response);
+      if (onAiPlanGenerated) {
+        onAiPlanGenerated();
+      }
     } catch (e) {
       toast.error("Failed to generate AI plan.");
     }

@@ -128,7 +128,7 @@ const ScenarioPage = () => {
   const mapRef = useRef(null);
   const floodMapRef = useRef(null);
   const drawRef = useRef(null);
-  const [isRotating, setIsRotating] = useState(true);
+  const [isRotating, setIsRotating] = useState(false);
   const rotationIntervalRef = useRef(null);
   const currentWaterHeight = useRef(3);
 
@@ -193,39 +193,55 @@ const ScenarioPage = () => {
     return null;
   }, [activeTab, floodLevel, floodScenarios]);
 
-  useEffect(() => {
-    logGeoJSONPayload(`flood level +${floodLevel}m`, activeFloodPolygon);
-  }, [activeFloodPolygon, floodLevel]);
+  const handleGenerateAiClicked = () => {
+    if (floodMapRef.current) {
+      floodMapRef.current.flyTo({
+        center: [74.4835, 19.8764], // Godavari river / flood area in Kopargaon
+        zoom: 15.5,
+        duration: 1500
+      });
+    }
+  };
 
   async function fetchScenarios() {
     try {
-      const list = await scenarioService.getAll();
+      const res = await scenarioService.getAll();
+      const list = Array.isArray(res) ? res : (res?.scenarios || res?.data || []);
       setScenarios(list);
     } catch {
-      toast.error('Failed to load scenarios');
+      toast.error('Failed to load scenarios', { id: 'scenario-fetch-error' });
     }
   }
 
   const initDraw = () => {
     if (!mapRef.current) return;
     const map = mapRef.current.getMap();
-    if (!drawRef.current) {
-      drawRef.current = new MapboxDraw({
-        displayControlsDefault: false,
-        controls: {
-          polygon: true,
-          trash: true
-        }
-      });
-      map.addControl(drawRef.current, 'top-right');
-
-      map.on('draw.create', updateArea);
-      map.on('draw.delete', updateArea);
-      map.on('draw.update', updateArea);
+    if (!map) return;
+    
+    // Always re-initialize draw control for the current map instance
+    if (drawRef.current) {
+      try {
+        map.removeControl(drawRef.current);
+      } catch (e) {}
     }
+
+    const draw = new MapboxDraw({
+      displayControlsDefault: false,
+      controls: {
+        polygon: true,
+        trash: true
+      }
+    });
+    drawRef.current = draw;
+    map.addControl(draw, 'top-right');
+
+    map.on('draw.create', updateArea);
+    map.on('draw.delete', updateArea);
+    map.on('draw.update', updateArea);
   };
 
   const updateArea = () => {
+    if (!drawRef.current) return;
     const data = drawRef.current.getAll();
     if (data.features.length > 0) {
       // Get the first drawn polygon
@@ -260,14 +276,6 @@ const ScenarioPage = () => {
     }
 
     try {
-      console.log('[FLOOD 3D] MapLibre load reached; style loaded:', map.isStyleLoaded());
-      console.log('[FLOOD 3D] pitch before:', map.getPitch());
-      map.once('moveend', () => {
-        console.log('[FLOOD 3D] pitch after:', map.getPitch());
-        console.log('[FLOOD 3D] bearing after:', map.getBearing());
-      });
-      map.easeTo({ pitch: 55, bearing: -17.6, duration: 2000 });
-      console.log('[FLOOD 3D] pitch after scheduling easeTo:', map.getPitch());
       setIsFloodMapReady(true);
       logFloodMapState(map);
     } catch (error) {
@@ -644,6 +652,11 @@ const ScenarioPage = () => {
               <Map
                 ref={mapRef}
                 onLoad={initDraw}
+                dragPan={true}
+                scrollZoom={true}
+                doubleClickZoom={true}
+                touchZoomRotate={true}
+                dragRotate={true}
                 initialViewState={{
                   longitude: mapCenter[1],
                   latitude: mapCenter[0],
@@ -720,6 +733,7 @@ const ScenarioPage = () => {
               setSelectedLevel={setFloodLevel}
               summary={floodSummary}
               facilities={floodFacilities}
+              onGenerateAiClick={handleGenerateAiClicked}
             />
 
             {/* Map Area */}
@@ -731,10 +745,16 @@ const ScenarioPage = () => {
                 maxPitch={85}
                 pitchWithRotate={true}
                 dragRotate={true}
+                dragPan={true}
+                scrollZoom={true}
+                doubleClickZoom={true}
+                touchZoomRotate={true}
                 initialViewState={{
                   longitude: mapCenter[1],
                   latitude: mapCenter[0],
-                  zoom: 14.5
+                  zoom: 14.5,
+                  pitch: 55,
+                  bearing: -17.6
                 }}
                 mapStyle={OSM_STYLE}
                 style={{ width: '100%', height: '100%' }}
@@ -807,8 +827,15 @@ const ScenarioPage = () => {
         )}
 
         {activeTab === 'list' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {scenarios.map(s => (
+          <div className="w-full">
+            {scenarios.length === 0 ? (
+              <div className="text-center py-12 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
+                <p className="text-slate-500 dark:text-slate-400 font-medium">No saved scenarios yet</p>
+                <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Create a new scenario to see it here.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {scenarios.map(s => (
               <div key={s.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-xs">
                 <div className="flex justify-between items-start mb-2">
                   <h4 className="font-bold text-slate-900 dark:text-slate-100">{s.name}</h4>
@@ -834,6 +861,8 @@ const ScenarioPage = () => {
                 </div>
               </div>
             ))}
+              </div>
+            )}
           </div>
         )}
 

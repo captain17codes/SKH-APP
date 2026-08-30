@@ -78,6 +78,8 @@ const MapView = ({
   const [buildingsData, setBuildingsData] = useState(null);
   const [infraData, setInfraData] = useState(null);
   const [projectsList, setProjectsList] = useState([]);
+  const [floodFeatures, setFloodFeatures] = useState(null);
+  const [waterFeatures, setWaterFeatures] = useState(null);
   
   const [hoveredWardId, setHoveredWardId] = useState(null);
   const [popupInfo, setPopupInfo] = useState(null);
@@ -87,6 +89,7 @@ const MapView = ({
   const [isLayerMenuOpen, setIsLayerMenuOpen] = useState(false);
   const [isLegendOpen, setIsLegendOpen] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [mapError, setMapError] = useState(null);
 
   const [activeLayers, setActiveLayers] = useState({
     wards: true,
@@ -100,7 +103,7 @@ const MapView = ({
     waterPipeline: true,
     drainage: true,
     electricity: true,
-    floodRisk: true,
+    floodRisk: false,
     complaintHotspots: true,
     cadastralPlots: true
   });
@@ -122,28 +125,83 @@ const MapView = ({
     gisService.getRoads().then(setRoadsData);
     gisService.getBuildings().then(setBuildingsData);
     gisService.getInfrastructure().then(setInfraData);
+
+    import('../../data/flood/scenarios.json').then(m => {
+      const highest = m.default.features.find(f => Number(f.properties?.relative_rise_m) === 3);
+      if (highest) {
+        setFloodFeatures({ type: 'FeatureCollection', features: [highest] });
+      }
+    }).catch(console.error);
+
+    import('../../data/flood/water-features.json').then(m => {
+      setWaterFeatures(m.default);
+    }).catch(console.error);
   }, []);
 
-  // FlyTo effect for selected feature or center prop
+  // Helper to extract bounds from any GeoJSON feature collection
+  const getGeoJSONBounds = useCallback((geojson) => {
+    if (!geojson) return null;
+    let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity;
+    const processCoords = (coords) => {
+      if (typeof coords[0] === 'number' && typeof coords[1] === 'number') {
+        const [lng, lat] = coords;
+        if (lng < minLng) minLng = lng;
+        if (lng > maxLng) maxLng = lng;
+        if (lat < minLat) minLat = lat;
+        if (lat > maxLat) maxLat = lat;
+      } else if (Array.isArray(coords)) {
+        coords.forEach(processCoords);
+      }
+    };
+    const features = geojson.features || (Array.isArray(geojson) ? geojson : [geojson]);
+    features.forEach(f => {
+      if (f.geometry && f.geometry.coordinates) {
+        processCoords(f.geometry.coordinates);
+      }
+    });
+    if (minLng === Infinity) return null;
+    return [[minLng, minLat], [maxLng, maxLat]];
+  }, []);
+
+  // Guarded camera navigation: executes ONLY ONCE when a new feature is explicitly selected
+  const lastFlownFeatureIdRef = useRef(null);
   useEffect(() => {
-    if (mapRef.current) {
-      if (selectedFeature && selectedFeature.coordinates) {
+    if (!selectedFeature) return;
+    const feat = selectedFeature.feat || selectedFeature;
+    const featKey = `${feat.id || feat.name || ''}_${feat.lat || ''}_${feat.lng || ''}`;
+    if (!featKey || lastFlownFeatureIdRef.current === featKey) return;
+    lastFlownFeatureIdRef.current = featKey;
+
+    const featId = String(feat.id || '').toLowerCase();
+    const featName = String(feat.name || '').toLowerCase();
+    const featType = String(selectedFeature.type || feat.type || '').toLowerCase();
+
+    const isFlood = featId.includes('godavari') || 
+                    featName.includes('godavari') || 
+                    featName.includes('flood') || 
+                    featType.includes('flood') || 
+                    featId.includes('river');
+
+    if (isFlood) {
+      setActiveLayers(prev => ({ ...prev, floodRisk: true }));
+      if (mapRef.current) {
         mapRef.current.flyTo({
-          center: [selectedFeature.coordinates[1], selectedFeature.coordinates[0]], // [lng, lat]
-          zoom: 16,
-          pitch: 65,
-          bearing: -20,
-          duration: 2000
+          center: [74.4835, 19.8764],
+          zoom: 15,
+          duration: 1200
         });
-      } else if (center && center.length === 2) {
+      }
+    } else {
+      const coords = feat.coordinates || (feat.lat && feat.lng ? [feat.lat, feat.lng] : null);
+      if (coords && mapRef.current) {
         mapRef.current.flyTo({
-          center: [center[1], center[0]],
-          zoom: zoom || 13,
-          duration: 1000
+          center: [coords[1], coords[0]], // [lng, lat]
+          zoom: 16,
+          duration: 1200
         });
       }
     }
-  }, [selectedFeature, center, zoom]);
+  }, [selectedFeature]);
 
   // Fullscreen support
   const handleToggleFullscreen = useCallback(() => {
@@ -328,8 +386,32 @@ const MapView = ({
       };
     }
     
-    // Default street map using Carto Voyager (reliable vector style)
-    return 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json';
+    // Default street map using OSM raster tiles (since 'osm' is explicitly requested by state)
+    // CartoCDN Voyager now requires an API key and returns 403, causing white map.
+    return {
+      version: 8,
+      sources: {
+        'osm': {
+          type: 'raster',
+          tiles: [
+            'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
+          ],
+          tileSize: 256,
+          attribution: '&copy; OpenStreetMap Contributors'
+        }
+      },
+      layers: [
+        {
+          id: 'osm-layer',
+          type: 'raster',
+          source: 'osm',
+          minzoom: 0,
+          maxzoom: 19
+        }
+      ]
+    };
   }, [baseTileSource]);
 
   const displayHospitals = (osmData?.hospitals && osmData.hospitals.length > 0) ? osmData.hospitals : (infraData?.hospitals || []);
@@ -374,7 +456,24 @@ const MapView = ({
       )}
 
       {/* Actual Map Container */}
-      <div className="flex-1 relative w-full h-full min-h-[400px]">
+      <div className="flex-1 relative w-full h-full min-h-[600px]">
+        {mapError && (
+          <div className="absolute inset-0 z-[500] flex items-center justify-center bg-surface/90 backdrop-blur-sm">
+            <div className="bg-error-container text-on-error-container p-6 rounded-xl shadow-lg max-w-md text-center border border-error/20">
+              <span className="material-symbols-outlined text-[40px] mb-2 text-error">broken_image</span>
+              <h3 className="font-title-lg mb-2">3D Map Engine Error</h3>
+              <p className="font-body-md text-on-error-container/80 mb-4">
+                {mapError.message || String(mapError)}
+              </p>
+              <button 
+                onClick={() => setMapError(null)} 
+                className="px-4 py-2 bg-error text-on-error rounded hover:opacity-90 font-label-md"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        )}
         <Map
           ref={mapRef}
           {...viewState}
@@ -385,9 +484,13 @@ const MapView = ({
           }}
           onClick={handleMapClick}
           onMouseMove={handleMapHover}
+          onError={e => {
+            console.error('[MapLibre Error]', e);
+            if (e.error) setMapError(e.error);
+          }}
           interactiveLayerIds={['wards-fill', 'cadastral-fill']}
           mapStyle={mapStyleUrl}
-          style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, width: '100%', height: '100%' }}
+          style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, width: '100%', height: '100%', minHeight: '600px' }}
         >
           <FullscreenControl position="top-right" />
 
@@ -405,14 +508,69 @@ const MapView = ({
           </Source>
         )}
 
-        {/* Roads Layer (Mock Data) */}
+        {/* River Water Bodies (Solid Natural Godavari River) */}
+        {waterFeatures?.water_bodies && (
+          <Source id="river-water-bodies-source" type="geojson" data={waterFeatures.water_bodies}>
+            <Layer
+              id="river-water-bodies-layer"
+              type="fill"
+              paint={{
+                'fill-color': '#1d4ed8', // Vibrant solid river blue
+                'fill-opacity': 0.85,
+                'fill-outline-color': '#1e40af'
+              }}
+            />
+          </Source>
+        )}
+
+        {/* River Waterways (Connected River Flowlines) */}
+        {waterFeatures?.waterways && (
+          <Source id="river-waterways-source" type="geojson" data={waterFeatures.waterways}>
+            <Layer
+              id="river-waterways-layer"
+              type="line"
+              paint={{
+                'line-color': '#2563eb',
+                'line-width': 3.5,
+                'line-opacity': 0.95
+              }}
+            />
+          </Source>
+        )}
+
+        {/* Flood Extent Overlay (Semi-transparent Blue extending from the river) */}
+        {activeLayers.floodRisk && floodFeatures && (
+          <Source id="flood-extent-source" type="geojson" data={floodFeatures}>
+            <Layer
+              id="flood-extent-layer"
+              type="fill"
+              paint={{
+                'fill-color': '#60a5fa', // Semi-transparent lighter water blue
+                'fill-opacity': 0.45,
+                'fill-outline-color': '#3b82f6'
+              }}
+            />
+            <Layer
+              id="flood-extent-outline"
+              type="line"
+              paint={{
+                'line-color': '#2563eb',
+                'line-width': 1.5,
+                'line-dasharray': [3, 2],
+                'line-opacity': 0.75
+              }}
+            />
+          </Source>
+        )}
+
+        {/* Roads Layer (Rendered Above Water) */}
         {activeLayers.roads && roadsData && (
           <Source id="roads-source" type="geojson" data={roadsData}>
             <Layer {...roadLayerStyle} />
           </Source>
         )}
 
-        {/* Buildings Layer */}
+        {/* Buildings Layer (Rendered Above Water) */}
         {activeLayers.buildings && buildingsData && (
           <Source id="buildings-source" type="geojson" data={buildingsData}>
             <Layer {...buildingLayerStyle} />
